@@ -1,7 +1,38 @@
-\documentclass[11pt, ngerman]{article}
+\documentclass[a4paper, 11pt, ngerman]{article}
 \usepackage{tikz-network}
-\usepackage[left=2.5cm, right = 2.5cm,top=2cm,bottom=2.5cm]{geometry}
+\usepackage[left=2.5cm, right = 2.5cm,top=3cm,bottom=2.5cm, head=14pt]{geometry}
 \usepackage{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage{algpseudocode}
+
+
+\newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort} 
+\newcommand{\TeilnahmeId}{67571}             
+\newcommand{\Name}{Finn Rudolph}   
+
+\usepackage{scrlayer-scrpage, lastpage}
+\setkomafont{pageheadfoot}{\textrm}
+\rohead{Teilnahme-ID: \TeilnahmeId}
+\lohead{\Name}
+\cfoot*{\thepage{}}
+
+\usepackage{listings}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{myblue}{rgb}{0.3, 0.0, 0.9}
+\lstset{
+language=C++,
+  keywordstyle=\color{myblue},commentstyle=\color{mygreen},
+  stringstyle=\color{mymauve},rulecolor=\color{black},
+  basicstyle=\footnotesize\ttfamily,numberstyle=\tiny\color{mygray},
+  captionpos=b, % sets the caption-position to bottom
+  keepspaces=true, % keeps spaces in text
+  numbers=left, numbersep=5pt, showspaces=false,showstringspaces=true,
+  showtabs=false, stepnumber=2, tabsize=2, title=\lstname
+}
 
 \title{\Huge Aufgabe 3: Pancake Sort}
 \author{\Large Finn Rudolph \\ \\ \Large Teilnahme-ID: 67571}
@@ -11,35 +42,55 @@
 
 \begin{titlepage}
     \maketitle
+    \thispagestyle{empty}
 \end{titlepage}
 
 \tableofcontents
+\thispagestyle{empty}
+\newpage
 
 \section{Lösungsidee}
 
-\begin{tikzpicture}[node distance = {18mm}, main/.style = {draw, circle}]
-    \node[main](1234) at (0, 14) {1234};
-    \node[main](1243) [right of = 1234] {1243};
-    \node[main](1324) [right of = 1243] {1324};
-    \node[main](1342) [right of = 1324] {1342};
+\subsection{Der Pancake-Graph}
 
-    \node[](d) [right of = 1342] {...};
-    \node[main](4213) [right of = d] {4213};
-    \node[main](4231) [right of = 4213] {4231};
-    \node[main](4312) [right of = 4231] {4312};
-    \node[main](4321) [right of = 4312] {4321};
+Wenn $p$ eine Permutation von $n$ Zahlen ist, bezeichnen wir mit $s(p)$ die Menge an Permutationen von $n - 1$ Zahlen, die aus $p$ durch eine Wende-und-Ess-Operation hervorgehen. Formal:
+$$
+    s(p) = \{q : q = \gamma_i p \} \quad 0 \le i < n
+$$
+Sei $\text{ind}(p)$ der Index von $p$ in einer lexikogrfisch sortierten Liste aller Permutationen der Größe $|p|$ (0-indexiert). Wir bezeichnen mit $p^*$ die Permutation, die in dieser Liste an Stelle $n! - \text{ind}(p) - 1$ steht, das heißt $p$ und $p^*$ stehen symmetrisch zur Mitte der Liste. Die Behauptung ist nun, dass auch die Permutationen $s(p)$ und $s(p^*)$ durch Spiegelung an der Mitte ineinander überführt werden können. Formal lässt sich das folgendermaßen erfassen,
+$$
+    q \in s(p) \Longleftrightarrow q^* \in s(p^*)
+$$
+wobei $q$ eine beliebige Permutation der Länge $|p| - 1$ ist.
+\newline
 
-    \node[main](123) at (2.7, 10) {123};
-    \node[main](132) [right of = 123] {132};
-    \node[main](213) [right of = 132] {213};
-    \node[main](231) [right of = 213] {231};
-    \node[main](312) [right of = 231] {312};
-    \node[main](321) [right of = 312] {321};
+\newpage
+\begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
+    \node[main](1234) at (0, 0) {1234};
+    \node[main](1243) [below of = 1234] {1243};
+    \node[main](1324) [below of = 1243] {1324};
+    \node[main](1342) [below of = 1324] {1342};
+    \node[main](1423) [below of = 1342] {1423};
+    \node[main](1432) [below of = 1423] {1432};
 
-    \node[main](12) at (6.3, 7) {12};
-    \node[main](21) [right of = 12] {21};
+    \node[main](2134) [below of = 1432] {2134};
+    \node[main](2143) [below of = 2134] {2143};
+    \node[main](2314) [below of = 2143] {2314};
+    \node[main](2341) [below of = 2314] {2341};
+    \node[main](2413) [below of = 2341] {2413};
+    \node[main](2431) [below of = 2413] {2431};
 
-    \node[main](1) at (7.2, 4) {1};
+    \node[main](123) at (7, -5.8) {123};
+    \node[main](132) [below of = 123] {132};
+    \node[main](213) [below of = 132] {213};
+    \node[main](231) [below of = 213] {231};
+    \node[main](312) [below of = 231] {312};
+    \node[main](321) [below of = 312] {321};
+
+    \node[main](12) at (11, -9.6) {12};
+    \node[main](21) [below of = 12] {21};
+
+    \node[main](1) at (13.5, -10.5) {1};
 
     \draw[->](1234) -- (123);
     \draw[->](1234) -- (213);
@@ -57,6 +108,107 @@
     \draw[->](1342) -- (132);
     \draw[->](1342) -- (312);
     \draw[->](1342) -- (321);
+
+    \draw[->](1423) -- (312);
+    \draw[->](1423) -- (123);
+    \draw[->](1423) -- (231);
+
+    \draw[->](1432) -- (321);
+    \draw[->](1432) -- (132);
+    \draw[->](1432) -- (312);
+    \draw[->](1432) -- (231);
+
+    \draw[->](2134) -- (123);
+    \draw[->](2134) -- (312);
+
+    \draw[->](2143) -- (132);
+    \draw[->](2143) -- (123);
+    \draw[->](2143) -- (312);
+
+    \draw[->](2314) -- (213);
+    \draw[->](2314) -- (132);
+
+    \draw[->](2341) -- (231);
+    \draw[->](2341) -- (321);
+
+    \draw[->](2413) -- (312);
+    \draw[->](2413) -- (213);
+    \draw[->](2413) -- (132);
+
+    \draw[->](2431) -- (321);
+    \draw[->](2431) -- (231);
+
+    \draw[->](123) -- (12);
+    \draw[->](123) -- (21);
+    \draw[->](132) -- (21);
+    \draw[->](132) -- (12);
+    \draw[->](213) -- (12);
+    \draw[->](231) -- (21);
+    \draw[->](312) -- (12);
+    \draw[->](312) -- (21);
+    \draw[->](321) -- (12);
+    \draw[->](321) -- (21);
+
+    \draw[->](12) -- (1);
+    \draw[->](21) -- (1);
+\end{tikzpicture}
+
+\newpage
+\begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
+    \node[main](3124) at (0, 0) {3124};
+    \node[main](3142) [below of = 3124] {3142};
+    \node[main](3214) [below of = 3142] {3214};
+    \node[main](3241) [below of = 3214] {3241};
+    \node[main](3412) [below of = 3241] {3412};
+    \node[main](3421) [below of = 3412] {3421};
+
+    \node[main](4123) [below of = 3421] {4123};
+    \node[main](4132) [below of = 4123] {4132};
+    \node[main](4213) [below of = 4132] {4213};
+    \node[main](4231) [below of = 4213] {4231};
+    \node[main](4312) [below of = 4231] {4312};
+    \node[main](4321) [below of = 4312] {4321};
+
+    \node[main](123) at (7, -5.8) {123};
+    \node[main](132) [below of = 123] {132};
+    \node[main](213) [below of = 132] {213};
+    \node[main](231) [below of = 213] {231};
+    \node[main](312) [below of = 231] {312};
+    \node[main](321) [below of = 312] {321};
+
+    \node[main](12) at (11, -9.6) {12};
+    \node[main](21) [below of = 12] {21};
+
+    \node[main](1) at (13.5, -10.5) {1};
+
+    \draw[->](3124) -- (123);
+    \draw[->](3124) -- (213);
+
+    \draw[->](3142) -- (132);
+    \draw[->](3142) -- (231);
+    \draw[->](3142) -- (312);
+
+    \draw[->](3214) -- (213);
+    \draw[->](3214) -- (123);
+
+    \draw[->](3241) -- (231);
+    \draw[->](3241) -- (312);
+
+    \draw[->](3412) -- (312);
+    \draw[->](3412) -- (321);
+    \draw[->](3412) -- (132);
+
+    \draw[->](3421) -- (321);
+    \draw[->](3421) -- (132);
+
+    \draw[->](4123) -- (123);
+    \draw[->](4123) -- (312);
+    \draw[->](4123) -- (132);
+    \draw[->](4123) -- (213);
+
+    \draw[->](4132) -- (132);
+    \draw[->](4132) -- (321);
+    \draw[->](4132) -- (213);
 
     \draw[->](4213) -- (213);
     \draw[->](4213) -- (312);
@@ -89,5 +241,9 @@
     \draw[->](12) -- (1);
     \draw[->](21) -- (1);
 \end{tikzpicture}
+
+\section{Implementierung}
+
+\section{Quellcode}
 
 \end{document}
