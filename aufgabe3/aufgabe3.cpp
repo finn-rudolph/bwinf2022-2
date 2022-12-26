@@ -3,11 +3,11 @@
 #include <algorithm>
 
 std::vector<uint8_t> y;
-std::vector<size_t> factorial;
+std::vector<__uint128_t> factorial;
 
 void precalc_factorial(size_t n)
 {
-    factorial = std::vector<size_t>(n + 1);
+    factorial = std::vector<__uint128_t>(n + 1);
     factorial[0] = 1;
     for (size_t i = 1; i <= n; i++)
         factorial[i] = factorial[i - 1] * i;
@@ -54,6 +54,20 @@ inline size_t gamma_index(std::vector<unsigned> const &p, size_t i)
     return k;
 }
 
+size_t optimal_precomputation_size(size_t n)
+{
+    size_t a = 1, b = std::min<size_t>(n - 1, 12);
+    while (a < b)
+    {
+        size_t mid = (a + b + 1) / 2;
+        if (factorial[mid] > factorial[n] / factorial[mid])
+            b = mid - 1;
+        else
+            a = mid;
+    }
+    return a;
+}
+
 int main()
 {
     size_t n;
@@ -70,7 +84,7 @@ int main()
     y = std::vector<uint8_t>(1, 0);
     std::vector<uint8_t> z;
 
-    for (size_t i = 2; i <= std::min<size_t>(n / 2, 12); i++)
+    for (size_t i = 2; i <= optimal_precomputation_size(n); i++)
     {
         z.resize(factorial[i]);
         std::vector<unsigned> s(i);
