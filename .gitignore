@@ -5,3 +5,5 @@
 *.log
 *.toc
 *.synctex.gz
+.vscode
+aufgabe3/aufgabe3
