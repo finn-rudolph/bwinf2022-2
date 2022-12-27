@@ -5,8 +5,11 @@
 #include <memory.h>
 #include <assert.h>
 
-#define min(x, y) ((x) < (y) ? (x) : (y))
-#define max(x, y) ((x) > (y) ? (x) : (y))
+typedef struct node node;
+struct node
+{
+    size_t i, parent;
+};
 
 __uint128_t *factorial;
 
@@ -20,7 +23,7 @@ void precalc_factorial(size_t n)
 
 size_t p_index(size_t n, unsigned const *const p)
 {
-    uint32_t mask = 0; // Bit i ist 1, wenn n - i - 1 bereits aufgetreten ist.
+    uint64_t mask = 0; // Bit i ist 1, wenn n - i - 1 bereits aufgetreten ist.
     size_t k = 0;
 
     for (size_t j = 0; j < n; j++)
@@ -35,7 +38,7 @@ size_t p_index(size_t n, unsigned const *const p)
 
 size_t p_index_gamma(size_t n, unsigned const *const p, size_t i)
 {
-    uint32_t mask = 0;
+    uint64_t mask = 0;
     size_t k = 0;
 
     // Um die Permutation in richtiger Reihenfolge von links nach rechts
@@ -61,54 +64,22 @@ size_t p_index_gamma(size_t n, unsigned const *const p, size_t i)
 
 void ith_permutation(size_t n, size_t i, unsigned *const p)
 {
+    // Berechne die Ziffern von i im fakultätsbasierten Zahlensystem.
     for (size_t j = 0; j < n; j++)
     {
         p[j] = i / factorial[n - j - 1];
         i %= factorial[n - j - 1];
     }
 
+    // Addiere zu jeder Ziffer die Anzahl kleiner oder gleicher, links gelegener
+    // Ziffern.
     for (size_t j = n - 1; j; j--)
         for (size_t k = j - 1; k < n; k--)
-            if (p[k] <= p[j])
-                p[j]++;
+            p[j] += (p[k] <= p[j]);
 }
-
-void next_permutation(size_t n, unsigned *const p)
-{
-    if (n == 1)
-        return;
-
-    size_t m = n - 2, k = n - 1;
-    while (m && p[m] > p[m + 1])
-        m--;
-    while (p[m] > p[k])
-        k--;
-    unsigned x = p[k];
-    p[k] = p[m];
-    p[m] = x;
-
-    m++;
-    k = n - 1;
-    while (m < k)
-    {
-        unsigned x = p[k];
-        p[k] = p[m];
-        p[m] = x;
-        m++, k--;
-    }
-}
-
-typedef struct node node;
-struct node
-{
-    size_t i, parent;
-};
 
 size_t make_unique(size_t n, node *const nodes)
 {
-    if (n == 1)
-        return 1;
-
     size_t i = 0, j = 0;
     while (++j < n)
     {
@@ -127,20 +98,6 @@ int node_cmp(void const *const a, void const *const b)
     return 0;
 }
 
-size_t binary_search(size_t l, node const *const z, size_t i)
-{
-    size_t a = 0, b = l - 1;
-    while (a < b)
-    {
-        size_t mid = (a + b) / 2;
-        if (z[mid].i < i)
-            a = mid + 1;
-        else
-            b = mid;
-    }
-    return a;
-}
-
 unsigned *reconstruct_path(
     size_t n, size_t m, size_t const *const l, node *const *const tree)
 {
@@ -149,6 +106,7 @@ unsigned *reconstruct_path(
 
     while (i != -1)
     {
+        // Suche den akutellen Knoten mit Binärsuche.
         size_t a = 0, b = l[m - 1] - 1;
 
         while (a < b)
@@ -161,6 +119,9 @@ unsigned *reconstruct_path(
         }
 
         i = tree[m - 1][a].parent;
+
+        // Finde die Wendeoperation, die benutzt wurde, um zum vorherigen
+        // Knoten zu gelangen.
         unsigned p[m + 1];
         ith_permutation(m + 1, tree[m - 1][a].parent, p);
         for (size_t j = 0; j < m + 1; j++)
@@ -179,7 +140,7 @@ unsigned *reconstruct_path(
     return path;
 }
 
-bool next_rec(size_t n, size_t l1, size_t *l2, node *y, node **z)
+bool recurse(size_t n, size_t l1, size_t *l2, node *y, node **z)
 {
     *z = malloc(n * l1 * sizeof(node));
     unsigned s[n];
@@ -224,11 +185,13 @@ int main()
     l[n - 1] = 1;
 
     size_t m = n;
-    while (!next_rec(m, l[m - 1], l + m - 2, tree[m - 1], tree + m - 2))
+    while (!recurse(m, l[m - 1], l + m - 2, tree[m - 1], tree + m - 2))
         m--;
     m--;
 
-    printf("Indizes, nach denen gewendet werden muss:\n");
+    printf("%zu Operationen erforderlich. "
+           "Indizes, nach denen gewendet werden muss (0-indexiert):\n",
+           n - m);
     unsigned *path = reconstruct_path(n, m, l, tree);
     for (size_t i = 0; i < n - m; i++)
         printf("%u ", path[i]);
