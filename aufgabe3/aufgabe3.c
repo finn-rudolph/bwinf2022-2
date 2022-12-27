@@ -97,72 +97,22 @@ void next_permutation(size_t n, unsigned *const p)
     }
 }
 
-size_t opt_precomputation_size(size_t n)
-{
-    size_t a = 1, b = min(n - 1, 12);
-    while (a < b)
-    {
-        size_t mid = (a + b + 1) / 2;
-        if (factorial[mid] > factorial[n] / factorial[mid])
-            b = mid - 1;
-        else
-            a = mid;
-    }
-    return a;
-}
-
-void precompute_next(size_t n, uint8_t const *const y, uint8_t *const z)
-{
-    unsigned s[n];
-    for (size_t j = 0; j < n; j++)
-        s[j] = j;
-
-    for (size_t j = 0; j < factorial[n] / 2; j++)
-    {
-        unsigned min_ops1 = n, min_ops2 = n;
-        for (size_t k = 0; k < n; k++)
-        {
-            size_t l = p_index_gamma(n, s, k);
-            min_ops1 = min(min_ops1, y[l] + 1U);
-            min_ops2 = min(min_ops2, y[factorial[n - 1] - l - 1] + 1U);
-        }
-        z[j] = min_ops1;
-        z[factorial[n] - j - 1] = min_ops2;
-        next_permutation(n, s);
-    }
-
-    z[0] = 0;
-}
-
 typedef struct node node;
 struct node
 {
     size_t i, parent1, parent2;
 };
 
-size_t binary_search(size_t n, node *const nodes, size_t i)
-{
-    size_t a = 0, b = n;
-    while (a < b)
-    {
-        size_t mid = (a + b) / 2;
-        if (nodes[mid].i < i)
-            a = mid + 1;
-        else
-            b = mid;
-    }
-    return a;
-}
-
 size_t make_unique(size_t n, node *const nodes)
 {
-    size_t i = 0, j = 1;
-    while (j < n)
+    if (n == 1)
+        return;
+
+    size_t i = 0, j = 0;
+    while (++j < n)
     {
-        if (nodes[i].i == nodes[j].i)
-            j++;
-        else
-            nodes[++i] = nodes[j++];
+        if (nodes[i].i != nodes[j].i && nodes[j].i != -1)
+            nodes[++i] = nodes[j];
     }
     return i + 1;
 }
@@ -176,64 +126,55 @@ int node_cmp(void const *const a, void const *const b)
     return 0;
 }
 
-uint8_t *optimal_gamma_seq(
-    size_t n, unsigned const *const p, uint8_t const *const *const y)
+unsigned *reconstruct_path(size_t n, node *z)
 {
-    node *nodes[n];
-    nodes[n - 1] = malloc(sizeof(node));
-    nodes[n - 1][0] = (node){.i = p_index(n, p), .parent1 = -1, .parent2 = -1};
-    size_t len[n];
-    len[n - 1] = 1;
+    unsigned *path = malloc(n * sizeof(unsigned));
+    return path;
+}
+
+bool next_rec(size_t n, size_t l1, size_t *l2, node *y, node *z)
+{
+    z = malloc(n * l1 * sizeof(node));
     unsigned s[n];
+    *l2 = 0;
 
-    for (size_t m = n - 1; m < n; m--)
+    for (size_t i = 0; i < l1; i++)
     {
-        size_t const l = len[m - 1] = len[m] * m;
-        node *z = nodes[m - 1] = malloc(l * sizeof(node));
-        size_t curr_len = 0;
+        ith_permutation(n, y[i].i, s);
 
-        for (size_t i = 0; i < len[m]; i++)
+        for (size_t j = 0; j < n; j++)
         {
-            node *x = nodes[m] + i;
-
-            if (!x->i)
-            {
-            }
-            else if (x->parent2 != -1 && x->i == factorial[m + 1] - 1)
-            {
-            }
-
-            ith_permutation(m, x->i, s);
-
-            for (size_t j = 0; j < m + 1; j++)
-            {
-                z[curr_len] = (node){.i = p_index_gamma(m + 1, s, j),
-                                     x->i,
-                                     factorial[m + 1] - x->i - 1};
-                if (x->parent2 == -1)
-                    z[curr_len].parent2 = -1;
-                curr_len++;
-            }
+            z[*l2] = (node){.i = p_index_gamma(n, s, j),
+                            .parent1 = z[i].i,
+                            .parent2 = factorial[n] - y[i].i - 1};
+            if (y[i].parent2 == -1)
+                z[*l2].parent2 = -1;
+            (*l2)++;
         }
-
-        qsort(z, l, sizeof(node *), node_cmp);
-
-        // Entferne einen Knoten symmetrischer Paare.
-        for (size_t i = 0; i < l; i++)
-        {
-            size_t const sym = binary_search(l, z, factorial[m] - z[i].i - 1);
-
-            if (z[sym].i == factorial[m] - z[i].i - 1)
-            {
-                z[i].parent2 = nodes[sym]->parent1;
-                for (size_t j = sym;
-                     j < l && z[j].i == factorial[m] - z[i].i - 1; j++)
-                    z[j].i = z[sym - 1].i;
-            }
-        }
-
-        len[m - 1] = make_unique(l, z);
     }
+
+    qsort(z, *l2, sizeof(node), node_cmp);
+    if (!z[0].i)
+        return 1;
+
+    *l2 = make_unique(l2, z);
+    size_t i = 1, j = *l2 - 1;
+
+    while (i < j)
+    {
+        if (z[i].i < factorial[n - 1] - z[j].i - 1)
+            i++;
+        else if (z[i].i > factorial[n - 1] - z[j].i - 1)
+            j--;
+        else
+        {
+            z[j].i = -1;
+            j--, i++;
+        }
+    }
+
+    *l2 = make_unique(l2, z);
+    return 0;
 }
 
 int main()
@@ -249,16 +190,12 @@ int main()
     }
 
     precalc_factorial(n);
-    size_t opt_size = opt_precomputation_size(n);
-    uint8_t *y[opt_size];
-    for (size_t i = 0; i < opt_size; i++)
-        y[i] = malloc(factorial[i + 1] * sizeof(uint8_t));
-    y[0][0] = 0;
 
-    for (size_t i = 2; i <= opt_precomputation_size(n); i++)
-        precompute_next(i, y[i - 2], y[i - 1]);
+    node *z[n];
+    z[n - 1] = malloc(sizeof(node));
+    z[n - 1][0] = (node){.i = p_index(n, p), .parent1 = -1, .parent2 = -1};
+    size_t l[n];
+    l[n - 1] = 1;
 
-    for (size_t i = 0; i < opt_size; i++)
-        free(y[i]);
     free(factorial);
 }
