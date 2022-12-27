@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <assert.h>
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) ((x) > (y) ? (x) : (y))
@@ -62,11 +63,11 @@ void ith_permutation(size_t n, size_t i, unsigned *const p)
 {
     for (size_t j = 0; j < n; j++)
     {
-        p[i] = i / factorial[n - j - 1];
+        p[j] = i / factorial[n - j - 1];
         i %= factorial[n - j - 1];
     }
 
-    for (size_t j = n - 1; j < n; j--)
+    for (size_t j = n - 1; j; j--)
         for (size_t k = j - 1; k < n; k--)
             if (p[k] <= p[j])
                 p[j]++;
@@ -100,18 +101,18 @@ void next_permutation(size_t n, unsigned *const p)
 typedef struct node node;
 struct node
 {
-    size_t i, parent1, parent2;
+    size_t i, parent;
 };
 
 size_t make_unique(size_t n, node *const nodes)
 {
     if (n == 1)
-        return;
+        return 1;
 
     size_t i = 0, j = 0;
     while (++j < n)
     {
-        if (nodes[i].i != nodes[j].i && nodes[j].i != -1)
+        if (nodes[i].i != nodes[j].i)
             nodes[++i] = nodes[j];
     }
     return i + 1;
@@ -126,15 +127,61 @@ int node_cmp(void const *const a, void const *const b)
     return 0;
 }
 
-unsigned *reconstruct_path(size_t n, node *z)
+size_t binary_search(size_t l, node const *const z, size_t i)
 {
-    unsigned *path = malloc(n * sizeof(unsigned));
+    size_t a = 0, b = l - 1;
+    while (a < b)
+    {
+        size_t mid = (a + b) / 2;
+        if (z[mid].i < i)
+            a = mid + 1;
+        else
+            b = mid;
+    }
+    return a;
+}
+
+unsigned *reconstruct_path(
+    size_t n, size_t m, size_t const *const l, node *const *const tree)
+{
+    size_t i = 0;
+    unsigned *path = malloc((n - m) * sizeof(unsigned));
+
+    while (i != -1)
+    {
+        size_t a = 0, b = l[m - 1] - 1;
+
+        while (a < b)
+        {
+            size_t mid = (a + b) / 2;
+            if (tree[m - 1][mid].i < i)
+                a = mid + 1;
+            else
+                b = mid;
+        }
+
+        i = tree[m - 1][a].parent;
+        unsigned p[m + 1];
+        ith_permutation(m + 1, tree[m - 1][a].parent, p);
+        for (size_t j = 0; j < m + 1; j++)
+        {
+            if (p_index_gamma(m + 1, p, j) == tree[m - 1][a].i)
+            {
+                path[n - m - 1] = j;
+                break;
+            }
+        }
+
+        m++;
+    }
+
+    assert(m == n + 1);
     return path;
 }
 
-bool next_rec(size_t n, size_t l1, size_t *l2, node *y, node *z)
+bool next_rec(size_t n, size_t l1, size_t *l2, node *y, node **z)
 {
-    z = malloc(n * l1 * sizeof(node));
+    *z = malloc(n * l1 * sizeof(node));
     unsigned s[n];
     *l2 = 0;
 
@@ -143,37 +190,15 @@ bool next_rec(size_t n, size_t l1, size_t *l2, node *y, node *z)
         ith_permutation(n, y[i].i, s);
 
         for (size_t j = 0; j < n; j++)
-        {
-            z[*l2] = (node){.i = p_index_gamma(n, s, j),
-                            .parent1 = z[i].i,
-                            .parent2 = factorial[n] - y[i].i - 1};
-            if (y[i].parent2 == -1)
-                z[*l2].parent2 = -1;
-            (*l2)++;
-        }
+            (*z)[(*l2)++] =
+                (node){.i = p_index_gamma(n, s, j), .parent = y[i].i};
     }
 
-    qsort(z, *l2, sizeof(node), node_cmp);
-    if (!z[0].i)
+    qsort(*z, *l2, sizeof(node), node_cmp);
+    *l2 = make_unique(*l2, *z);
+    if (!(*z)[0].i)
         return 1;
 
-    *l2 = make_unique(l2, z);
-    size_t i = 1, j = *l2 - 1;
-
-    while (i < j)
-    {
-        if (z[i].i < factorial[n - 1] - z[j].i - 1)
-            i++;
-        else if (z[i].i > factorial[n - 1] - z[j].i - 1)
-            j--;
-        else
-        {
-            z[j].i = -1;
-            j--, i++;
-        }
-    }
-
-    *l2 = make_unique(l2, z);
     return 0;
 }
 
@@ -191,11 +216,25 @@ int main()
 
     precalc_factorial(n);
 
-    node *z[n];
-    z[n - 1] = malloc(sizeof(node));
-    z[n - 1][0] = (node){.i = p_index(n, p), .parent1 = -1, .parent2 = -1};
+    node *tree[n];
+    memset(tree, 0, n * sizeof(node *));
+    tree[n - 1] = malloc(sizeof(node));
+    tree[n - 1][0] = (node){.i = p_index(n, p), .parent = -1};
     size_t l[n];
     l[n - 1] = 1;
 
+    size_t m = n;
+    while (!next_rec(m, l[m - 1], l + m - 2, tree[m - 1], tree + m - 2))
+        m--;
+    m--;
+
+    printf("Indizes, nach denen gewendet werden muss:\n");
+    unsigned *path = reconstruct_path(n, m, l, tree);
+    for (size_t i = 0; i < n - m; i++)
+        printf("%u ", path[i]);
+    putchar('\n');
+
     free(factorial);
+    for (size_t i = 0; i < n; i++)
+        free(tree[i]);
 }
