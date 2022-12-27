@@ -1,11 +1,12 @@
-\documentclass[a4paper, 11pt, ngerman]{article}
+\documentclass[a4paper, 10pt, ngerman]{article}
 \usepackage{tikz-network}
-\usepackage[left=2.5cm, right = 2.5cm,top=3cm,bottom=2.5cm, head=14pt]{geometry}
+\usepackage[left=3cm, right = 3cm, top=3cm, bottom=3cm]{geometry}
 \usepackage{babel}
 \usepackage[T1]{fontenc}
-\usepackage[utf8x]{inputenc}
+\usepackage{inputenc}
 \usepackage{algpseudocode}
 \usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 
 \newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort} 
@@ -18,71 +19,56 @@
 \lohead{\Name}
 \cfoot*{\thepage{}}
 
-\usepackage{listings}
-\usepackage{color}
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
-\definecolor{myblue}{rgb}{0.3, 0.0, 0.9}
-\lstset{
-language=C++,
-  keywordstyle=\color{myblue},commentstyle=\color{mygreen},
-  stringstyle=\color{mymauve},rulecolor=\color{black},
-  basicstyle=\footnotesize\ttfamily,numberstyle=\tiny\color{mygray},
-  captionpos=b, % sets the caption-position to bottom
-  keepspaces=true, % keeps spaces in text
-  numbers=left, numbersep=5pt, showspaces=false,showstringspaces=true,
-  showtabs=false, stepnumber=2, tabsize=2, title=\lstname
-}
-
-\title{\Huge Aufgabe 3: Pancake Sort}
-\author{\Large Finn Rudolph \\ \\ \Large Teilnahme-ID: 67571}
-\date{\Large 23. Dezember 2022}
+\title{\LARGE \textbf{Aufgabe 3: Pancake Sort}}
+\author{\large Finn Rudolph \\ \\ \large Teilnahme-ID: 67571}
+\date{\large 23. Dezember 2022}
 
 \begin{document}
 
 \begin{titlepage}
     \maketitle
+    \tableofcontents
     \thispagestyle{empty}
 \end{titlepage}
 
-\tableofcontents
-\thispagestyle{empty}
-\newpage
+\newtheorem{theorem}{Satz}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
 
 \section{Lösungsidee}
 
-Pancake Sort ist ein bekannter Sortieralgorithmus, der zwar meist nicht zum Sortieren verwendet wird, aber anderweitige Anwendungen hat. Im unveränderten Pancake Sort wird der oberste Pfannkuchen allerdings nicht aufgegessen, sondern allein ein Präfix der zu sortierenden Folge umgekehrt, weshalb Pancake Sort auch als \emph{Sorting by Prefix Reversals} bezeichnet wird.
+Pancake Sort ist ein bekannter Sortieralgorithmus, der zwar meist nicht zum Sortieren verwendet wird, aber anderweitige Anwendungen hat. In seiner ursprünglichen Form wird der oberste Pfannkuchen allerdings nicht aufgegessen, sondern allein ein Präfix der zu sortierenden Folge umgekehrt, weshalb Pancake Sort auch als \emph{Sorting by Prefix Reversals} bezeichnet wird.
 
 Im Folgenden wird ein Stapel von $n$ Pfannkuchen als Folge
 $$
     p = p_0, p_1, p_2, \dots, p_{n - 1}
 $$
 definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. (Folgen werden grundsätzlich mit 0 beginnend indexiert.) Da jede Zahl von 1 bis $n$ in dieser Folge genau einmal vorkommt, wird $p$ auch als Permutation der Länge $n$ bezeichnet. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
-\newline \newline
-\textbf{Definition 1.} $\gamma_i p$ bezeichnet die Permutation der ersten $n - 1$ natürlichen Zahlen, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt.
-$$
-    \gamma_i p = p_{i-1}', p_{i-2}', \dots, p_1', p_0', p_{i+1}', p_{i+2}', \dots, p_{n-1}'
-$$
-$$
-    p_j' = \begin{cases}
-        p_j     & \text{wenn } p_j < p_i \\
-        p_j - 1 & \text{wenn } p_j > p_i
-    \end{cases}
-    \quad 0 \le j \le n - 1, j \ne i
-$$
-\newline \newline
-Zum Beispiel, wenn $p = 4, 1, 2, 3$, dann ist
+
+\begin{definition}
+    Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Der Wende-und-Ess-Operator $\gamma_i$ ist für $p$ wie folgt definiert.
+    $$
+        \gamma_i p = p_{i-1}', p_{i-2}', \dots, p_1', p_0', p_{i+1}', p_{i+2}', \dots, p_{n-1}'
+    $$
+    $$
+        p_j' = \begin{cases}
+            p_j     & \text{wenn } p_j < p_i \\
+            p_j - 1 & \text{wenn } p_j > p_i
+        \end{cases}
+        \quad 0 \le j \le n - 1, j \ne i
+    $$
+\end{definition}
+$\gamma_i p$ bezeichnet also die Permutation der ersten $n - 1$ natürlichen Zahlen, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt. Zum Beispiel, wenn $p = 4, 1, 2, 3$, dann ist
 $$
     \gamma_2 p = \gamma_2 (4, 1, 2, 3) = 1, 3, 2
 $$
-Zuerst wurde das Präfix $4, 1, 2$ umgekehrt, dann die 2 am Anfang entfernt und schließlich 3 und 4 um 1 verringert.
 
 \subsection{Der Pancake-Graph}
 
-Im Kontext des ursprünglichen Pancake-Sort wird der Graph, in dem jede Permutation einer bestimmten Länge einem Knoten zugeordnet ist, als Pancake-Graph bezeichnet. Zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet.
+Im Kontext des ursprünglichen Pancake-Sort ist der sogenannte Pancake-Graph für Permutationen der Länge $n$ wie folgt definiert: Für jede Permutation der Länge $n$ gibt es genau einen Knoten. Zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet. In diesem Abschnitt soll eine interessante Symmetrieeigenschaft von $G_n$ behandelt werden, die eine Optimierung der Lösungen für beide Teilaufgaben ermöglicht.
 
-Betrachtet man die beiden Teile des Graphen gleichzeitig, fällt auf, dass der zweite Teil genau wie der erste Teil aussieht, nur vertikal gespiegelt. Auch die kleineren Pancake-Graphen $G_3, G_2$ und $G_1$, die in $G_4$ enthalten sind, scheinen symmetrisch um ihre Mitte zu sein. Genauer sind die Kanten symmetrisch um die Mitte, d. h. durch Spiegelung einer Kante an der Mitte der Permutationsliste erhält man ebenfalls eine Kante des Graphen.
+Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zweite Teil genau wie der erste Teil aussieht, nur vertikal gespiegelt. Auch die kleineren Pancake-Graphen $G_3, G_2$ und $G_1$, die Teilgraphen von $G_4$ sind, scheinen symmetrisch um ihre Mitte zu sein. Genauer sind die Kanten symmetrisch um die Mitte der lexikographisch sortierten Liste der Permutationen von Größe 4.
 
 \newpage
 \begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
@@ -262,9 +248,10 @@ Betrachtet man die beiden Teile des Graphen gleichzeitig, fällt auf, dass der z
     \draw[->](21) -- (1);
 \end{tikzpicture}
 \newline \newline
-\textbf{Abbildung 1:} Der Pancake-Graph $G_4$. Von Knoten $u$ verläuft genau dann eine gerichtete Kante nach Knoten $v$, wenn die zu $u$ zugehörige Permutation durch ein $\gamma_i$ in die zu $v$ zugehörige Permutation umgewandelt werden kann.
+\emph{Abbildung 1.} Der Pancake-Graph $G_4$. Von Knoten $u$ verläuft genau dann eine gerichtete Kante nach Knoten $v$, wenn die zu $u$ zugehörige Permutation durch ein $\gamma_i$ in die zu $v$ zugehörige Permutation umgewandelt werden kann.
 \newpage
-Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph symmetrisch um die Mitte der lexikographisch geordneten Liste aller Permutationen der Länge 4. Das lässt vermuten, dass diese Symmetrie auch bei $G_5, G_6$ und allgemein $G_n$, für jede natürliche Zahl $n$, auftritt.
+
+Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
 Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 1,3,4,2$ und $p^* = 4, 2, 1, 3$:
 \begin{align*}
     \gamma_1 p = 2, 3, 1 \quad \gamma_1 p^* = 2, 1, 3 \\
@@ -272,10 +259,12 @@ Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetri
     \gamma_3 p = 3, 1, 2 \quad \gamma_3 p^* = 1, 3, 2 \\
     \gamma_4 p = 3, 2, 1 \quad \gamma_4 p^* = 1, 2, 3
 \end{align*}
-Die Ergebnisse der jeweiligen Anwendung von $\gamma_i$ liegen symmetrisch um die Mitte der Liste aller Permutationen von Länge 3. Mithilfe des Programms \emph{test\_sym.cpp} konnte diese Eigenschaft von $\gamma_i$ für alle symmetrisch gelegenen Paare an Permutationen bis Größe 10 bestätigt werden. Es scheint also, dass die Symmetrie des Pancake-Graphen allgemein gültig ist. Sie würde es einem Algorithmus zum Finden der kürzesten Folge an $\gamma_i$-Operationen erlauben, nur die Hälfte aller Permutationen in Betracht ziehen zu müssen, da auf die Ergebnisse von $\gamma_i$-Operationen mit der anderen Hälfte durch Symmetrie geschlossen werden kann.
+Die Ergebnisse der jeweiligen Anwendung von $\gamma_i$ liegen symmetrisch um die Mitte der Liste aller Permutationen von Länge 3. Mithilfe des Programms \emph{test\_sym.cpp} konnte diese Eigenschaft von $\gamma_i$ für alle symmetrisch gelegenen Paare an Permutationen bis Größe 10 bestätigt werden. Es scheint also, dass die Symmetrie des Pancake-Graphen allgemein gültig ist.
 
-Um diese Vermutung zu beweisen, muss in einem Einschub das fakultätsbasierte Zahlensystem eingeführt werden. Mithilfe dessen und einigen weiteren Erkenntnissen kann anschließend die endtdeckte Symmetrie formal festgehalten werden.
+Um diese Vermutung zu beweisen, sind einige weitere Mittel nötig. Zunächst wird das fakultätsbasierte Zahlensystem eingeführt, mithilfe dessen der Effekt des $\gamma_i$-Operators aus einer völlig anderen Perspektive betrachtet werden kann. Denn das fakultätsbasierte Zahlensystem erlaubt es, die Anzahl an Inversionen symmetrisch gelegener Paare von Permutationen miteinander in Verbindung zu bringen. Damit kann schließlich gezeigt werden, dass die Anwendung von $\gamma_i$ auf zwei in einer lexikographisch sortierten Liste symmetrisch positionierte Permutationen wieder zu einem symmetrischen Paar führt.
+
 \subsubsection*{Das fakultätsbasierte Zahlensystem}
+
 Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsystem eine unterschiedliche Basis für jede Ziffer verwendet. Die $k$-te Ziffer (mit 0 beginnend), von rechts gelesen, verwendet $k!$ als Basis und kann die Werte 0 bis $k$ annehmen. Der Wert einer fakultätsbasiert geschriebenen Zahl ist die Summe der einzelnen Ziffern, multipliziert mit ihrer jeweiligen Basis. Beispielsweise ist
 \begin{align*}
     17_{10} & = 2210_!   = 2 \cdot 3! + 2 \cdot 2! + 1 \cdot 1! + 0 \cdot 0!             \\
@@ -284,69 +273,141 @@ Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsys
 \end{align*}
 wobei das tiefgestellte ! auf das fakultätsbasierte Zahlensystem hinweist. Eine Fakultät $n!$, geschrieben im fakultätsbasierten Zahlensystem, ist immer von der Form $1000\dots$ ($n$ Nullen). Die Ziffern von $n! - 1$ sind immer genau $n-1, n-2, n-3, \dots, 0$.
 Da sich mit einer fakultätsbasierten Zahl mit $n$ Ziffern genau $n!$ Zahlen darstellen lassen, können diese Zahlen auf natürlichem Weg zum Nummerieren von Permutationen der Länge $n$ verwendet werden. Die Folgenden zwei Arten der Nummerierung sind entscheidend den Beweis der Symmetrie des Pancake-Graphen. Beide bilden eine Bijektion zwischen Permutationen der Länge $n$ und ganzen Zahlen von 0 bis $n! - 1$.
-\newline \newline
-\textbf{Definition 2.} Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. $\mu(p)$ ist auch als Lehmer-Code von $p$ bekannt \cite{factorial}. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
-\newline \newline
-\textbf{Definition 3.} Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Bei Sortierung nach kolexikographischer Ordung werden die Permutationen von rechts anstatt von links beginnend verglichen \cite{lexicographic}. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\nu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
-\newline \newline
-Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau die Anzahl an kleineren Elementen rechts von $p_i$, und $\nu(p)_{|p| - i - 1}$ die Anzahl an größeren Elementen links von $p_i$ \cite{factorial}. Als nächstes wird die zu $p$ symmetrisch gelegene Permutation definiert.
-\newline \newline
-\textbf{Definition 4.} Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) = n! - \mu(p^*) - 1$. $p$ und $p^*$ werden auch als symmetrisch gelegene Permutationen bezeichnet.
-\newline \newline
-Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*)$ genau $(n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie dafür ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Daraus lässt sich leicht die Symmetrieeigenschaft von $\gamma_i$ herleiten. Zunächst benötigen wir allerdings noch folgendes Lemma.
-\newline \newline
-\textbf{Lemma 1.} Sei $p$ eine Permutation der Länge $n$ und $p_i$ ein Element von $p$ $(0 \le i \le n - 1)$. Für jedes $0 \le j \le n-1, j \ne i$ ist entweder ($p_i < p_j$ und $p^*_i > p^*_j$) oder ($p_i > p_j$ und $p^*_i < p^*_j$).
-\newline \newline
-\emph{Beweis.} In anderen Worten sagt Lemma 1, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, mithilfe der ein Beweis schließlich möglich ist.
 
-Aufgrund der Definition von $p^*$ gilt $\mu(p) + \mu(p^*) = n! - 1$. Die Ziffern von $n! - 1$ in fakultätsbasierter Schreibweise sind aber genau in der Form $n-1, n-2, n-3, \dots, 0$, d. h. jede Ziffer bis zu $n$-ten nimmt ihren maximalen Wert an. Außerdem geben die Ziffern $\mu(p)_i$ und $\mu(p^*)_{i}$ die Anzahl an kleineren, rechts gelegenen Elementen von $p_i$ und $p^*_i$ an. Daher muss die Anzahl an kleineren, rechts gelgenen Elementen von $p_i$ plus der Anzahl an kleineren, rechts gelegenen Elementen von $p^*_i$ genau $n-i-1$ sein. Denn da die $i$-te Ziffer von $\mu(p) + \mu(p^*)$ genau $n - i - 1$ ist, muss $\mu(p)_i + \mu(p^*)_{i} = n-i-1$ gelten. Wäre das nicht der Fall, ist es leicht zu überprüfen, dass die Summe von $\mu(p)$ und $\mu(p^*)$ nicht $n! - 1$ sein kann. Da $\nu(p) + \nu(p^*) = n! - 1$, kann mit ähnlicher Begründung gezeigt werden, dass die Anzahl an größeren, links gelegenen Elementen von $p_i$ plus der Anzahl an größeren, links gelegenen Elementen von $p^*_i$ genau $i$ ist. Wichtig ist, dass die Anzahl an links gelegenen, größeren und rechts gelegenen, kleineren Elementen von $p_i$ und $p^*_i$ zusammengezählt allein anbhängig von $i$ ist, aber unabhängig davon, welche Permutation $p$ ist. Zur Verdeutlichung dieser Eigenschaft folgt ein Beispiel: Sei $p = 2,1,3,4$ und $p^* = 3,4,2,1$. Es gilt
+\begin{definition}
+    Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
+\end{definition}
+
+$\mu(p)$ ist auch als Lehmer-Code von $p$ bekannt \cite{factorial}.
+
+\begin{definition}
+    Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\nu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
+\end{definition}
+
+Bei Sortierung nach kolexikographischer Ordung werden die Permutationen von rechts anstatt von links beginnend verglichen \cite{lexicographic}.
+
+Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau die Anzahl an kleineren Elementen rechts von $p_i$, und $\nu(p)_{|p| - i - 1}$ die Anzahl an größeren Elementen links von $p_i$ \cite{factorial}. Mit $\mu(p)$ ist es nun möglich, die zu $p$ symmetrisch gelegene Permutation zu definieren.
+
+\begin{definition}
+    Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) = n! - \mu(p^*) - 1$.
+\end{definition}
+
+$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie dafür ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgendes Lemma benötigt.
+
+\begin{lemma}
+    Sei $p$ eine Permutation der Länge $n$ und $p_i$ ein Element von $p$ $(0 \le i \le n - 1)$. Für jedes $0 \le j \le n-1, j \ne i$ ist entweder ($p_i < p_j$ und $p^*_i > p^*_j$) oder ($p_i > p_j$ und $p^*_i < p^*_j$).
+\end{lemma}
+
+\begin{proof}
+    In anderen Worten sagt Lemma 1, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, die für den Beweis nötig ist.
+
+    Aufgrund der Definition von $p^*$ gilt
+    \begin{align*}
+        \mu(p) + \mu(p^*) & = n! - 1                                                                           \\
+                          & =(n - 1) \cdot (n - 1)! + (n - 2) \cdot (n - 2)! + \dots + 1 \cdot 1! + 0 \cdot 0!
+    \end{align*}
+    Die Koeffizienten der Fakultäten in der zweiten Zeile sind genau die Ziffern von $\mu(p) + \mu(p^*)$ in fakultätsbasierter Schreibweise, daher gilt
+    \begin{align*}
+        \mu(p)_i + \mu(p^*)_i = n - i - 1 \quad 0 \le i \le n - 1
+    \end{align*}
+    Ist das nicht der Fall, ist es leicht zu überprüfen, dass $\mu(p) + \mu(p^*) \ne n! - 1$. Daher muss die Anzahl an kleineren, rechts gelgenen Elementen von $p_i$ plus der Anzahl an kleineren, rechts gelegenen Elementen von $p^*_i$ genau $n-i-1$ sein. Mit ähnlicher Begründung kann gezeigt werden, dass $\nu(p)_i + \nu(p^*)_i = i$, folglich ist die Anzahl an größeren, links gelegenen Elementen von $p_i$ plus der Anzahl an größeren, links gelegenen Elementen von $p^*_i$ genau $i$. Die Anzahl an links gelegenen, größeren und rechts gelegenen, kleineren Elementen von $p_i$ und $p^*_i$ zusammengezählt ist also allein anbhängig von $i$ und unabhängig davon, welche Permutation $p$ ist.
+
+    Nun wird der eigentliche Beweis durchgeführt, er funktioniert über unendlichen Abstieg. Man nehme an, dass für irgendein $j_0 > i$ sowohl $p_{j_0} < p_i$, als auch $p^*_{j_0} < p^*_i$ gilt. Der Fall $j_0 < i$ funktioniert ähnlich. Auch die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ dient nur der einfacheren Beweisführung, der Fall $p_{j_0} > p_i$ und $p^*_{j_0} > p^*_i$ kann mit der gleichen Methode bewiesen werden. Da $\nu(p)_{n - j_0 - 1} + \nu(p^*)_{n - j_0 - 1} = j_0$, muss für irgendein ein $j_1 < j_0$ gelten, dass $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$. Andernfalls wäre es nicht möglich, auf insgesamt $j_0$ links gelegene, größere Elemente von $p_{j_0}$ und $p^*_{j_0}$ zu kommen. Nun gibt es zwei Fälle:
+    \begin{enumerate}
+        \item $j_1 < i$: Rechts von $j_1$ liegen $i$ und $j_0$, das heißt, es muss zwei Indizes $j_2, j_3 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$, $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Andernfalls wäre es wieder nicht möglich, auf die nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ nötigen, kleineren, rechts gelegenen Elemente zu kommen. Denn bereits zwei der $n - j_1 - 1$ rechts gelegenen Plätze sind sowohl in $p$ als auch in $p^*$ durch größere Zahlen besetzt, aber $n - j_1 - 1$ kleinere Elemente sind erforderlich.
+        \item $i < j_1 < j_0$: Da $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$, muss es rechts von $j_1$ einen Index $j_2 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$. Auch links von $j_1$ muss es einen Index $j_3 < j_1$ geben, sodass $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Erneut wäre andernfalls das Erreichen der nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ rechts gelegenen, kleineren und der $\nu(p)_{n - j_1 - 1} + \nu(p^*)_{n - j_1 - 1} = j_1$ links gelegenen, größeren Elemente unmöglich.
+    \end{enumerate}
+    Man sieht, dass durch die Forderung nach einer allein vom Index anbhängigen Zahl rechts gelegener, kleinerer bzw. links gelegener, größerer Elemente immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen erzeugt werden. Das ist ein Widerspruch, da natürliche Zahlen, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. (Daneben wären die $n$ verfügbaren Elemente irgendwann ausgeschöpft.) Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
+\end{proof}
+
+Nun wird die Funktion $\eta(p, i, j, k)$ eingeführt, die die Anzahl an Elementen von $p$ mit Indizes im Intervall $[i, j]$ zählt, die kleiner als $p_i$ sind.
+\begin{definition}
+    Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Wir definieren die Funktion
+    $$
+        \eta(p, i, j, k) = \sum_{h = j}^k
+        \begin{cases}
+            1 & \text{wenn } p_i > p_h   \\
+            0 & \text{wenn } p_i \le p_h
+        \end{cases}
+    $$
+    für $0 \le i, j, k \le n - 1$.
+\end{definition}
+Lemma 1 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berechnen, denn für jeden Index ist entweder das Element in $p$ oder in $p^*$ kleiner als $p_i$ bzw. $p^*_i$.
 \begin{align*}
-    \mu(p)    = 6 =  1000_! \quad  & \nu(p)     = 1 = 0010_! \\
-    \mu(p^*) = 17 =  2210_!  \quad & \nu(p^*) = 22 = 3200_!  \\
-\end{align*}
-Zur Erinnerung: Um aus $\nu(p)$ die Anzahl links gelegener, größerer Zahlen des $i$-ten Elements von $p$ herauszulesen, wird die $|p| - i - 1$-te Ziffer betrachtet. Beispielsweise hat das Element bei Index 2 in $p^*$ (die 2) genau 2 links gelegene, größere Elemente und die Ziffer bei Index $4 - 2 - 1 = 1$ in $\nu(p^*)$ ist 2.
-
-Nun wird der eigentliche Beweis durchgeführt, er geschieht durch unendlichen Abstieg. Man nehme an, dass für irgendein $j_0 > i$ sowohl $p_{j_0} < p_i$, als auch $p^*_{j_0} < p^*_i$ gilt. Der Fall $j_0 < i$ funktioniert ähnlich. Auch die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ dient nur der einfacheren Beweisführung, der Fall $p_{j_0} > p_i$ und $p^*_{j_0} > p^*_i$ kann mit der gleichen Methode bewiesen werden. Da $\nu(p)_{n - j_0 - 1} + \nu(p^*)_{n - j_0 - 1} = j_0$, muss für irgendein ein $j_1 < j_0$ gelten, dass $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$. Andernfalls wäre es nicht möglich, auf die insgesamt $j_0$ links gelegenen, größeren Elemente von $p_{j_0}$ und $p^*_{j_0}$ zu kommen. Nun gibt es zwei Fälle:
-\begin{enumerate}
-    \item $j_1 < i$: Rechts von $j_1$ liegen $i$ und $j_0$, das heißt, es muss zwei Indizes $j_2, j_3 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$, $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Andernfalls wäre es wieder nicht möglich, auf die nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ nötigen, kleineren, rechts gelegenen Elemente zu kommen. Denn bereits zwei der $n - j_1 - 1$ rechts gelegenen Plätze sind sowohl in $p$ als auch in $p^*$ durch größere Zahlen besetzt, aber $n - j_1 - 1$ kleinere Elemente sind erforderlich.
-    \item $i < j_1 < j_0$: Da $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$, muss es rechts von $j_1$ einen Index $j_2 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$. Auch links von $j_1$ muss es einen Index $j_3 < j_1$ geben, sodass $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Erneut wäre andernfalls das Erreichen der nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ rechts gelegenen, kleineren und der $\nu(p)_{n - j_1 - 1} + \nu(p^*)_{n - j_1 - 1} = j_1$ links gelegenen, größeren Elemente unmöglich.
-\end{enumerate}
-Man sieht, dass durch die Forderung nach einer allein vom Index anbhängigen Zahl rechts gelegener, kleinerer bzw. links gelegener, größerer Elemente immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Das ist ein Widerspruch, da natürliche Zahlen, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. Daneben wären die $n$ verfügbaren Elemente irgendwann ausgeschöpft. Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
-\newline \newline
-Aus Lemma 1 folgt eine sehr nützliche Eigenschaft. Wir definieren
-$$
-    \eta(p, i, j, k) = \sum_{h = j}^k \begin{cases}
+    \eta(p, i, j, k) + \eta(p^*, i, j, k) & = \sum_{h = j}^k
+    \begin{cases}
         1 & \text{wenn } p_i > p_h   \\
         0 & \text{wenn } p_i \le p_h
-    \end{cases}
-$$
-$\eta(p, i, j, k)$ gibt also die Anzahl an Elementen von $p$ im Intervall $[j, k]$ an, die kleiner als $p_i$ sind. Aufgrund von Lemma 1 gilt
-$$
-    \eta(p, i, j, k) + \eta(p^*, i, j, k) = k - j + 1
-$$
-Mithilfe dieser Eigenschaft wird nun gezeigt, dass das Umkehren von Präfixen zweier symmetrisch gelegener Permutationen erneut zu zwei symmetrisch gelegene Permutationen führt. Das ist bereits sehr nahe am gewünschten Ergebnis, es muss lediglich noch das erste Element aus der Permutation entfernt werden.
-\newline \newline
-\textbf{Lemma 2.} Seien $x$ und $y$ die Permutationen, die aus $p$ und $p^*$ durch Umkehrung des Präfixes bis einschließlich Index $i$ hervorgehen. Wenn $\mu(p) + \mu(p^*) = n! - 1$, dann gilt auch $\mu(x) + \mu(y) = n! - 1$.
-\newline \newline
-\emph{Beweis.} Die Ziffern $\mu(p)$ und $\mu(p^*)$ geben in fakultätsbasierter Schreibweise die Anzahl an rechts gelegenen, kleineren Elementen an. Da an den Elementen $p_j, p^*_j$ für $j > i$ nichts geändert wird, ändert sich auch nicht ihre Zahl rechts gelegener, kleinerer Elemente, d. h. sie können im Folgenden außer Acht gelassen werden. Für $j < i$ werden alle links gelegenen, kleineren Elemente durch die Umkehrung auf die rechte Seite gebracht, die kleineren Elemente rechts von $i$ bleiben. Der Index, zu dem das $j$-te Element durch die Umkehrung bewegt wird, ist $i - j$. Wenn $x$ und $y$ die Permutationen sind, die aus $p$ und $p^*$ nach Umkehrung des Präfixes bis $i$ hervorgehen, ist die Anzahl rechts gelegener, kleinerer Elemente von $x_{i - j}$ und $y_{i - j}$ zusammen folglich
-\begin{align*}
-    \mu(x)_{i - j} + \mu(y)_{i - j}
-     & = \eta(p, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, 0, j - 1) + \eta(p^*, j, i + 1, n - 1) \\
-     & = \eta(p, j, 0, j - 1) + \eta(p^*, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, i + 1, n - 1) \\
-     & = j - 1 + 1 + n - 1 - (i + 1) + 1                                                                       \\
-     & = j + n - i - 1                                                                                         \\
-     & = n - (i - j) - 1
+    \end{cases} + \sum_{h = j}^k
+    \begin{cases}
+        1 & \text{wenn } p^*_i > p^*_h   \\
+        0 & \text{wenn } p^*_i \le p^*_h
+    \end{cases}                                 \\
+                                          & = \sum_{h = j}^k \Bigg (
+    \begin{cases}
+            1 & \text{wenn } p_i > p_h   \\
+            0 & \text{wenn } p_i \le p_h
+        \end{cases} +
+    \begin{cases}
+            1 & \text{wenn } p^*_i > p^*_h   \\
+            0 & \text{wenn } p^*_i \le p^*_h
+        \end{cases} \Bigg )                                 \\
+                                          & = \sum_{h = j}^k 1       \\
+                                          & = k - j + 1
 \end{align*}
-Hier wurden die vor der Umkehrung links gelegenen, kleineren Elemente zu den kleineren Elementen rechts von $i$ addiert. Daraus folgt für jedes $0 \le i \le n - 1$, dass $\mu(x)_i + \mu(y)_i = n - i-1$. Man sieht, dass die Ziffern von $\mu(x) + \mu(y)$ die Form $n-1, n-2, n-3, \dots, 0$ haben, daher muss $\mu(x) + \mu(y) = n! - 1$ sein. Wenn also das gleiche Präfix zwei symmetrisch gelegener Permutationen umgekehrt wird, gehen daraus erneut zwei symmetrisch gelegene Permutationen hervor.
-\newline \newline
-Nun kann die Symmetrie des Pancake-Graphen, bzw. des $\gamma_i$-Operators als Satz festgehalten werden.
-\newline \newline
-\textbf{Satz 1.} Wenn $p$ eine Permutation der Länge $n$ und $q$ eine Permutation der Länge $n - 1$ ist, gilt
-$$
-    \gamma_i p = q \Longleftrightarrow \gamma_i p^* = q^* \quad 0 \le i \le n - 1
-$$
-\newline \newline
-\emph{Beweis:} Wir nennen die Permutation, die man durch Umkehren des Präfixes bis $i$ von $p$ erhält, $x$. Aufgrund von Lemma 2 ist $x^*$ genau die Permutation, die man durch Umkehren des Präfixes bis $i$ von $p^*$ erhält. Wir betrachten nun $\mu(x)$ und $\mu(x^*)$ in fakultätsbasierter Schreibweise. Entfernt man das erste Element von $x$ bzw. $x^*$, verändern sich die Ziffern $\mu(x)_i$ bzw. $\mu(x^*)_i$ für $i > 0$ nicht, da sie nur die Anzahl rechts gelegener, kleinerer Elemente zählen, zu denen $x_0$ bzw. $x^*_0$ nicht gehören kann. Daher gilt $\mu(x)_i + \mu(x^*)_i = n - i - 1$ auch nach Entfernen des ersten Elements von $x$ und $x^*$. Aber die aus dem Entfernen von $x_0$ bzw. $x^*_0$ entstehende Folge ist genau $\gamma_i p$ bzw. $\gamma_i p^*$, folglich gilt $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$. Das heißt, $\gamma_i p$ und $\gamma_i p^*$ symmetrisch gelegene Permutationen der Länge $n - 1$.
+Damit kann nun gezeigt werden, dass das Umkehren von Präfixen zweier symmetrisch gelegener Permutationen erneut zu zwei symmetrisch gelegene Permutationen führt. Das ist bereits sehr nahe am gewünschten Ergebnis, es muss lediglich noch das erste Element aus beiden Permutationen entfernt werden.
+\begin{lemma}Seien $x$ und $y$ die Permutationen, die aus $p$ und $p^*$ durch Umkehrung des Präfixes bis einschließlich Index $i$ hervorgehen. Wenn $\mu(p) + \mu(p^*) = n! - 1$, dann gilt auch $\mu(x) + \mu(y) = n! - 1$.
+\end{lemma}
+
+\begin{proof}
+    Die Ziffern $\mu(p)$ und $\mu(p^*)$ geben in fakultätsbasierter Schreibweise die Anzahl an rechts gelegenen, kleineren Elementen an. Da an den Elementen $p_j, p^*_j$ für $j > i$ nichts geändert wird, ändert sich auch nicht ihre Zahl rechts gelegener, kleinerer Elemente, d. h. sie können im Folgenden außer Acht gelassen werden. Für $j < i$ werden alle links gelegenen, kleineren Elemente durch die Umkehrung auf die rechte Seite gebracht, die kleineren Elemente rechts von $i$ bleiben. Der Index, zu dem das $j$-te Element durch die Umkehrung bewegt wird, ist $i - j$. Folglich ist die Anzahl rechts gelegener, kleinerer Elemente von $x_{i - j}$ und $y_{i - j}$ zusammen
+    \begin{align*}
+        \mu(x)_{i - j} + \mu(y)_{i - j}
+         & = \eta(p, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, 0, j - 1) + \eta(p^*, j, i + 1, n - 1) \\
+         & = \eta(p, j, 0, j - 1) + \eta(p^*, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, i + 1, n - 1) \\
+         & = j - 1 + 1 + n - 1 - (i + 1) + 1                                                                       \\
+         & = j + n - i - 1                                                                                         \\
+         & = n - (i - j) - 1
+    \end{align*}
+    In Zeile 1 wurden die vor der Umkehrung links gelegenen, kleineren Elemente zu den kleineren Elementen rechts von $i$ addiert. Daraus folgt
+    \begin{align*}
+        \mu(x)_i + \mu(y)_i = n - i - 1 \quad 0 \le i \le n - 1
+    \end{align*}
+    und damit
+    \begin{align*}
+        \mu(x) + \mu(y) = n! - 1
+    \end{align*}
+\end{proof}
+
+Man sieht, dass das Umkehren eines Präfixes in einem symmetrischen Paar von Permutationen wieder zu einem symmetrischen Paar führt. Nun kann die Symmetrie des Pancake-Graphen, bzw. des $\gamma_i$-Operators als Satz festgehalten werden.
+
+\begin{theorem}
+    Wenn $p$ eine Permutation der Länge $n$ und $q$ eine Permutation der Länge $n - 1$ ist, gilt
+    $$
+        \gamma_i p = q \Longleftrightarrow \gamma_i p^* = q^* \quad 0 \le i \le n - 1
+    $$
+\end{theorem}
+
+\begin{proof}
+    Wir nennen die Permutation, die man durch Umkehren des Präfixes bis $i$ von $p$ erhält, $x$. Aufgrund von Lemma 2 ist $x^*$ genau die Permutation, die man durch Umkehren des Präfixes bis $i$ von $p^*$ erhält.
+    Da
+    \begin{align*}
+        \gamma_i p = x_1, x_2, \dots, x_{n-1} \\
+        \gamma_i p^* = x^*_1, x^*_2, \dots, x^*_{n-1}
+    \end{align*}
+    entspricht die Anzahl rechts gelegener, kleinerer Elemente von $(\gamma_i p)_0, (\gamma_i p)_1, \dots, (\gamma_i p)_{n - 2}$ bzw. $(\gamma_i p^*)_0, (\gamma_i p^*)_1, \dots, (\gamma_i p^*)_{n - 2}$ genau der Anzahl rechts gelegener, kleinerer Elemente von $x_1, x_2, \dots, x_{n-1}$ bzw. $x^*_1, x^*_2, \dots, x^*_{n-1}$. Daher gilt
+    \begin{align*}
+        \mu(\gamma_i p)_i = \mu(x)_{i + 1} \\
+        \mu(\gamma_i p^*)_i = \mu(x^*)_{i + 1}
+    \end{align*}
+    und folglich
+    \begin{align*}
+        \mu(\gamma_i p)_i + \mu(\gamma_i p^*)_i & = \mu(x)_{i + 1} + \mu(x^*)_{i + 1} \\
+                                                & = (n - (i + 1) - 1)                 \\
+                                                & = (n - 1) - i - 1
+    \end{align*}
+    Da $|\gamma_i p| = |\gamma_i p^*| = n - 1$, ist $\gamma_i p$ und $\gamma_i p^*$ ein symmetrisches Paar von Permutationen der Länge $n - 1$. Somit gilt $\gamma_i p = q$ genau dann, wenn $\gamma_i p^* = q^*$.
+\end{proof}
 
 \subsection{Beweis der NP-Schwere}
 
@@ -358,17 +419,21 @@ $$
 
 \section{Quellcode}
 
-\begin{thebibliography}{2}
+\begin{thebibliography}{3}
+    \bibitem{parallelbfs}
+    Korf, R. E., Schultze, P. (2005).
+    Large-Scale Parallel Breadth-First Search. \\
+    \emph{https://www.aaai.org/Papers/AAAI/2005/AAAI05-219.pdf}
+
     \bibitem{factorial}
-    Wikipedia (2022),
-    Factorial number system,
+    Wikipedia (2022).
+    Factorial number system. \\
     \emph{https://en.wikipedia.org/wiki/Factorial\_number\_system}
 
     \bibitem{lexicographic}
-    Wikipedia (2022),
-    Lexicographic order,
+    Wikipedia (2022).
+    Lexicographic order. \\
     \emph{https://en.wikipedia.org/wiki/Lexicographic\_order}
-
 \end{thebibliography}
 
 \end{document}
