@@ -1,8 +1,8 @@
-CC = clang++
-CFLAGS = -Wall -g -O3
+CC = clang
+CFLAGS = -Wall -g -O3 -march=native
 
 all:
-	$(CC) $(CFLAGS) aufgabe3.cpp -o aufgabe3
+	$(CC) $(CFLAGS) aufgabe3.c -o aufgabe3
 
 test_sym:
-	%(CC) $(CFLAGS) test_sym.cpp -o test_sym
+	%(CC) $(CFLAGS) test_sym.c -o test_sym
