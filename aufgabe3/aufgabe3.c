@@ -17,7 +17,7 @@ void precalc_factorial(size_t n)
         factorial[i] = factorial[i - 1] * i;
 }
 
-inline size_t p_index(size_t n, unsigned const *const p)
+size_t p_index(size_t n, unsigned const *const p)
 {
     uint32_t mask = 0; // Bit i ist 1, wenn n - i - 1 bereits aufgetreten ist.
     size_t k = 0;
@@ -32,7 +32,7 @@ inline size_t p_index(size_t n, unsigned const *const p)
     return k;
 }
 
-inline size_t p_index_gamma(size_t n, unsigned const *const p, size_t i)
+size_t p_index_gamma(size_t n, unsigned const *const p, size_t i)
 {
     uint32_t mask = 0;
     size_t k = 0;
@@ -74,6 +74,27 @@ void ith_permutation(size_t n, size_t i, unsigned *const p)
 
 void next_permutation(size_t n, unsigned *const p)
 {
+    if (n == 1)
+        return;
+
+    size_t m = n - 2, k = n - 1;
+    while (m && p[m] > p[m + 1])
+        m--;
+    while (p[m] > p[k])
+        k--;
+    unsigned x = p[k];
+    p[k] = p[m];
+    p[m] = x;
+
+    m++;
+    k = n - 1;
+    while (m < k)
+    {
+        unsigned x = p[k];
+        p[k] = p[m];
+        p[m] = x;
+        m++, k--;
+    }
 }
 
 size_t opt_precomputation_size(size_t n)
@@ -197,6 +218,7 @@ uint8_t *optimal_gamma_seq(
 
         qsort(z, l, sizeof(node *), node_cmp);
 
+        // Entferne einen Knoten symmetrischer Paare.
         for (size_t i = 0; i < l; i++)
         {
             size_t const sym = binary_search(l, z, factorial[m] - z[i].i - 1);
@@ -235,4 +257,8 @@ int main()
 
     for (size_t i = 2; i <= opt_precomputation_size(n); i++)
         precompute_next(i, y[i - 2], y[i - 1]);
+
+    for (size_t i = 0; i < opt_size; i++)
+        free(y[i]);
+    free(factorial);
 }
