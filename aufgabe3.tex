@@ -8,20 +8,22 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
+\usepackage{graphicx}
+\usepackage{svg}
 
-\newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort} 
-\newcommand{\TeilnahmeId}{67571}             
-\newcommand{\Name}{Finn Rudolph}   
+\newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort}
+\newcommand{\TeilnahmeId}{67571}
+\newcommand{\Name}{Finn Rudolph}
 
 \usepackage{scrlayer-scrpage, lastpage}
 \setkomafont{pageheadfoot}{\textrm}
 \rohead{Teilnahme-ID: \TeilnahmeId}
-\lohead{\Name}
+\lohead{\Aufgabe}
 \cfoot*{\thepage{}}
 
 \title{\LARGE \textbf{Aufgabe 3: Pancake Sort}}
 \author{\large Finn Rudolph \\ \\ \large Teilnahme-ID: 67571}
-\date{\large 23. Dezember 2022}
+\date{\large 28. Dezember 2022}
 
 \begin{document}
 
@@ -38,13 +40,13 @@
 
 \section{Lösungsidee}
 
-Pancake Sort ist ein bekannter Sortieralgorithmus, der zwar meist nicht zum Sortieren verwendet wird, aber anderweitige Anwendungen hat. In seiner ursprünglichen Form wird der oberste Pfannkuchen allerdings nicht aufgegessen, sondern allein ein Präfix der zu sortierenden Folge umgekehrt, weshalb Pancake Sort auch als \emph{Sorting by Prefix Reversals} bezeichnet wird.
+Pancake Sort ist ein bekannter Sortieralgorithmus, in seiner ursprünglichen Form wird der oberste Pfannkuchen allerdings nicht aufgegessen, sondern allein ein Präfix der zu sortierenden Folge umgekehrt. Pancake Sort wird daher auch als \emph{Sorting by Prefix Reversals} bezeichnet. Der Algorithmus wird zwar nicht direkt zum Sortieren verwendet, der mit ihm verbundene Pancake Graph dient jedoch beispielsweise als Grundlage für Netzwerke für parallele Computersysteme.
 
-Im Folgenden wird ein Stapel von $n$ Pfannkuchen als Folge
+Ein Stapel von $n$ Pfannkuchen wird als Folge
 $$
     p = p_0, p_1, p_2, \dots, p_{n - 1}
 $$
-definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. (Folgen werden grundsätzlich mit 0 beginnend indexiert.) Da jede Zahl von 1 bis $n$ in dieser Folge genau einmal vorkommt, wird $p$ auch als Permutation der Länge $n$ bezeichnet. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
+definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. Folgen und Ähnliches werden grundsätzlich mit 0 beginnend indexiert. Da jede Zahl von 1 bis $n$ in dieser Folge genau einmal vorkommt, wird $p$ auch als Permutation der Länge $n$ bezeichnet. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
 
 \begin{definition}
     Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Der Wende-und-Ess-Operator $\gamma_i$ ist für $p$ wie folgt definiert.
@@ -63,10 +65,15 @@ $\gamma_i p$ bezeichnet also die Permutation der ersten $n - 1$ natürlichen Zah
 $$
     \gamma_2 p = \gamma_2 (4, 1, 2, 3) = 1, 3, 2
 $$
+Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können, wird ihm der Name ``$\gamma_i$-Pancake Sort'' gegeben.
+
+\begin{definition}[$\gamma_i$-Pancake Sort]
+    Gegeben sei eine Permutation $p$ der ersten $n$ natürlichen Zahlen. Wie lautet eine kürzestmögliche Folge an $\gamma_i$-Operationen, mit denen $p$ in eine identische Permutation beliebiger Länge umgewandelt wird?
+\end{definition}
 
 \subsection{Der Pancake-Graph}
 
-Im Kontext des ursprünglichen Pancake-Sort ist der sogenannte Pancake-Graph für Permutationen der Länge $n$ wie folgt definiert: Für jede Permutation der Länge $n$ gibt es genau einen Knoten. Zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet. In diesem Abschnitt soll eine interessante Symmetrieeigenschaft von $G_n$ behandelt werden, die eine Optimierung der Lösungen für beide Teilaufgaben ermöglicht.
+Im Kontext des ursprünglichen Pancake-Sort ist der sogenannte Pancake-Graph für Permutationen der Länge $n$ wie folgt definiert: Für jede Permutation der Länge $n$ gibt es genau einen Knoten, und zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet. In diesem Abschnitt soll eine interessante Symmetrieeigenschaft von $G_n$ behandelt werden, die eine Optimierung der Lösungen für beide Teilaufgaben ermöglicht.
 
 Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zweite Teil genau wie der erste Teil aussieht, nur vertikal gespiegelt. Auch die kleineren Pancake-Graphen $G_3, G_2$ und $G_1$, die Teilgraphen von $G_4$ sind, scheinen symmetrisch um ihre Mitte zu sein. Genauer sind die Kanten symmetrisch um die Mitte der lexikographisch sortierten Liste der Permutationen von Größe 4.
 
@@ -158,7 +165,6 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
     \draw[->](12) -- (1);
     \draw[->](21) -- (1);
 \end{tikzpicture}
-
 \newpage
 \begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
     \node[main](3124) at (0, 0) {3124};
@@ -247,8 +253,9 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
     \draw[->](12) -- (1);
     \draw[->](21) -- (1);
 \end{tikzpicture}
-\newline \newline
-\emph{Abbildung 1.} Der Pancake-Graph $G_4$. Von Knoten $u$ verläuft genau dann eine gerichtete Kante nach Knoten $v$, wenn die zu $u$ zugehörige Permutation durch ein $\gamma_i$ in die zu $v$ zugehörige Permutation umgewandelt werden kann.
+\begin{figure}
+    \caption{Der Pancake-Graph $G_4$. Von Knoten $u$ verläuft genau dann eine gerichtete Kante nach Knoten $v$, wenn die zu $u$ zugehörige Permutation durch ein $\gamma_i$ in die zu $v$ zugehörige Permutation umgewandelt werden kann.}
+\end{figure}
 \newpage
 
 Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
@@ -409,7 +416,53 @@ Man sieht, dass das Umkehren eines Präfixes in einem symmetrischen Paar von Per
     Da $|\gamma_i p| = |\gamma_i p^*| = n - 1$, ist $\gamma_i p$ und $\gamma_i p^*$ ein symmetrisches Paar von Permutationen der Länge $n - 1$. Somit gilt $\gamma_i p = q$ genau dann, wenn $\gamma_i p^* = q^*$.
 \end{proof}
 
-\subsection{Beweis der NP-Schwere}
+\subsection{Reduktion des Burnt Pancake-Problems}
+
+In diesem Abschnitt soll gezeigt werden, dass $\gamma_i$-Pancake Sort mindestens so schwierig wie das Burnt Pancake Problem, eine Variante des Pfannkuchen-Sortierproblems, ist. Mit ``mindestens so schwierig'' ist gemeint, dass das Burnt Pancake Problem in polynomieller Zeit auf das vorliegende Problem reduziert werden kann. Damit wird gezeigt, dass wahrscheinlich kein Algorithmus existiert, der $\gamma_i$-Pancake Sort in polynomieller Zeit löst. Für das Burnt Pancake-Problem gibt es zwar keinen Beweis der NP-Schwere, allerdings ist es seit über 40 Jahren niemandem gelungen, einen Algorithmus mit polynomieller Laufzeit für dieses Problem zu entwickeln.
+
+Im Burnt Pancake Problem haben Pfannkuchen eine verbrannte Seite, die nach dem Sortieren bei jedem Pfannkuchen unten liegen muss \cite{burntpancakes}. Indem das Konzept der verbrannten Seite durch ein Vorzeichen vor jedem Element der Permutation formalisiert wird, kann das Burnt Pancake-Problem wie folgt definiert werden.
+\begin{definition}[Burnt Pancake-Problem]
+    Gegeben sei eine vorzeichenbehaftete Permutation
+    \begin{align*}
+        p = \sigma_0 p_0, \sigma_1 p_1, \dots, \sigma_{n-1} p_{n-1}
+    \end{align*}
+    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in die identische Permutation der Länge $|p|$ mit ausschließlich positiven Elementen überführt wird?
+\end{definition}
+Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrannte Seite oben hat.
+
+\begin{theorem}
+    $\gamma_i$-Pancake Sort ist mindestens so schwierig wie das Burnt Pancake-Problem.
+\end{theorem}
+
+\begin{proof}
+    Es wird gezeigt, dass schon das Bestimmen der minimalen Anzahl an $\gamma_i$-Operationen mindestens so schwierig wie das Burnt Pancake-Problem ist. Daraus folgt direkt, dass auch $\gamma_i$-Pancake Sort mindestens so schwierig ist, denn mit jedem Algorithmus, der $\gamma_i$-Pancake Sort löst, kann man die minimale Anzahl an $\gamma_i$-Operationen bestimmen, indem man die Länge der zurückgegebenen Folge an $\gamma_i$-Operationen bestimmt.
+
+    Die Reduktion geschieht nun, indem das Burnt Pancake-Problem in $\gamma_i$-Pancake Sort simuliert wird. Für eine vorzeichenbehaftete Permutation $p$ der Länge $n$, die Eingabe für das Burnt Pancake-Problem, konstruieren wir eine nicht-vorzeichenbehaftete Permutation $q$ wie folgt:
+    $$
+        q = a_0, a_1, \dots, a_{n-1}
+    $$
+    $$
+        a_i  = \begin{cases}
+            (p_i - 1) \cdot 3n + 1, (p_i - 1) \cdot 3n + 2, \dots, p_i \cdot 3n & \text{wenn } \sigma_i = 1  \\
+            p_i \cdot 3n, p_i \cdot 3n - 1, \dots, (p_i - 1) \cdot 3n + 1       & \text{wenn } \sigma_i = -1
+        \end{cases}
+    $$
+    Jedem Pfannkuchen in $p$ wird je nach seiner Orientierung eine aufsteigende oder absteigende Folge von $3n$ aufeinanderfolgenden, natürlichen Zahlen zugeordnet. Dieses Vorgehen ist in Abbildung 2 veranschaulicht. Mit $a_i$ wird die zu $p_i$ zugehörige Teilfolge von $q$ bezeichnet. Der Einfachheit halber bezeichnet $a_i$ auch die zu $p_i$ zugehörige Teilfolge in $q$ nach einigen Sortierschritten, auch wenn diese dann andere Zahlen enthalten kann bzw. gekürzt worden sein kann. Die Folgen $a_0, a_1, \dots, a_{n-1}$ in Zeile 1 werden zu einer Folge $q$ zusammengefügt, $q$ ist also keine Folge von Folgen. Die Länge von $q$ beträgt $n \cdot 3n = 3n^2$, ist also durch ein Polynom in $n$ beschränkt, d. h. die Reduktion ist eine Polynomialzeitreduktion.
+
+    \begin{figure}[h]
+        \begin{center}
+            \includegraphics[width=\textwidth]{grafiken/burnt-pancake-reduktion}
+            \caption{Reduktion des Burnt Pancake-Problems auf $\gamma_i$-Pancake Sort. Die Pfeile geben die Orientierung der verbrannten Pfannkuchen an, die Pfeilspitze zeigt zur nicht verbrannten Seite.}
+        \end{center}
+    \end{figure}
+    Ist $\sigma_i = 1$, d. h. der $i$-te Pfannkuchen ist richtig orientiert, wird er durch eine aufsteigende Folge repräsentiert. Das entspricht auch der richtigen Orientierung im Sortieren ohne Vorzeichen. Denn wäre $p$ vollständig sortiert und $\sigma_i = 1$ für alle $0 \le i \le n - 1$, wäre auch $q$ vollständig sortiert. Die Idee ist nun, zu zeigen, dass kein $a_i$ in einer optimalen Folge an $\gamma_i$-Operationen in der Mitte getrennt oder vollständig aufgegessen wird. Denn dann werden durch $\gamma_i$-Operationen immer nur Pfannkuchen am Anfang und Ende einer der Folgen $a_i$ entfernt, sodass sich diese schließlich wie ein verbrannter Pfannkuchen verhalten. Durch die $3n$ Pufferelemente bleiben von jedem $a_i$ außerdem mindestens $n$ Elemente übrig, sodass das Ergebnis des Sortierens mit $\gamma_i$ als sortierter Stapel an verbrannten Pfannkuchen interpretiert werden kann.
+
+    Die einem Element von $p$ zugeordnete Teilfolge von $q$ wird niemals durch eine optimale Folge an $\gamma_i$-Operationen vollständig entfernt, da eine vorzeichenbehaftete Permutation in maximal $2n$ Schritten sortiert werden kann. Diese obere Schranke stammt von Cohen und Blum \cite{burntpancakes}. Für $n \ge 10$ wurde dort sogar eine Schranke von $2n - 2$ angegeben, der Einfachheit halber wird im Folgenden allerdings mit $2n$ gearbeitet. Es folgt, dass eine Folge an $\gamma_i$-Operationen, die länger als $2n$ ist, nicht optimal sein kann, denn man könnte $q$ in maximal $2n$ Schritten sortieren, indem man eine optimale Folge an Präfixumkehrungen für $p$ simuliert. Wenn in $p$ das Präfix bis Index $i$ umgekehrt wird, wendet man $\gamma_j$ auf $q$ an, wobei $j$ die größtmöglich Zahl ist, sodass $q_j$ zur Teilfolge von $p_i$ gehört (unter Beachtung der Tatsache, dass durch jede Anwendung von $\gamma_i$ möglicherweise einige Elemente in $q$ verringert werden). Da jedes Element von $p$ nach der Sortierung positiv ist, sind nach der Definition von $q$ auch alle den Elementen von $p$ zugeordneten Teilfolgen aufsteigend sortiert. Da die Pfannkuchen in $p$ aufsteigend sortiert sind, sind auch die ihnen zugeordneten Teilfolgen in $q$ aufsteigend sortiert, daher lässt sich $q$ tatsächlich in maximal $2n$ Schritten sortieren. Da also maximal $2n$ $\gamma_i$-Operationen durchgeführt werden und mit jeder $\gamma_i$-Operation genau ein Element aus $q$ entfernt wird, muss jedes $a_i$ nach dem Sortieren noch mindestens $n$ Elemente enthalten.
+
+    Nun wird gezeigt, dass es unter den optimalen $\gamma_i$-Folgen zum Sortieren von $q$ immer eine gibt, die im Sortierprozess keines der $a_i$ in der Mitte trennt. Das ist notwendig, da ein solcher Schritt, übertragen auf das Burnt Pancake-Problem, unmöglich wäre. Man nehme an, $a_j$ für $0 \le j \le n - 1$ wird durch $\gamma_k$ mit $l + 1 \le k \le r-1$ in zwei Teile geteilt, wobei $a_j$ vor der Anwendung von $\gamma_k$ in $q$ von $q_l$ bis $q_r$ reichte. Da nach vollständiger Sortierung von $q$ noch Elemente von $a_j$ vorhanden sein müssen, müssen die zwei Teile an einem bestimmten Punkt wieder in richtiger Orientierung zusammengefügt werden. Hätte man aber anstatt $\gamma_k$ $\gamma_r$ verwendet und sonst alle Operationen in gleicher Weise durchgeführt, wären die beiden Teile von $a_i$ ebenfalls in richtiger Orientierung zusammengefügt. Mit ,,in gleicher Weise'' ist gemeint, dass man hinter den gleichen $a_i$ wendet, wie man es mit Trennung von $a_j$ getan hätte, der genaue Index der $\gamma_i$-Operationen mag sich allerdings unterscheiden. Durch diese Veränderung wird die Gesamtzahl an $\gamma_i$-Operationen nicht vergrößert, daher gibt es immer eine optimale Folge an $\gamma_i$-Operationen ohne Trennung einer Folge $a_i$ in der Mitte.
+
+    Es konnte gezeigt werden, dass jede Instanz des Burnt Pancake-Problems in polynomieller Zeit auf eine Instanz von $\gamma_i$-Pancake Sort reduziert werden kann. Damit ist $\gamma_i$-Pancake Sort mindestens so schwierig wie das Burnt Pancake-Problem.
+\end{proof}
 
 \subsection{Finden der kürzesten Folge an $\gamma_i$-Operationen}
 
@@ -419,21 +472,31 @@ Man sieht, dass das Umkehren eines Präfixes in einem symmetrischen Paar von Per
 
 \section{Quellcode}
 
-\begin{thebibliography}{3}
+\begin{thebibliography}{5}
+    \bibitem{burntpancakes}
+    Cohen, D. S., Blum, M. (1993).
+    On the problem of sorting burnt pancakes. \\
+    https://www.sciencedirect.com/science/article/pii/0166218X94000093
+
+    \bibitem{discretemath}
+    Johnsonbaugh, R. (2017).
+    Discrete Mathematics (8. Auflage).
+    Pearson Verlag.
+
     \bibitem{parallelbfs}
     Korf, R. E., Schultze, P. (2005).
     Large-Scale Parallel Breadth-First Search. \\
-    \emph{https://www.aaai.org/Papers/AAAI/2005/AAAI05-219.pdf}
+    https://www.aaai.org/Papers/AAAI/2005/AAAI05-219.pdf
 
     \bibitem{factorial}
     Wikipedia (2022).
     Factorial number system. \\
-    \emph{https://en.wikipedia.org/wiki/Factorial\_number\_system}
+    https://en.wikipedia.org/wiki/Factorial\_number\_system
 
     \bibitem{lexicographic}
     Wikipedia (2022).
     Lexicographic order. \\
-    \emph{https://en.wikipedia.org/wiki/Lexicographic\_order}
+    https://en.wikipedia.org/wiki/Lexicographic\_order
 \end{thebibliography}
 
 \end{document}
