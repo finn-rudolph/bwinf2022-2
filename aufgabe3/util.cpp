@@ -21,7 +21,7 @@ size_t ind(vector<unsigned> const &p)
     {
         k += (p[j] - __builtin_popcount(mask >> (p.size() - p[j] - 1))) *
              factorial[p.size() - j - 1];
-        mask ^= 1 << (p.size() - p[j] - 1);
+        mask ^= 1ULL << (p.size() - p[j] - 1);
     }
 
     assert(mask == (1ULL << p.size()) - 1);
@@ -38,12 +38,12 @@ size_t ind_gamma(vector<unsigned> const &p, unsigned i)
 
     // Um die Permutation in richtiger Reihenfolge von links nach rechts
     // abzuarbeiten, wird der umgekehrte Teil umgekehrt durchgegangen.
-    for (size_t j = i - 1; j < p.size(); j--)
+    for (size_t j = 0; j < i; j++)
     {
-        unsigned const x = p[j] - (p[j] > p[i]);
+        unsigned const x = p[i - j - 1] - (p[i - j - 1] > p[i]);
         k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
-             factorial[p.size() - (i - j) - 1];
-        mask ^= 1 << (p.size() - x - 2);
+             factorial[p.size() - j - 2];
+        mask ^= 1ULL << (p.size() - x - 2);
     }
 
     for (size_t j = i + 1; j < p.size(); j++)
@@ -51,7 +51,7 @@ size_t ind_gamma(vector<unsigned> const &p, unsigned i)
         unsigned const x = p[j] - (p[j] > p[i]);
         k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
              factorial[p.size() - j - 1];
-        mask ^= 1 << (p.size() - x - 2);
+        mask ^= 1ULL << (p.size() - x - 2);
     }
 
     return k;
@@ -86,21 +86,22 @@ size_t ind_gamma_inv(vector<unsigned> const &p, unsigned i, unsigned r)
         unsigned const x = p[i - j - 1] + (p[i - j - 1] >= r);
         k += (x - __builtin_popcount(mask >> (p.size() - x))) *
              factorial[p.size() - j];
-        mask ^= 1 << (p.size() - x);
+        mask ^= 1ULL << (p.size() - x);
     }
 
     k += (r - __builtin_popcount(mask >> (p.size() - r))) *
          factorial[p.size() - i];
-    mask ^= (p.size() - r);
+    mask ^= 1ULL << (p.size() - r);
 
     for (size_t j = i + 1; j < p.size() + 1; j++)
     {
         unsigned const x = p[j - 1] + (p[j - 1] >= r);
         k += (x - __builtin_popcount(mask >> (p.size() - x))) *
              factorial[p.size() - j];
-        mask ^= 1 << (p.size() - x);
+        mask ^= 1ULL << (p.size() - x);
     }
 
+    assert(mask == (1ULL << (p.size() + 1)) - 1);
     return k;
 }
 
