@@ -9,7 +9,7 @@
 \usepackage{amsthm}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{graphicx}
-\usepackage{svg}
+\usepackage{float}
 
 \newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort}
 \newcommand{\TeilnahmeId}{67571}
@@ -68,7 +68,7 @@ $$
 Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können, wird ihm der Name ``$\gamma_i$-Pancake Sort'' gegeben.
 
 \begin{definition}[$\gamma_i$-Pancake Sort]
-    Gegeben sei eine Permutation $p$ der ersten $n$ natürlichen Zahlen. Wie lautet eine kürzestmögliche Folge an $\gamma_i$-Operationen, mit denen $p$ in eine identische Permutation beliebiger Länge umgewandelt wird?
+    Gegeben sei eine Permutation $p$ der ersten $n$ natürlichen Zahlen. Das Problem, eine kürzestmögliche Folge an $\gamma_i$-Operationen, mit denen $p$ in eine identische Permutation beliebiger Länge umgewandelt wird, zu finden, wird $\gamma_i$-Pancake Sort genannt.
 \end{definition}
 
 \subsection{Der Pancake-Graph}
@@ -426,7 +426,7 @@ Im Burnt Pancake Problem haben Pfannkuchen eine verbrannte Seite, die nach dem S
     \begin{align*}
         p = \sigma_0 p_0, \sigma_1 p_1, \dots, \sigma_{n-1} p_{n-1}
     \end{align*}
-    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in die identische Permutation der Länge $|p|$ mit ausschließlich positiven Elementen überführt wird?
+    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Wir nennen folgendes Problem das Burnt Pancake-Problem: Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in die identische Permutation der Länge $|p|$ mit ausschließlich positiven Elementen überführt wird?
 \end{definition}
 Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrannte Seite oben hat.
 
@@ -450,18 +450,23 @@ Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrann
     Jedem Pfannkuchen in $p$ wird je nach seiner Orientierung eine aufsteigende oder absteigende Folge von $3n$ aufeinanderfolgenden, natürlichen Zahlen zugeordnet. Dieses Vorgehen ist in Abbildung 2 veranschaulicht. Mit $a_i$ wird die zu $p_i$ zugehörige Teilfolge von $q$ bezeichnet. Der Einfachheit halber bezeichnet $a_i$ auch die zu $p_i$ zugehörige Teilfolge in $q$ nach einigen Sortierschritten, auch wenn diese dann andere Zahlen enthalten kann bzw. gekürzt worden sein kann. Die Folgen $a_0, a_1, \dots, a_{n-1}$ in Zeile 1 werden zu einer Folge $q$ zusammengefügt, $q$ ist also keine Folge von Folgen. Die Länge von $q$ beträgt $n \cdot 3n = 3n^2$, ist also durch ein Polynom in $n$ beschränkt, d. h. die Reduktion ist eine Polynomialzeitreduktion.
 
     \begin{figure}[h]
-        \begin{center}
-            \includegraphics[width=\textwidth]{grafiken/burnt-pancake-reduktion}
-            \caption{Reduktion des Burnt Pancake-Problems auf $\gamma_i$-Pancake Sort. Die Pfeile geben die Orientierung der verbrannten Pfannkuchen an, die Pfeilspitze zeigt zur nicht verbrannten Seite.}
-        \end{center}
+        \centering
+        \includegraphics[width=\textwidth]{grafiken/burnt-pancake-reduktion-1}
+        \caption{Reduktion des Burnt Pancake-Problems auf $\gamma_i$-Pancake Sort. Die Pfeile geben die Orientierung der verbrannten Pfannkuchen an, die Pfeilspitze zeigt zur nicht verbrannten Seite.}
     \end{figure}
     Ist $\sigma_i = 1$, d. h. der $i$-te Pfannkuchen ist richtig orientiert, wird er durch eine aufsteigende Folge repräsentiert. Das entspricht auch der richtigen Orientierung im Sortieren ohne Vorzeichen. Denn wäre $p$ vollständig sortiert und $\sigma_i = 1$ für alle $0 \le i \le n - 1$, wäre auch $q$ vollständig sortiert. Die Idee ist nun, zu zeigen, dass kein $a_i$ in einer optimalen Folge an $\gamma_i$-Operationen in der Mitte getrennt oder vollständig aufgegessen wird. Denn dann werden durch $\gamma_i$-Operationen immer nur Pfannkuchen am Anfang und Ende einer der Folgen $a_i$ entfernt, sodass sich diese schließlich wie ein verbrannter Pfannkuchen verhalten. Durch die $3n$ Pufferelemente bleiben von jedem $a_i$ außerdem mindestens $n$ Elemente übrig, sodass das Ergebnis des Sortierens mit $\gamma_i$ als sortierter Stapel an verbrannten Pfannkuchen interpretiert werden kann.
 
     Die einem Element von $p$ zugeordnete Teilfolge von $q$ wird niemals durch eine optimale Folge an $\gamma_i$-Operationen vollständig entfernt, da eine vorzeichenbehaftete Permutation in maximal $2n$ Schritten sortiert werden kann. Diese obere Schranke stammt von Cohen und Blum \cite{burntpancakes}. Für $n \ge 10$ wurde dort sogar eine Schranke von $2n - 2$ angegeben, der Einfachheit halber wird im Folgenden allerdings mit $2n$ gearbeitet. Es folgt, dass eine Folge an $\gamma_i$-Operationen, die länger als $2n$ ist, nicht optimal sein kann, denn man könnte $q$ in maximal $2n$ Schritten sortieren, indem man eine optimale Folge an Präfixumkehrungen für $p$ simuliert. Wenn in $p$ das Präfix bis Index $i$ umgekehrt wird, wendet man $\gamma_j$ auf $q$ an, wobei $j$ die größtmöglich Zahl ist, sodass $q_j$ zur Teilfolge von $p_i$ gehört (unter Beachtung der Tatsache, dass durch jede Anwendung von $\gamma_i$ möglicherweise einige Elemente in $q$ verringert werden). Da jedes Element von $p$ nach der Sortierung positiv ist, sind nach der Definition von $q$ auch alle den Elementen von $p$ zugeordneten Teilfolgen aufsteigend sortiert. Da die Pfannkuchen in $p$ aufsteigend sortiert sind, sind auch die ihnen zugeordneten Teilfolgen in $q$ aufsteigend sortiert, daher lässt sich $q$ tatsächlich in maximal $2n$ Schritten sortieren. Da also maximal $2n$ $\gamma_i$-Operationen durchgeführt werden und mit jeder $\gamma_i$-Operation genau ein Element aus $q$ entfernt wird, muss jedes $a_i$ nach dem Sortieren noch mindestens $n$ Elemente enthalten.
 
-    Nun wird gezeigt, dass es unter den optimalen $\gamma_i$-Folgen zum Sortieren von $q$ immer eine gibt, die im Sortierprozess keines der $a_i$ in der Mitte trennt. Das ist notwendig, da ein solcher Schritt, übertragen auf das Burnt Pancake-Problem, unmöglich wäre. Man nehme an, $a_j$ für $0 \le j \le n - 1$ wird durch $\gamma_k$ mit $l + 1 \le k \le r-1$ in zwei Teile geteilt, wobei $a_j$ vor der Anwendung von $\gamma_k$ in $q$ von $q_l$ bis $q_r$ reichte. Da nach vollständiger Sortierung von $q$ noch Elemente von $a_j$ vorhanden sein müssen, müssen die zwei Teile an einem bestimmten Punkt wieder in richtiger Orientierung zusammengefügt werden. Hätte man aber anstatt $\gamma_k$ $\gamma_r$ verwendet und sonst alle Operationen in gleicher Weise durchgeführt, wären die beiden Teile von $a_i$ ebenfalls in richtiger Orientierung zusammengefügt. Mit ,,in gleicher Weise'' ist gemeint, dass man hinter den gleichen $a_i$ wendet, wie man es mit Trennung von $a_j$ getan hätte, der genaue Index der $\gamma_i$-Operationen mag sich allerdings unterscheiden. Durch diese Veränderung wird die Gesamtzahl an $\gamma_i$-Operationen nicht vergrößert, daher gibt es immer eine optimale Folge an $\gamma_i$-Operationen ohne Trennung einer Folge $a_i$ in der Mitte.
+    Nun wird gezeigt, dass es unter den optimalen $\gamma_i$-Folgen zum Sortieren von $q$ immer eine gibt, die im Sortierprozess keines der $a_i$ in der Mitte trennt. Das ist notwendig, da ein solcher Schritt, übertragen auf das Burnt Pancake-Problem, unmöglich wäre. Man nehme an, $a_j$ für $0 \le j \le n - 1$ wird durch $\gamma_k$ mit $l + 1 \le k \le r-1$ in zwei Teile geteilt, wobei $a_j$ vor der Anwendung von $\gamma_k$ in $q$ von $q_l$ bis $q_r$ reichte. Da nach vollständiger Sortierung von $q$ noch Elemente von $a_j$ vorhanden sein müssen, müssen die zwei Teile an einem bestimmten Punkt wieder in richtiger Orientierung zusammengefügt werden. Es ergeben sich zwei Fälle: Entweder wurde einer der Teile vollständig aufgegessen oder beide sind noch vorhanden. Dass beide Teile vollständig aufgegessen werden ist unter der Annahme, dass die behandelte $\gamma_i$-Folge optimal ist, unmöglich. Das Ergebnis im ersten Fall wäre auch erreichbar, indem man immer wieder Elemente vom Anfang oder Ende von $a_j$ entfernt. Im zweiten Fall hätte man anstatt $\gamma_k$ $\gamma_r$ verwenden können und zum gleichen Ergebnis gelangen können, indem man $q_{k + 1}, q_{k + 2}, \dots, q_r$ dauerhaft mit $q_l, q_{l+1}, \dots, q_{k}$ mitführt. Das heißt, man führt alle Wendeoperationen hinter den gleichen $a_i$ wie zuvor durch, behandelt $q_l, q_{l+1}, q_r$ aber genau so wie zuvor $q_l, q_{l+1}, q_{k-1}$. Der genaue Index der $\gamma_i$-Operationen mag sich unterscheiden, da in jedem Schritt aber die gleichen $a_i$ umgekehrt werden, ist das Ergebnis ebenfalls ein sortierter Stapel. Die Argumentation ist in Abbildung 3 veranschaulicht. Durch die Veränderung wird die Gesamtzahl an $\gamma_i$-Operationen nicht vergrößert, daher gibt es immer eine optimale Folge an $\gamma_i$-Operationen ohne Trennung einer Folge $a_i$ in der Mitte.
 
-    Es konnte gezeigt werden, dass jede Instanz des Burnt Pancake-Problems in polynomieller Zeit auf eine Instanz von $\gamma_i$-Pancake Sort reduziert werden kann. Damit ist $\gamma_i$-Pancake Sort mindestens so schwierig wie das Burnt Pancake-Problem.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{grafiken/burnt-pancake-reduktion-2}
+        \caption{Eine optimale Folge an $\gamma_i$-Operationen kann immer ohne die Teilung von $a_i$ in der Mitte auskommen.}
+    \end{figure}
+
+    Damit verhält sich eine Teilfolge, die einem verbrannten Pfannkuchen zugeordnet wurde, im Sortierprozess wie ein verbrannter Pfannkuchen. Denn sie kann weder vollständig verschwinden oder geteilt werden und muss am Ende, wie der verbrannte Pfannkuchen, richtig orientiert an der richtigen Stelle platziert sein, damit $q$ sortiert ist. Folglich ist die minimale Anzahl an $\gamma_i$-Operationen zum Sortieren von $q$ gleich der minimalen Anzahl an Wendeoperationen zum Sortieren von $p$. Da jede Instanz des Burnt Pancake-Problems in polynomieller Zeit auf eine Instanz von $\gamma_i$-Pancake Sort reduziert werden kann, ist $\gamma_i$-Pancake Sort mindestens so schwierig wie das Burnt Pancake-Problem.
 \end{proof}
 
 \subsection{Finden der kürzesten Folge an $\gamma_i$-Operationen}
