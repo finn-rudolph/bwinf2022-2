@@ -71,7 +71,7 @@ pair<vector<unsigned>, bool> shortest_op_dfs_r(
         q.push({get_lbound_gamma(p, i), i});
 
     vector<unsigned> res;
-    bool found_better = 0;
+    bool found_solution = 0;
 
     // Gehe die durch eine gamma-Operation erreichbaren Permutationen
     // aufsteigend nach unterer Schranke durch und bestimme rekursiv die
@@ -87,14 +87,14 @@ pair<vector<unsigned>, bool> shortest_op_dfs_r(
             ubound = op.size() + 1;
             res = op;
             res.push_back(q.top().second);
-            found_better = 1;
+            found_solution = 1;
         }
 
         q.pop();
     }
 
     vis[p.size() - 1].insert(ind(p));
-    return {res, found_better};
+    return {res, found_solution};
 }
 
 vector<unsigned> shortest_op_dfs(vector<unsigned> const &p)
@@ -171,6 +171,44 @@ vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
     return res;
 }
 
+pair<vector<unsigned>, bool> shortest_op_bf_r(
+    vector<unsigned> const &p, vector<unordered_set<size_t>> &vis)
+{
+    if (!ind(p))
+        return {{}, 1};
+
+    if (vis[p.size() - 1].find(ind(p)) != vis[p.size() - 1].end())
+        return {{}, 0};
+
+    vector<unsigned> res;
+    bool found_solution = 0;
+
+    for (size_t i = 0; i < p.size(); i++)
+    {
+        auto const [op, found] = shortest_op_bf_r(gamma(p, i), vis);
+
+        if (found && (op.size() + 1 < res.size() || !found_solution))
+        {
+            res = op;
+            res.push_back(i);
+            found_solution = 1;
+        }
+    }
+
+    vis[p.size() - 1].insert(ind(p));
+    return {res, found_solution};
+}
+
+// Findet die kürzeste Folge an gamma-Operationen, um p in eine identische
+// Permutation umzuformen, durch Austesten aller möglichen Folgen.
+vector<unsigned> shortest_op_bf(vector<unsigned> const &p)
+{
+    vector<unordered_set<size_t>> vis(p.size());
+    vector<unsigned> res = shortest_op_bf_r(p, vis).first;
+    reverse(res.begin(), res.end());
+    return res;
+}
+
 int main(int argc, char *argv[])
 {
     size_t n;
@@ -188,6 +226,8 @@ int main(int argc, char *argv[])
 
     if (argc == 2 && !strcmp(argv[1], "--dfs"))
         op = shortest_op_dfs(p);
+    else if (argc == 2 && !strcmp(argv[1], "--bf"))
+        op = shortest_op_bf(p);
     else
         op = shortest_op_bfs(p);
 
