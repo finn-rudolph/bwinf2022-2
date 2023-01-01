@@ -60,11 +60,11 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
         mask ^= 1ULL << (p.size() - x - 2);
     }
 
-    for (size_t j = i; j < p.size() - 1; j++)
+    for (size_t j = i + 1; j < p.size(); j++)
     {
-        unsigned const x = p[j + 1] - (p[j + 1] > p[i]);
+        unsigned const x = p[j] - (p[j] > p[i]);
         k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
-             factorial[p.size() - j];
+             factorial[p.size() - j - 1];
         mask ^= 1ULL << (p.size() - x - 2);
     }
 

@@ -50,7 +50,7 @@ unsigned lbound_gamma(vector<unsigned> const &p, size_t i)
     return (num_monotone + 1) / 3;
 }
 
-pair<vector<unsigned>, bool> shortest_ops(
+pair<vector<unsigned>, bool> shortest_ops_dfs_r(
     vector<unsigned> const &p, vector<unordered_set<size_t>> &vis,
     unsigned b = UINT_MAX)
 {
@@ -67,18 +67,19 @@ pair<vector<unsigned>, bool> shortest_ops(
     for (size_t i = 0; i < p.size(); i++)
         q.push({lbound_gamma(p, i), i});
 
-    vector<unsigned> ops;
+    vector<unsigned> res;
     bool found_better = 0;
 
     while (!q.empty() && q.top().first < b)
     {
-        auto [res, found] = shortest_ops(gamma(p, q.top().second), vis, b - 1);
+        auto [ops, found] =
+            shortest_ops_dfs_r(gamma(p, q.top().second), vis, b - 1);
 
-        if (found && res.size() + 1 < b)
+        if (found && ops.size() + 1 < b)
         {
-            b = res.size() + 1;
-            ops = res;
-            ops.push_back(q.top().second);
+            b = ops.size() + 1;
+            res = ops;
+            res.push_back(q.top().second);
             found_better = 1;
         }
 
@@ -86,7 +87,79 @@ pair<vector<unsigned>, bool> shortest_ops(
     }
 
     vis[p.size() - 1].insert(ind(p));
-    return {ops, found_better};
+    return {res, found_better};
+}
+
+vector<unsigned> shortest_ops_dfs(vector<unsigned> const &p)
+{
+    vector<unordered_set<size_t>> vis(p.size());
+    vector<unsigned> res = shortest_ops_dfs_r(p, vis).first;
+    reverse(res.begin(), res.end());
+    return res;
+}
+
+struct node
+{
+    size_t n, i;
+    unsigned b;
+    vector<unsigned> ops;
+
+    bool operator<(node const &x) const
+    {
+        if (b == x.b)
+            return n > x.n;
+        return b > x.b;
+    }
+};
+
+vector<unsigned> shortest_ops_bfs(vector<unsigned> const &p)
+{
+    vector<unordered_set<size_t>> vis(p.size());
+    vis[p.size() - 1].insert(ind(p));
+
+    priority_queue<node> q;
+    q.push({p.size(), ind(p), lbound(p), {}});
+
+    unsigned b = p.size();
+    vector<unsigned> s(p.size());
+    vector<unsigned> res;
+
+    while (!q.empty() && q.top().b < b)
+    {
+        node const x = q.top();
+        q.pop();
+
+        if (!x.i)
+        {
+            if (x.ops.size() < b)
+            {
+                res = x.ops;
+                b = res.size();
+            }
+            continue;
+        }
+
+        s.resize(x.n);
+        ith_permutation(x.n, x.i, s);
+
+        for (size_t i = 0; i < x.n; i++)
+        {
+            unsigned const l = lbound_gamma(s, i);
+            if (l + x.ops.size() < b)
+            {
+                node y = {x.n - 1, ind_gamma(s, i), l + 1, x.ops};
+                y.ops.push_back(i);
+
+                if (vis[y.n - 1].find(y.i) == vis[y.n - 1].end())
+                {
+                    q.push(y);
+                    vis[y.n - 1].insert(y.i);
+                }
+            }
+        }
+    }
+
+    return res;
 }
 
 int main()
@@ -102,8 +175,7 @@ int main()
     }
 
     precalc_factorial(n);
-    vector<unordered_set<size_t>> vis(n);
-    vector<unsigned> ops = shortest_ops(p, vis).first;
+    vector<unsigned> ops = shortest_ops_bfs(p);
 
     if (!ops.empty())
     {
@@ -111,7 +183,7 @@ int main()
                               " Indizes wenden:\n\n";
         cout << "Index |  p\n";
 
-        for (auto it = ops.rbegin(); it != ops.rend(); it++)
+        for (auto it = ops.cbegin(); it != ops.cend(); it++)
         {
             cout << left << setw(6) << *it << "|  ";
             for (unsigned const &x : p)
