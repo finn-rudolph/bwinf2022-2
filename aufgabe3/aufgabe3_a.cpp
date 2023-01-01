@@ -144,10 +144,10 @@ vector<unsigned> shortest_ops_bfs(vector<unsigned> const &p)
 
         for (size_t i = 0; i < x.n; i++)
         {
-            unsigned const l = lbound_gamma(s, i);
-            if (l + x.ops.size() < b)
+            unsigned const l = x.ops.size() + lbound_gamma(s, i) + 1;
+            if (l < b)
             {
-                node y = {x.n - 1, ind_gamma(s, i), l + 1, x.ops};
+                node y = {x.n - 1, ind_gamma(s, i), l, x.ops};
                 y.ops.push_back(i);
 
                 if (vis[y.n - 1].find(y.i) == vis[y.n - 1].end())
@@ -162,7 +162,7 @@ vector<unsigned> shortest_ops_bfs(vector<unsigned> const &p)
     return res;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     size_t n;
     cin >> n;
@@ -175,7 +175,12 @@ int main()
     }
 
     precalc_factorial(n);
-    vector<unsigned> ops = shortest_ops_bfs(p);
+    vector<unsigned> ops;
+
+    if (argc == 2 && !strcmp(argv[1], "--dfs"))
+        ops = shortest_ops_dfs(p);
+    else
+        ops = shortest_ops_bfs(p);
 
     if (!ops.empty())
     {
