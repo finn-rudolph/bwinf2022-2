@@ -8,6 +8,8 @@ void precalc_factorial(size_t n);
 
 size_t ind(vector<unsigned> const &p);
 
+vector<unsigned> gamma(vector<unsigned> const &p, unsigned i);
+
 size_t ind_gamma(vector<unsigned> const &p, unsigned i);
 
 vector<unsigned> gamma_inv(vector<unsigned> const &p, unsigned i, unsigned r);

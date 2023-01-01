@@ -14,6 +14,8 @@ void precalc_factorial(size_t n)
 
 size_t ind(vector<unsigned> const &p)
 {
+    assert(factorial.size() >= p.size());
+
     uint64_t mask = 0; // Bit i ist 1, wenn n - i - 1 bereits aufgetreten ist.
     size_t k = 0;
 
@@ -26,6 +28,18 @@ size_t ind(vector<unsigned> const &p)
 
     assert(mask == (1ULL << p.size()) - 1);
     return k;
+}
+
+vector<unsigned> gamma(vector<unsigned> const &p, unsigned i)
+{
+    vector<unsigned> q(p.size() - 1);
+
+    for (size_t j = 0; j < i; j++)
+        q[j] = p[i - j - 1] - (p[i - j - 1] > p[i]);
+    for (size_t j = i; j < p.size() - 1; j++)
+        q[j] = p[j + 1] - (p[j + 1] > p[i]);
+
+    return q;
 }
 
 size_t ind_gamma(vector<unsigned> const &p, unsigned i)
@@ -46,14 +60,15 @@ size_t ind_gamma(vector<unsigned> const &p, unsigned i)
         mask ^= 1ULL << (p.size() - x - 2);
     }
 
-    for (size_t j = i + 1; j < p.size(); j++)
+    for (size_t j = i; j < p.size() - 1; j++)
     {
-        unsigned const x = p[j] - (p[j] > p[i]);
+        unsigned const x = p[j + 1] - (p[j + 1] > p[i]);
         k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
-             factorial[p.size() - j - 1];
+             factorial[p.size() - j];
         mask ^= 1ULL << (p.size() - x - 2);
     }
 
+    assert(mask == (1ULL << (p.size() - 1)) - 1);
     return k;
 }
 
@@ -75,6 +90,7 @@ vector<unsigned> gamma_inv(vector<unsigned> const &p, unsigned i, unsigned r)
 
 size_t ind_gamma_inv(vector<unsigned> const &p, unsigned i, unsigned r)
 {
+    assert(factorial.size() >= p.size());
     assert(i < p.size() + 1);
     assert(r <= p.size() + 1);
 
