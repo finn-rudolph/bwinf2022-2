@@ -105,11 +105,35 @@ vector<unsigned> shortest_op_dfs(vector<unsigned> const &p)
     return res;
 }
 
+vector<unsigned> reconstruct_op(
+    vector<unordered_map<size_t, size_t>> const &pre, size_t res_n, size_t res_i)
+{
+    vector<unsigned> op;
+    size_t n = res_n, i = res_i;
+
+    while (pre[n - 1].at(i) != SIZE_MAX)
+    {
+        vector<unsigned> p = ith_permutation(n + 1, pre[n - 1].at(i));
+
+        for (size_t j = 0; j < n + 1; j++)
+            if (ind_gamma(p, j) == i)
+            {
+                op.push_back(j);
+                break;
+            }
+
+        i = pre[n - 1].at(i);
+        n++;
+    }
+
+    reverse(op.begin(), op.end());
+    return op;
+}
+
 struct node
 {
     size_t n, i;
     unsigned lbound;
-    vector<unsigned> op;
 
     bool operator<(node const &x) const
     {
@@ -121,15 +145,16 @@ struct node
 
 vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
 {
-    // Speichert für jede Permutationsgröße die Indizes besuchter Permutationen.
-    vector<unordered_set<size_t>> vis(p.size());
-    vis[p.size() - 1].insert(ind(p));
+    // Speichert für jede Permutationsgröße die Indizes besuchter Permutationen
+    // und deren Vorgänger im Suchbaum.
+    vector<unordered_map<size_t, size_t>> pre(p.size());
+    pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
     priority_queue<node> q;
-    q.push({p.size(), ind(p), get_lbound(p), {}});
+    q.push({p.size(), ind(p), get_lbound(p)});
 
     unsigned ubound = p.size(); // aktuelle Oberschranke
-    vector<unsigned> res;
+    size_t res_n = p.size(), res_i;
 
     while (!q.empty() && q.top().lbound < ubound)
     {
@@ -139,74 +164,66 @@ vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
         if (!x.i)
         {
             // Eine identische Permutation wurde gefunden.
-            if (x.op.size() < ubound)
+            if (p.size() - x.n < ubound)
             {
-                res = x.op;
-                ubound = res.size();
+                res_n = x.n;
+                res_i = x.i;
+                ubound = p.size() - x.n;
             }
             continue;
         }
 
-        vector<unsigned> s = ith_permutation(x.n, x.i);
+        vector<unsigned> const s = ith_permutation(x.n, x.i);
 
         // Füge jede durch eine gamma-Operation erreichbare Permutation zur
         // Warteschlange hinzu, die das Ergebnis noch verbessern kann.
         for (size_t i = 0; i < x.n; i++)
         {
-            unsigned const lbound = x.op.size() + get_lbound_gamma(s, i) + 1;
-            if (lbound < ubound)
+            node const y = {x.n - 1, ind_gamma(s, i),
+                            p.size() - x.n + get_lbound_gamma(s, i) + 1};
+            if (y.lbound < ubound && pre[y.n - 1].find(y.i) == pre[y.n - 1].end())
             {
-                node y = {x.n - 1, ind_gamma(s, i), lbound, x.op};
-                y.op.push_back(i);
-
-                if (vis[y.n - 1].find(y.i) == vis[y.n - 1].end())
-                {
-                    q.push(y);
-                    vis[y.n - 1].insert(y.i);
-                }
+                q.push(y);
+                pre[y.n - 1][y.i] = x.i;
             }
         }
     }
 
-    return res;
-}
-
-pair<vector<unsigned>, bool> shortest_op_bf_r(
-    vector<unsigned> const &p, vector<unordered_set<size_t>> &vis)
-{
-    if (!ind(p))
-        return {{}, 1};
-
-    if (vis[p.size() - 1].find(ind(p)) != vis[p.size() - 1].end())
-        return {{}, 0};
-
-    vector<unsigned> res;
-    bool found_solution = 0;
-
-    for (size_t i = 0; i < p.size(); i++)
-    {
-        auto const [op, found] = shortest_op_bf_r(gamma(p, i), vis);
-
-        if (found && (op.size() + 1 < res.size() || !found_solution))
-        {
-            res = op;
-            res.push_back(i);
-            found_solution = 1;
-        }
-    }
-
-    vis[p.size() - 1].insert(ind(p));
-    return {res, found_solution};
+    return reconstruct_op(pre, res_n, res_i);
 }
 
 // Findet die kürzeste Folge an gamma-Operationen, um p in eine identische
 // Permutation umzuformen, durch Austesten aller möglichen Folgen.
 vector<unsigned> shortest_op_bf(vector<unsigned> const &p)
 {
-    vector<unordered_set<size_t>> vis(p.size());
-    vector<unsigned> res = shortest_op_bf_r(p, vis).first;
-    reverse(res.begin(), res.end());
-    return res;
+    vector<unordered_map<size_t, size_t>> pre(p.size());
+    pre[p.size() - 1][ind(p)] = SIZE_MAX;
+    // Speichert Länge und Index jedes Blatts im Suchbaum.
+    queue<pair<size_t, size_t>> q;
+    q.push({p.size(), ind(p)});
+
+    while (!q.empty())
+    {
+        auto const [n, i] = q.front();
+        q.pop();
+
+        if (!i)
+            return reconstruct_op(pre, n, i);
+
+        vector<unsigned> const s = ith_permutation(n, i);
+
+        for (size_t j = 0; j < n; j++)
+        {
+            pair<size_t, size_t> const y = {n - 1, ind_gamma(s, j)};
+            if (pre[y.first - 1].find(y.second) == pre[y.first - 1].end())
+            {
+                pre[y.first - 1][y.second] = i;
+                q.push(y);
+            }
+        }
+    }
+
+    exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[])
@@ -234,8 +251,11 @@ int main(int argc, char *argv[])
     if (!op.empty())
     {
         cout << op.size() << " Operationen nötig. Dafür hinter folgenden"
-                             " Indizes wenden:\n\n";
-        cout << "Index |  p\n";
+                             " Indizes wenden:\n";
+        for (auto it = op.cbegin(); it != --op.cend(); it++)
+            cout << *it << ", ";
+        cout << *(--op.cend()) << "\n\n"
+             << "Index |  p\n";
 
         for (auto it = op.cbegin(); it != op.cend(); it++)
         {
