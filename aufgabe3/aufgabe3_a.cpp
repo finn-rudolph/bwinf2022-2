@@ -108,9 +108,21 @@ int main()
     if (!ops.empty())
     {
         cout << ops.size() << " Operationen nötig. Dafür hinter folgenden"
-                              " Indizes wenden:\n";
+                              " Indizes wenden:\n\n";
+        cout << "Index |  p\n";
+
         for (auto it = ops.rbegin(); it != ops.rend(); it++)
-            cout << *it << ' ';
+        {
+            cout << left << setw(6) << *it << "|  ";
+            for (unsigned const &x : p)
+                cout << left << setw(4) << x + 1;
+            p = rev_and_eat(p, *it);
+            cout << '\n';
+        }
+
+        cout << "      |  ";
+        for (unsigned const &x : p)
+            cout << left << setw(4) << x + 1;
     }
     else
         cout << "Der Stapel ist bereits sortiert.";
