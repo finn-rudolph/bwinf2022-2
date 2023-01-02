@@ -14,19 +14,26 @@ void precalc_factorial(size_t n)
 
 size_t ind(vector<unsigned> const &p)
 {
-    assert(factorial.size() >= p.size());
-
-    uint64_t mask = 0; // Bit i ist 1, wenn n - i - 1 bereits aufgetreten ist.
     size_t k = 0;
+    size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
+    unsigned tree[2 * m];
+    memset(tree, 0, 2 * m * sizeof(unsigned));
 
     for (size_t j = 0; j < p.size(); j++)
     {
-        k += (p[j] - __builtin_popcount(mask >> (p.size() - p[j] - 1))) *
-             factorial[p.size() - j - 1];
-        mask ^= 1ULL << (p.size() - p[j] - 1);
+        size_t z = m + p[j];
+        k *= (p.size() - j);
+        k += p[j];
+        for (size_t l = 0; l < lgn; l++)
+        {
+            if (z & 1)
+                k -= tree[z - 1];
+            tree[z]++;
+            z >>= 1;
+        }
+        tree[z]++;
     }
 
-    assert(mask == (1ULL << p.size()) - 1);
     return k;
 }
 
@@ -44,31 +51,43 @@ vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
 
 size_t ind_gamma(vector<unsigned> const &p, size_t i)
 {
-    assert(factorial.size() >= p.size());
-    assert(i < p.size());
-
-    uint64_t mask = 0;
     size_t k = 0;
+    size_t const lgn = 32 - __builtin_clz(p.size() - 1), m = 1 << lgn;
+    unsigned tree[2 * m];
+    memset(tree, 0, 2 * m * sizeof(unsigned));
 
-    // Um die Permutation in richtiger Reihenfolge von links nach rechts
-    // abzuarbeiten, wird der umgekehrte Teil umgekehrt durchgegangen.
     for (size_t j = 0; j < i; j++)
     {
         unsigned const x = p[i - j - 1] - (p[i - j - 1] > p[i]);
-        k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
-             factorial[p.size() - j - 2];
-        mask ^= 1ULL << (p.size() - x - 2);
+        size_t z = m + x;
+        k *= (p.size() - 1 - j);
+        k += x;
+        for (size_t l = 0; l < lgn; l++)
+        {
+            if (z & 1)
+                k -= tree[z - 1];
+            tree[z]++;
+            z >>= 1;
+        }
+        tree[z]++;
     }
 
-    for (size_t j = i + 1; j < p.size(); j++)
+    for (size_t j = i; j < p.size() - 1; j++)
     {
-        unsigned const x = p[j] - (p[j] > p[i]);
-        k += (x - __builtin_popcount(mask >> (p.size() - x - 2))) *
-             factorial[p.size() - j - 1];
-        mask ^= 1ULL << (p.size() - x - 2);
+        unsigned const x = p[j + 1] - (p[j + 1] > p[i]);
+        size_t z = m + x;
+        k *= (p.size() - 1 - j);
+        k += x;
+        for (size_t l = 0; l < lgn; l++)
+        {
+            if (z & 1)
+                k -= tree[z - 1];
+            tree[z]++;
+            z >>= 1;
+        }
+        tree[z]++;
     }
 
-    assert(mask == (1ULL << (p.size() - 1)) - 1);
     return k;
 }
 
