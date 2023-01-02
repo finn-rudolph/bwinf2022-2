@@ -1,15 +1,16 @@
-\documentclass[a4paper, 10pt, ngerman]{article}
+\documentclass[a4paper, 11pt, ngerman]{article}
 \usepackage{tikz-network}
-\usepackage[left=3cm, right = 3cm, top=3cm, bottom=3cm]{geometry}
+\usepackage[left=3cm, right = 3cm, top=3cm, bottom=3cm, head=13.6pt]{geometry}
 \usepackage{babel}
 \usepackage[T1]{fontenc}
 \usepackage{inputenc}
-\usepackage{algpseudocode}
+\usepackage[noend,nosemicolon,algoruled,noline]{algorithm2e}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{enumitem}
 
 \newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort}
 \newcommand{\TeilnahmeId}{67571}
@@ -24,6 +25,8 @@
 \title{\LARGE \textbf{Aufgabe 3: Pancake Sort}}
 \author{\large Finn Rudolph \\ \\ \large Teilnahme-ID: 67571}
 \date{\large 28. Dezember 2022}
+
+\setlist[enumerate]{label*={\arabic*.}}
 
 \begin{document}
 
@@ -42,11 +45,11 @@
 
 Pancake Sort ist ein bekannter Sortieralgorithmus, in seiner ursprünglichen Form wird der oberste Pfannkuchen allerdings nicht aufgegessen, sondern allein ein Präfix der zu sortierenden Folge umgekehrt. Pancake Sort wird daher auch als \emph{Sorting by Prefix Reversals} bezeichnet. Der Algorithmus wird zwar nicht direkt zum Sortieren verwendet, der mit ihm verbundene Pancake Graph dient jedoch beispielsweise als Grundlage für Netzwerke für parallele Computersysteme.
 
-Ein Stapel von $n$ Pfannkuchen wird als Folge
+Ein Stapel von $n$ Pfannkuchen wird als Permutation
 $$
     p = p_0, p_1, p_2, \dots, p_{n - 1}
 $$
-definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. Folgen und Ähnliches werden grundsätzlich mit 0 beginnend indexiert. Da jede Zahl von 1 bis $n$ in dieser Folge genau einmal vorkommt, wird $p$ auch als Permutation der Länge $n$ bezeichnet. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
+definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. Die Elemente von $p$ werden mit 0 beginnend indexiert. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
 
 \begin{definition}
     Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Der Wende-und-Ess-Operator $\gamma_i$ ist für $p$ wie folgt definiert.
@@ -65,10 +68,14 @@ $\gamma_i p$ bezeichnet also die Permutation der ersten $n - 1$ natürlichen Zah
 $$
     \gamma_2 p = \gamma_2 (4, 1, 2, 3) = 1, 3, 2
 $$
-Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können, wird ihm der Name ``$\gamma_i$-Pancake Sort'' gegeben.
+Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können, wird ihm der Name ``$\gamma_i$-Pancake Sort'' gegeben. $I^n$ bezeichnet die identische Permutation der Länge $n$.
 
 \begin{definition}[$\gamma_i$-Pancake Sort]
-    Gegeben sei eine Permutation $p$ der ersten $n$ natürlichen Zahlen. Das Problem, eine kürzestmögliche Folge an $\gamma_i$-Operationen, mit denen $p$ in eine identische Permutation beliebiger Länge umgewandelt wird, zu finden, wird $\gamma_i$-Pancake Sort genannt.
+    Gegeben sei eine Permutation $p$ der ersten $n$ natürlichen Zahlen. Das Problem, eine kürzestmögliche Folge an $\gamma_i$-Operationen $\gamma_{i_0}, \gamma_{i_1}, \dots \gamma_{i_{k-1}}$ zu finden, sodass
+    \begin{align*}
+        (\gamma_{i_{k-1}} \dots (\gamma_{i_1} (\gamma_{i_0} p)) \dots) = I^{n - k}
+    \end{align*}
+    wird $\gamma_i$-Pancake Sort genannt.
 \end{definition}
 
 \subsection{Der Pancake-Graph}
@@ -269,17 +276,16 @@ Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetri
 Die Ergebnisse der jeweiligen Anwendung von $\gamma_i$ liegen symmetrisch um die Mitte der Liste aller Permutationen von Länge 3. Mithilfe des Programms \emph{test\_sym.cpp} konnte diese Eigenschaft von $\gamma_i$ für alle symmetrisch gelegenen Paare an Permutationen bis Größe 10 bestätigt werden. Es scheint also, dass die Symmetrie des Pancake-Graphen allgemein gültig ist.
 
 Um diese Vermutung zu beweisen, sind einige weitere Mittel nötig. Zunächst wird das fakultätsbasierte Zahlensystem eingeführt, mithilfe dessen der Effekt des $\gamma_i$-Operators aus einer völlig anderen Perspektive betrachtet werden kann. Denn das fakultätsbasierte Zahlensystem erlaubt es, die Anzahl an Inversionen symmetrisch gelegener Paare von Permutationen miteinander in Verbindung zu bringen. Damit kann schließlich gezeigt werden, dass die Anwendung von $\gamma_i$ auf zwei in einer lexikographisch sortierten Liste symmetrisch positionierte Permutationen wieder zu einem symmetrischen Paar führt.
+\bigskip
 
-\subsubsection*{Das fakultätsbasierte Zahlensystem}
-
-Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsystem eine unterschiedliche Basis für jede Ziffer verwendet. Die $k$-te Ziffer (mit 0 beginnend), von rechts gelesen, verwendet $k!$ als Basis und kann die Werte 0 bis $k$ annehmen. Der Wert einer fakultätsbasiert geschriebenen Zahl ist die Summe der einzelnen Ziffern, multipliziert mit ihrer jeweiligen Basis. Beispielsweise ist
+\noindent \emph{Das fakultätsbasierte Zahlensystem.} Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsystem eine unterschiedliche Basis für jede Ziffer verwendet. Die $k$-te Ziffer (mit 0 beginnend), von rechts gelesen, verwendet $k!$ als Basis und kann die Werte 0 bis $k$ annehmen. Der Wert einer fakultätsbasiert geschriebenen Zahl ist die Summe der einzelnen Ziffern, multipliziert mit ihrer jeweiligen Basis. Beispielsweise ist
 \begin{align*}
     17_{10} & = 2210_!   = 2 \cdot 3! + 2 \cdot 2! + 1 \cdot 1! + 0 \cdot 0!             \\
     24_{10} & = 10000_! = 1 \cdot 4! + 0 \cdot 3! + 0 \cdot 2! + 0 \cdot 1! + 0 \cdot 0! \\
     23_{10} & = 3210_!  = 3 \cdot 3! + 2 \cdot 2! + 1 \cdot 1! + 0 \cdot 0!
 \end{align*}
 wobei das tiefgestellte ! auf das fakultätsbasierte Zahlensystem hinweist. Eine Fakultät $n!$, geschrieben im fakultätsbasierten Zahlensystem, ist immer von der Form $1000\dots$ ($n$ Nullen). Die Ziffern von $n! - 1$ sind immer genau $n-1, n-2, n-3, \dots, 0$.
-Da sich mit einer fakultätsbasierten Zahl mit $n$ Ziffern genau $n!$ Zahlen darstellen lassen, können diese Zahlen auf natürlichem Weg zum Nummerieren von Permutationen der Länge $n$ verwendet werden. Die Folgenden zwei Arten der Nummerierung sind entscheidend den Beweis der Symmetrie des Pancake-Graphen. Beide bilden eine Bijektion zwischen Permutationen der Länge $n$ und ganzen Zahlen von 0 bis $n! - 1$.
+Da sich mit einer fakultätsbasierten Zahl mit $n$ Ziffern genau $n!$ Zahlen darstellen lassen, können diese Zahlen auf natürlichem Weg zum Nummerieren von Permutationen der Länge $n$ verwendet werden. Folgende zwei Arten der Nummerierung sind entscheidend den Beweis der Symmetrie des Pancake-Graphen. Beide bilden eine Bijektion zwischen Permutationen der Länge $n$ und ganzen Zahlen von 0 bis $n! - 1$.
 
 \begin{definition}
     Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
@@ -324,22 +330,18 @@ $p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Z
         \item $j_1 < i$: Rechts von $j_1$ liegen $i$ und $j_0$, das heißt, es muss zwei Indizes $j_2, j_3 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$, $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Andernfalls wäre es wieder nicht möglich, auf die nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ nötigen, kleineren, rechts gelegenen Elemente zu kommen. Denn bereits zwei der $n - j_1 - 1$ rechts gelegenen Plätze sind sowohl in $p$ als auch in $p^*$ durch größere Zahlen besetzt, aber $n - j_1 - 1$ kleinere Elemente sind erforderlich.
         \item $i < j_1 < j_0$: Da $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$, muss es rechts von $j_1$ einen Index $j_2 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$. Auch links von $j_1$ muss es einen Index $j_3 < j_1$ geben, sodass $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Erneut wäre andernfalls das Erreichen der nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ rechts gelegenen, kleineren und der $\nu(p)_{n - j_1 - 1} + \nu(p^*)_{n - j_1 - 1} = j_1$ links gelegenen, größeren Elemente unmöglich.
     \end{enumerate}
-    Man sieht, dass durch die Forderung nach einer allein vom Index anbhängigen Zahl rechts gelegener, kleinerer bzw. links gelegener, größerer Elemente immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen erzeugt werden. Das ist ein Widerspruch, da natürliche Zahlen, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. (Daneben wären die $n$ verfügbaren Elemente irgendwann ausgeschöpft.) Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
+    Man sieht, dass durch die Forderung nach einer allein vom Index anbhängigen Zahl rechts gelegener, kleinerer bzw. links gelegener, größerer Elemente immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen erzeugt werden. Das ist ein Widerspruch, da natürliche Zahlen, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
 \end{proof}
 
-Nun wird die Funktion $\eta(p, i, j, k)$ eingeführt, die die Anzahl an Elementen von $p$ mit Indizes im Intervall $[i, j]$ zählt, die kleiner als $p_i$ sind.
-\begin{definition}
-    Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Wir definieren die Funktion
-    $$
-        \eta(p, i, j, k) = \sum_{h = j}^k
-        \begin{cases}
-            1 & \text{wenn } p_i > p_h   \\
-            0 & \text{wenn } p_i \le p_h
-        \end{cases}
-    $$
-    für $0 \le i, j, k \le n - 1$.
-\end{definition}
-Lemma 1 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berechnen, denn für jeden Index ist entweder das Element in $p$ oder in $p^*$ kleiner als $p_i$ bzw. $p^*_i$.
+Für eine Permutation $p$ und $0 \le i, j, k \le n - 1$ wird nun die Funktion $\eta(p, i, j, k)$ definiert.
+$$
+    \eta(p, i, j, k) = \sum_{h = j}^k
+    \begin{cases}
+        1 & \text{wenn } p_i > p_h   \\
+        0 & \text{wenn } p_i \le p_h
+    \end{cases}
+$$
+$\eta(p, i, j, k)$ zählt die Anzahl an Elementen mit Indizes in $[j, k]$, die kleiner als $p_i$ sind. Lemma 1 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berechnen, denn für jeden Index ist entweder das Element in $p$ oder in $p^*$ kleiner als $p_i$ bzw. $p^*_i$.
 \begin{align*}
     \eta(p, i, j, k) + \eta(p^*, i, j, k) & = \sum_{h = j}^k
     \begin{cases}
@@ -362,7 +364,7 @@ Lemma 1 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berec
                                           & = \sum_{h = j}^k 1       \\
                                           & = k - j + 1
 \end{align*}
-Damit kann nun gezeigt werden, dass das Umkehren von Präfixen zweier symmetrisch gelegener Permutationen erneut zu zwei symmetrisch gelegene Permutationen führt. Das ist bereits sehr nahe am gewünschten Ergebnis, es muss lediglich noch das erste Element aus beiden Permutationen entfernt werden.
+Damit kann nun gezeigt werden, dass das Umkehren von Präfixen zweier symmetrisch gelegener Permutationen erneut zu zwei symmetrisch gelegene Permutationen führt. Das ist fast das gewünschte Ergebnis, es muss lediglich noch das erste Element aus beiden Permutationen entfernt werden.
 \begin{lemma}Seien $x$ und $y$ die Permutationen, die aus $p$ und $p^*$ durch Umkehrung des Präfixes bis einschließlich Index $i$ hervorgehen. Wenn $\mu(p) + \mu(p^*) = n! - 1$, dann gilt auch $\mu(x) + \mu(y) = n! - 1$.
 \end{lemma}
 
@@ -370,13 +372,15 @@ Damit kann nun gezeigt werden, dass das Umkehren von Präfixen zweier symmetrisc
     Die Ziffern $\mu(p)$ und $\mu(p^*)$ geben in fakultätsbasierter Schreibweise die Anzahl an rechts gelegenen, kleineren Elementen an. Da an den Elementen $p_j, p^*_j$ für $j > i$ nichts geändert wird, ändert sich auch nicht ihre Zahl rechts gelegener, kleinerer Elemente, d. h. sie können im Folgenden außer Acht gelassen werden. Für $j < i$ werden alle links gelegenen, kleineren Elemente durch die Umkehrung auf die rechte Seite gebracht, die kleineren Elemente rechts von $i$ bleiben. Der Index, zu dem das $j$-te Element durch die Umkehrung bewegt wird, ist $i - j$. Folglich ist die Anzahl rechts gelegener, kleinerer Elemente von $x_{i - j}$ und $y_{i - j}$ zusammen
     \begin{align*}
         \mu(x)_{i - j} + \mu(y)_{i - j}
-         & = \eta(p, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, 0, j - 1) + \eta(p^*, j, i + 1, n - 1) \\
-         & = \eta(p, j, 0, j - 1) + \eta(p^*, j, 0, j - 1) + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, i + 1, n - 1) \\
-         & = j - 1 + 1 + n - 1 - (i + 1) + 1                                                                       \\
-         & = j + n - i - 1                                                                                         \\
-         & = n - (i - j) - 1
+         & =  \eta(p, j, 0, j - 1) + \eta(p, j, i + 1, n - 1)            \\
+         & \quad + \eta(p^*, j, 0, j - 1) + \eta(p^*, j, i + 1, n - 1)   \\
+         & =  \eta(p, j, 0, j - 1) + \eta(p^*, j, 0, j - 1)              \\
+         & \quad + \eta(p, j, i + 1, n - 1) + \eta(p^*, j, i + 1, n - 1) \\
+         & =  (j - 1 - 0 + 1) + (n - 1 - (i + 1) + 1)                    \\
+         & =  j + n - i - 1                                              \\
+         & =  n - (i - j) - 1
     \end{align*}
-    In Zeile 1 wurden die vor der Umkehrung links gelegenen, kleineren Elemente zu den kleineren Elementen rechts von $i$ addiert. Daraus folgt
+    Daraus folgt
     \begin{align*}
         \mu(x)_i + \mu(y)_i = n - i - 1 \quad 0 \le i \le n - 1
     \end{align*}
@@ -420,22 +424,22 @@ Man sieht, dass das Umkehren eines Präfixes in einem symmetrischen Paar von Per
 
 In diesem Abschnitt soll gezeigt werden, dass $\gamma_i$-Pancake Sort mindestens so schwierig wie das Burnt Pancake Problem, eine Variante des Pfannkuchen-Sortierproblems, ist. Mit ``mindestens so schwierig'' ist gemeint, dass das Burnt Pancake Problem in polynomieller Zeit auf das vorliegende Problem reduziert werden kann. Damit wird gezeigt, dass wahrscheinlich kein Algorithmus existiert, der $\gamma_i$-Pancake Sort in polynomieller Zeit löst. Für das Burnt Pancake-Problem gibt es zwar keinen Beweis der NP-Schwere, allerdings ist es seit über 40 Jahren niemandem gelungen, einen Algorithmus mit polynomieller Laufzeit für dieses Problem zu entwickeln.
 
-Im Burnt Pancake Problem haben Pfannkuchen eine verbrannte Seite, die nach dem Sortieren bei jedem Pfannkuchen unten liegen muss \cite{burntpancakes}. Indem das Konzept der verbrannten Seite durch ein Vorzeichen vor jedem Element der Permutation formalisiert wird, kann das Burnt Pancake-Problem wie folgt definiert werden.
+Im Burnt Pancake Problem haben Pfannkuchen eine verbrannte Seite, die nach dem Sortieren bei jedem Pfannkuchen unten liegen muss \cite{burntpancakes}. Das Konzept der verbrannten Seite wird in folgender Definition durch ein Vorzeichen vor jedem Element der Permutation formalisiert.
 \begin{definition}[Burnt Pancake-Problem]
     Gegeben sei eine vorzeichenbehaftete Permutation
     \begin{align*}
         p = \sigma_0 p_0, \sigma_1 p_1, \dots, \sigma_{n-1} p_{n-1}
     \end{align*}
-    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Wir nennen folgendes Problem das Burnt Pancake-Problem: Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in die identische Permutation der Länge $|p|$ mit ausschließlich positiven Elementen überführt wird?
+    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Wir nennen folgendes Problem das Burnt Pancake-Problem: Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in $I^n$ überführt wird?
 \end{definition}
-Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrannte Seite oben hat.
+$\sigma_i = -1$ bedeutet, dass der $i$-te Pfannkuchen die verbrannte Seite oben hat, andernfalls liegt die unverbrannte Seite oben.
 
 \begin{theorem}
     $\gamma_i$-Pancake Sort ist mindestens so schwierig wie das Burnt Pancake-Problem.
 \end{theorem}
 
 \begin{proof}
-    Es wird gezeigt, dass schon das Bestimmen der minimalen Anzahl an $\gamma_i$-Operationen mindestens so schwierig wie das Burnt Pancake-Problem ist. Daraus folgt direkt, dass auch $\gamma_i$-Pancake Sort mindestens so schwierig ist, denn mit jedem Algorithmus, der $\gamma_i$-Pancake Sort löst, kann man die minimale Anzahl an $\gamma_i$-Operationen bestimmen, indem man die Länge der zurückgegebenen Folge an $\gamma_i$-Operationen bestimmt.
+    Schon das Bestimmen der minimalen Anzahl an $\gamma_i$-Operationen ist mindestens so schwierig wie das Burnt Pancake-Problem, was im Beweis gezeigt wird. Daraus folgt direkt, dass auch $\gamma_i$-Pancake Sort mindestens so schwierig ist, denn mit jedem Algorithmus, der $\gamma_i$-Pancake Sort löst, kann man einfach die minimale Anzahl an $\gamma_i$-Operationen bestimmen.
 
     Die Reduktion geschieht nun, indem das Burnt Pancake-Problem in $\gamma_i$-Pancake Sort simuliert wird. Für eine vorzeichenbehaftete Permutation $p$ der Länge $n$, die Eingabe für das Burnt Pancake-Problem, konstruieren wir eine nicht-vorzeichenbehaftete Permutation $q$ wie folgt:
     $$
@@ -471,6 +475,64 @@ Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrann
 
 \subsection{Finden der kürzesten Folge an $\gamma_i$-Operationen}
 
+In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt. Zunächst wird ein Brute-Force Ansatz vorgestellt, der bereits alle vorgegebenen Beispiele gut lösen kann. Anschließend wird eine untere Schranke für die nötige Anzahl an $\gamma_i$-Operationen zum Erreichen einer identischen Permutation hergeleitet, mit der sich der Brtue-Force Algorithmus auf zwei Arten verbessern lässt.
+\bigskip
+
+\noindent \emph{Eine Brute-Force Lösung.} Wie der Name bereits sagt, werden einfach alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. Als einzige Ausnahme von dieser Definition enthält $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
+
+Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisiert, die bei $\mu(p)$ den $\mu$-Wert des Vorgängers von $p$ speichert. Um Speicher zu sparen, wird in der Warteschlange außerdem nicht die gesamte Permutation, sondern lediglich ihre Länge und ihr $\mu$-Wert, durch den sie eindeutig bestimmt ist, festgelgt. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
+
+\begin{algorithm}
+    $Q \gets \{(|p|, \mu(p))\}$ \;
+    $pre \gets$ Array of Hashmaps of size $|p|$ \;
+
+    \While{$Q \ne \{\}$}
+    {
+        $(n, i) \gets $ \textsc{Dequeue}$(Q)$ \;
+        $s \gets$ \textsc{IthPermutation}$(n, i)$ \;
+        \If{$\mu(p) = 0$}
+        {
+            \Return{} \textsc{ReconstructOperations}$(pre, n, i)$ \;
+        }
+
+        \For{$i \gets 0$ \KwTo $|s| - 1$}
+        {
+            \If{$\gamma_i s \notin pre\mathrm{[|s| - 1]}$}
+            {
+                $pre[|s| - 1][\mu(\gamma_i s)] \gets \mu(s)$ \;
+                \textsc{Enqueue}$(Q, (n - 1, \mu(\gamma_i s)))$ \;
+            }
+        }
+    }
+
+    \caption{\textsc{MinOperationsBF}$(p)$}
+\end{algorithm}
+
+\noindent Um die durchgeführten $\gamma_i$-Operationen aus \emph{pre} zu rekonstruieren, wird der Suchbaum von unten nach oben durchlaufen. Auf dem direkten Vorgänger wird jede mögliche $\gamma_i$-Operation ausprobiert, bis die Richtige gefunden ist.
+
+\begin{algorithm}
+    $t \gets$ empty Array
+
+    \While{$n < \mathrm{size}$ $\mathrm{of}$ $pre$}{
+        $s \gets$ \textsc{IthPermutation}$(n + 1, pre[n - 1][i])$ \;
+
+        \For{$j \gets 0$ \KwTo $n + 1$}
+        {
+            \If{$\mu(\gamma_j s) = i$}
+            {
+                append $j$ to the front of $t$ \;
+                \textbf{break}
+            }
+        }
+
+        $i \gets pre[n-1][i]$ \;
+        $n \gets n + 1$ \;
+    }
+    \Return{t}
+
+    \caption{\textsc{ReconstructOperations}$(pre, n, i)$}
+\end{algorithm}
+
 \subsection{Berechnung der PWUE-Zahl}
 
 \section{Implementierung}
@@ -478,6 +540,11 @@ Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrann
 \section{Quellcode}
 
 \begin{thebibliography}{5}
+    \bibitem{permutationranking}
+    Bonet, B. (2008).
+    Efficient Algorithms to Rank and Unrank Permutations in Lexicographic Order. \\
+    https://www.aaai.org/Papers/Workshops/2008/WS-08-10/WS08-10-004.pdf
+
     \bibitem{burntpancakes}
     Cohen, D. S., Blum, M. (1993).
     On the problem of sorting burnt pancakes. \\
@@ -487,11 +554,6 @@ Wenn $\sigma_i = -1$ ist, bedeutet das, dass der $i$-te Pfannkuchen die verbrann
     Johnsonbaugh, R. (2017).
     Discrete Mathematics (8. Auflage).
     Pearson Verlag.
-
-    \bibitem{parallelbfs}
-    Korf, R. E., Schultze, P. (2005).
-    Large-Scale Parallel Breadth-First Search. \\
-    https://www.aaai.org/Papers/AAAI/2005/AAAI05-219.pdf
 
     \bibitem{factorial}
     Wikipedia (2022).
