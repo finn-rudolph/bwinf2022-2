@@ -49,10 +49,10 @@ Ein Stapel von $n$ Pfannkuchen wird als Permutation
 $$
     p = p_0, p_1, p_2, \dots, p_{n - 1}
 $$
-definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. Die Elemente von $p$ werden mit 0 beginnend indexiert. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
+definiert, wobei $0 \le p_i \le n-1$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ und $i \ne j$. $p_0$ ist der oberste Pfannkuchen, $p_{n - 1}$ der unterste. Die Elemente von $p$ mit 0 beginnend zu indexieren und die $p_i$ bei 0 beginnen zu lassen, wird später einige Vereinfachungen bringen. Um eine Wende-und-Ess-Operation kompakt auszudrücken, wird der Wende-und-Ess-Operator $\gamma_i$ eingeführt.
 
 \begin{definition}
-    Sei $p$ eine Permutation der ersten $n$ natürlichen Zahlen. Der Wende-und-Ess-Operator $\gamma_i$ ist für $p$ wie folgt definiert.
+    Sei $p$ eine Permutation von Länge $n$. Der Wende-und-Ess-Operator $\gamma_i$ ist für $p$ wie folgt definiert.
     $$
         \gamma_i p = p_{i-1}', p_{i-2}', \dots, p_1', p_0', p_{i+1}', p_{i+2}', \dots, p_{n-1}'
     $$
@@ -64,9 +64,9 @@ definiert, wobei $1 \le p_i \le n$ und $p_i \ne p_j$, für $0 \le i, j \le n-1$ 
         \quad 0 \le j \le n - 1, j \ne i
     $$
 \end{definition}
-$\gamma_i p$ bezeichnet also die Permutation der ersten $n - 1$ natürlichen Zahlen, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt. Zum Beispiel, wenn $p = 4, 1, 2, 3$, dann ist
+$\gamma_i p$ bezeichnet also die Permutation der Länge $n - 1$, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt. Zum Beispiel, wenn $p = 3, 0, 1, 2$, dann ist
 $$
-    \gamma_2 p = \gamma_2 (4, 1, 2, 3) = 1, 3, 2
+    \gamma_2 p = \gamma_2 (3, 0, 1, 2) = 0, 2, 1
 $$
 Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können, wird ihm der Name ``$\gamma_i$-Pancake Sort'' gegeben. $I^n$ bezeichnet die identische Permutation der Länge $n$.
 
@@ -75,7 +75,7 @@ Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können,
     \begin{align*}
         (\gamma_{i_{k-1}} \dots (\gamma_{i_1} (\gamma_{i_0} p)) \dots) = I^{n - k}
     \end{align*}
-    wird $\gamma_i$-Pancake Sort genannt.
+    wird $\gamma_i$-Pancake Sort genannt. Das kleinstmögliche $k$ wird als $A(p)$ bezeichnet.
 \end{definition}
 
 \subsection{Der Pancake-Graph}
@@ -86,179 +86,179 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
 
 \newpage
 \begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
-    \node[main](1234) at (0, 0) {1234};
-    \node[main](1243) [below of = 1234] {1243};
-    \node[main](1324) [below of = 1243] {1324};
-    \node[main](1342) [below of = 1324] {1342};
-    \node[main](1423) [below of = 1342] {1423};
-    \node[main](1432) [below of = 1423] {1432};
+    \node[main](0123) at (0, 0) {0123};
+    \node[main](0132) [below of = 0123] {0132};
+    \node[main](0213) [below of = 0132] {0213};
+    \node[main](0231) [below of = 0213] {0231};
+    \node[main](0312) [below of = 0231] {0312};
+    \node[main](0321) [below of = 0312] {0321};
 
-    \node[main](2134) [below of = 1432] {2134};
-    \node[main](2143) [below of = 2134] {2143};
-    \node[main](2314) [below of = 2143] {2314};
-    \node[main](2341) [below of = 2314] {2341};
-    \node[main](2413) [below of = 2341] {2413};
-    \node[main](2431) [below of = 2413] {2431};
+    \node[main](1023) [below of = 0321] {1023};
+    \node[main](1032) [below of = 1023] {1032};
+    \node[main](1203) [below of = 1032] {1203};
+    \node[main](1230) [below of = 1203] {1230};
+    \node[main](1302) [below of = 1230] {1302};
+    \node[main](1320) [below of = 1302] {1320};
 
-    \node[main](123) at (7, -5.8) {123};
-    \node[main](132) [below of = 123] {132};
-    \node[main](213) [below of = 132] {213};
-    \node[main](231) [below of = 213] {231};
-    \node[main](312) [below of = 231] {312};
-    \node[main](321) [below of = 312] {321};
+    \node[main](012) at (7, -5.8) {012};
+    \node[main](021) [below of = 012] {021};
+    \node[main](102) [below of = 021] {102};
+    \node[main](120) [below of = 102] {120};
+    \node[main](201) [below of = 120] {201};
+    \node[main](210) [below of = 201] {210};
 
-    \node[main](12) at (11, -9.6) {12};
-    \node[main](21) [below of = 12] {21};
+    \node[main](01) at (11, -9.6) {01};
+    \node[main](10) [below of = 01] {10};
 
-    \node[main](1) at (13.5, -10.5) {1};
+    \node[main](0) at (13.5, -10.5) {0};
 
-    \draw[->](1234) -- (123);
-    \draw[->](1234) -- (213);
-    \draw[->](1234) -- (321);
+    \draw[->](0123) -- (012);
+    \draw[->](0123) -- (102);
+    \draw[->](0123) -- (210);
 
-    \draw[->](1243) -- (132);
-    \draw[->](1243) -- (213);
-    \draw[->](1243) -- (321);
+    \draw[->](0132) -- (021);
+    \draw[->](0132) -- (102);
+    \draw[->](0132) -- (210);
 
-    \draw[->](1324) -- (213);
-    \draw[->](1324) -- (123);
-    \draw[->](1324) -- (231);
+    \draw[->](0213) -- (102);
+    \draw[->](0213) -- (012);
+    \draw[->](0213) -- (120);
 
-    \draw[->](1342) -- (231);
-    \draw[->](1342) -- (132);
-    \draw[->](1342) -- (312);
-    \draw[->](1342) -- (321);
+    \draw[->](0231) -- (120);
+    \draw[->](0231) -- (021);
+    \draw[->](0231) -- (201);
+    \draw[->](0231) -- (210);
 
-    \draw[->](1423) -- (312);
-    \draw[->](1423) -- (123);
-    \draw[->](1423) -- (231);
+    \draw[->](0312) -- (201);
+    \draw[->](0312) -- (012);
+    \draw[->](0312) -- (120);
 
-    \draw[->](1432) -- (321);
-    \draw[->](1432) -- (132);
-    \draw[->](1432) -- (312);
-    \draw[->](1432) -- (231);
+    \draw[->](0321) -- (210);
+    \draw[->](0321) -- (021);
+    \draw[->](0321) -- (201);
+    \draw[->](0321) -- (120);
 
-    \draw[->](2134) -- (123);
-    \draw[->](2134) -- (312);
+    \draw[->](1023) -- (012);
+    \draw[->](1023) -- (201);
 
-    \draw[->](2143) -- (132);
-    \draw[->](2143) -- (123);
-    \draw[->](2143) -- (312);
+    \draw[->](1032) -- (021);
+    \draw[->](1032) -- (012);
+    \draw[->](1032) -- (201);
 
-    \draw[->](2314) -- (213);
-    \draw[->](2314) -- (132);
+    \draw[->](1203) -- (102);
+    \draw[->](1203) -- (021);
 
-    \draw[->](2341) -- (231);
-    \draw[->](2341) -- (321);
+    \draw[->](1230) -- (120);
+    \draw[->](1230) -- (210);
 
-    \draw[->](2413) -- (312);
-    \draw[->](2413) -- (213);
-    \draw[->](2413) -- (132);
+    \draw[->](1302) -- (201);
+    \draw[->](1302) -- (102);
+    \draw[->](1302) -- (021);
 
-    \draw[->](2431) -- (321);
-    \draw[->](2431) -- (231);
+    \draw[->](1320) -- (210);
+    \draw[->](1320) -- (120);
 
-    \draw[->](123) -- (12);
-    \draw[->](123) -- (21);
-    \draw[->](132) -- (21);
-    \draw[->](132) -- (12);
-    \draw[->](213) -- (12);
-    \draw[->](231) -- (21);
-    \draw[->](312) -- (12);
-    \draw[->](312) -- (21);
-    \draw[->](321) -- (12);
-    \draw[->](321) -- (21);
+    \draw[->](012) -- (01);
+    \draw[->](012) -- (10);
+    \draw[->](021) -- (10);
+    \draw[->](021) -- (01);
+    \draw[->](102) -- (01);
+    \draw[->](120) -- (10);
+    \draw[->](201) -- (01);
+    \draw[->](201) -- (10);
+    \draw[->](210) -- (01);
+    \draw[->](210) -- (10);
 
-    \draw[->](12) -- (1);
-    \draw[->](21) -- (1);
+    \draw[->](01) -- (0);
+    \draw[->](10) -- (0);
 \end{tikzpicture}
 \newpage
 \begin{tikzpicture}[node distance = {19mm}, main/.style = {draw, circle}]
-    \node[main](3124) at (0, 0) {3124};
-    \node[main](3142) [below of = 3124] {3142};
-    \node[main](3214) [below of = 3142] {3214};
-    \node[main](3241) [below of = 3214] {3241};
-    \node[main](3412) [below of = 3241] {3412};
-    \node[main](3421) [below of = 3412] {3421};
+    \node[main](2013) at (0, 0) {2013};
+    \node[main](2031) [below of = 2013] {2031};
+    \node[main](2103) [below of = 2031] {2103};
+    \node[main](2130) [below of = 2103] {2130};
+    \node[main](2301) [below of = 2130] {2301};
+    \node[main](2310) [below of = 2301] {2310};
 
-    \node[main](4123) [below of = 3421] {4123};
-    \node[main](4132) [below of = 4123] {4132};
-    \node[main](4213) [below of = 4132] {4213};
-    \node[main](4231) [below of = 4213] {4231};
-    \node[main](4312) [below of = 4231] {4312};
-    \node[main](4321) [below of = 4312] {4321};
+    \node[main](3012) [below of = 2310] {3012};
+    \node[main](3021) [below of = 3012] {3021};
+    \node[main](3102) [below of = 3021] {3102};
+    \node[main](3120) [below of = 3102] {3120};
+    \node[main](3201) [below of = 3120] {3201};
+    \node[main](3210) [below of = 3201] {3210};
 
-    \node[main](123) at (7, -5.8) {123};
-    \node[main](132) [below of = 123] {132};
-    \node[main](213) [below of = 132] {213};
-    \node[main](231) [below of = 213] {231};
-    \node[main](312) [below of = 231] {312};
-    \node[main](321) [below of = 312] {321};
+    \node[main](012) at (7, -5.8) {012};
+    \node[main](021) [below of = 012] {021};
+    \node[main](102) [below of = 021] {102};
+    \node[main](120) [below of = 102] {120};
+    \node[main](201) [below of = 120] {201};
+    \node[main](210) [below of = 201] {210};
 
-    \node[main](12) at (11, -9.6) {12};
-    \node[main](21) [below of = 12] {21};
+    \node[main](01) at (11, -9.6) {01};
+    \node[main](10) [below of = 01] {10};
 
-    \node[main](1) at (13.5, -10.5) {1};
+    \node[main](0) at (13.5, -10.5) {0};
 
-    \draw[->](3124) -- (123);
-    \draw[->](3124) -- (213);
+    \draw[->](2013) -- (012);
+    \draw[->](2013) -- (102);
 
-    \draw[->](3142) -- (132);
-    \draw[->](3142) -- (231);
-    \draw[->](3142) -- (312);
+    \draw[->](2031) -- (021);
+    \draw[->](2031) -- (120);
+    \draw[->](2031) -- (201);
 
-    \draw[->](3214) -- (213);
-    \draw[->](3214) -- (123);
+    \draw[->](2103) -- (102);
+    \draw[->](2103) -- (012);
 
-    \draw[->](3241) -- (231);
-    \draw[->](3241) -- (312);
+    \draw[->](2130) -- (120);
+    \draw[->](2130) -- (201);
 
-    \draw[->](3412) -- (312);
-    \draw[->](3412) -- (321);
-    \draw[->](3412) -- (132);
+    \draw[->](2301) -- (201);
+    \draw[->](2301) -- (210);
+    \draw[->](2301) -- (021);
 
-    \draw[->](3421) -- (321);
-    \draw[->](3421) -- (132);
+    \draw[->](2310) -- (210);
+    \draw[->](2310) -- (021);
 
-    \draw[->](4123) -- (123);
-    \draw[->](4123) -- (312);
-    \draw[->](4123) -- (132);
-    \draw[->](4123) -- (213);
+    \draw[->](3012) -- (012);
+    \draw[->](3012) -- (201);
+    \draw[->](3012) -- (021);
+    \draw[->](3012) -- (102);
 
-    \draw[->](4132) -- (132);
-    \draw[->](4132) -- (321);
-    \draw[->](4132) -- (213);
+    \draw[->](3021) -- (021);
+    \draw[->](3021) -- (210);
+    \draw[->](3021) -- (102);
 
-    \draw[->](4213) -- (213);
-    \draw[->](4213) -- (312);
-    \draw[->](4213) -- (132);
-    \draw[->](4213) -- (123);
+    \draw[->](3102) -- (102);
+    \draw[->](3102) -- (201);
+    \draw[->](3102) -- (021);
+    \draw[->](3102) -- (012);
 
-    \draw[->](4231) -- (231);
-    \draw[->](4231) -- (321);
-    \draw[->](4231) -- (213);
+    \draw[->](3120) -- (120);
+    \draw[->](3120) -- (210);
+    \draw[->](3120) -- (102);
 
-    \draw[->](4312) -- (312);
-    \draw[->](4312) -- (231);
-    \draw[->](4312) -- (123);
+    \draw[->](3201) -- (201);
+    \draw[->](3201) -- (120);
+    \draw[->](3201) -- (012);
 
-    \draw[->](4321) -- (321);
-    \draw[->](4321) -- (231);
-    \draw[->](4321) -- (123);
+    \draw[->](3210) -- (210);
+    \draw[->](3210) -- (120);
+    \draw[->](3210) -- (012);
 
-    \draw[->](123) -- (12);
-    \draw[->](123) -- (21);
-    \draw[->](132) -- (21);
-    \draw[->](132) -- (12);
-    \draw[->](213) -- (12);
-    \draw[->](231) -- (21);
-    \draw[->](312) -- (12);
-    \draw[->](312) -- (21);
-    \draw[->](321) -- (12);
-    \draw[->](321) -- (21);
+    \draw[->](012) -- (01);
+    \draw[->](012) -- (10);
+    \draw[->](021) -- (10);
+    \draw[->](021) -- (01);
+    \draw[->](102) -- (01);
+    \draw[->](120) -- (10);
+    \draw[->](201) -- (01);
+    \draw[->](201) -- (10);
+    \draw[->](210) -- (01);
+    \draw[->](210) -- (10);
 
-    \draw[->](12) -- (1);
-    \draw[->](21) -- (1);
+    \draw[->](01) -- (0);
+    \draw[->](10) -- (0);
 \end{tikzpicture}
 \begin{figure}
     \caption{Der Pancake-Graph $G_4$. Von Knoten $u$ verläuft genau dann eine gerichtete Kante nach Knoten $v$, wenn die zu $u$ zugehörige Permutation durch ein $\gamma_i$ in die zu $v$ zugehörige Permutation umgewandelt werden kann.}
@@ -266,12 +266,12 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
 \newpage
 
 Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
-Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 1,3,4,2$ und $p^* = 4, 2, 1, 3$:
+Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 0,2,3,1$ und $p^* = 3, 1, 0, 2$:
 \begin{align*}
-    \gamma_1 p = 2, 3, 1 \quad \gamma_1 p^* = 2, 1, 3 \\
-    \gamma_2 p = 1, 3, 2 \quad \gamma_2 p^* = 3, 1, 2 \\
-    \gamma_3 p = 3, 1, 2 \quad \gamma_3 p^* = 1, 3, 2 \\
-    \gamma_4 p = 3, 2, 1 \quad \gamma_4 p^* = 1, 2, 3
+    \gamma_0 p = 1, 2, 0 \quad \gamma_0 p^* = 1, 0, 2 \\
+    \gamma_1 p = 0, 2, 1 \quad \gamma_1 p^* = 2, 0, 1 \\
+    \gamma_2 p = 2, 0, 1 \quad \gamma_2 p^* = 0, 2, 1 \\
+    \gamma_3 p = 2, 1, 0 \quad \gamma_3 p^* = 0, 1, 2
 \end{align*}
 Die Ergebnisse der jeweiligen Anwendung von $\gamma_i$ liegen symmetrisch um die Mitte der Liste aller Permutationen von Länge 3. Mithilfe des Programms \emph{test\_sym.cpp} konnte diese Eigenschaft von $\gamma_i$ für alle symmetrisch gelegenen Paare an Permutationen bis Größe 10 bestätigt werden. Es scheint also, dass die Symmetrie des Pancake-Graphen allgemein gültig ist.
 
@@ -305,7 +305,7 @@ Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau d
     Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) = n! - \mu(p^*) - 1$.
 \end{definition}
 
-$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie dafür ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgendes Lemma benötigt.
+$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgendes Lemma benötigt.
 
 \begin{lemma}
     Sei $p$ eine Permutation der Länge $n$ und $p_i$ ein Element von $p$ $(0 \le i \le n - 1)$. Für jedes $0 \le j \le n-1, j \ne i$ ist entweder ($p_i < p_j$ und $p^*_i > p^*_j$) oder ($p_i > p_j$ und $p^*_i < p^*_j$).
@@ -430,7 +430,7 @@ Im Burnt Pancake Problem haben Pfannkuchen eine verbrannte Seite, die nach dem S
     \begin{align*}
         p = \sigma_0 p_0, \sigma_1 p_1, \dots, \sigma_{n-1} p_{n-1}
     \end{align*}
-    wobei $1 \le p_i \le n$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Wir nennen folgendes Problem das Burnt Pancake-Problem: Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in $I^n$ überführt wird?
+    wobei $0 \le p_i \le n-1$ und $\sigma_i \in \{-1, 1\}$ für $0 \le i \le n - 1$ sowie $p_i \ne p_j$ für $i \ne j$. Wir nennen folgendes Problem das Burnt Pancake-Problem: Was ist die minimale Anzahl an Präfixumkehrungen, wobei bei einer Präfixumkehrung auch alle Vorzeichen im umgekehrten Präfix invertiert werden, sodass $p$ in $I^n$ überführt wird und alle Vorzeichen positiv sind?
 \end{definition}
 $\sigma_i = -1$ bedeutet, dass der $i$-te Pfannkuchen die verbrannte Seite oben hat, andernfalls liegt die unverbrannte Seite oben.
 
@@ -480,7 +480,7 @@ In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt
 
 \noindent \emph{Brute-Force Lösung.} Wie der Name bereits sagt, werden einfach alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. Als einzige Ausnahme von dieser Definition enthält $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
 
-Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisiert, die bei $\mu(p)$ den $\mu$-Wert des Vorgängers von $p$ speichert. Um Speicher zu sparen, wird in der Warteschlange außerdem nicht die gesamte Permutation, sondern lediglich ihre Länge und ihr $\mu$-Wert, durch den sie eindeutig bestimmt ist, festgelgt. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
+Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisiert, die bei $\mu(p)$ den $\mu$-Wert des Vorgängers von $p$ speichert. Um Speicher zu sparen, wird in der Warteschlange außerdem nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
 
 \begin{algorithm}
     $Q \gets$ Queue containing $(|p|, \mu(p))$ \;
