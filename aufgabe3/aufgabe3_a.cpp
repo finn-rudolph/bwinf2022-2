@@ -26,6 +26,7 @@ unsigned get_lbound(vector<unsigned> const &p)
     return (num_monotone + 1) / 3;
 }
 
+// Bestimmt die untere Schranke nach der Anwendung von gamma_i auf p.
 unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
 {
     assert(i < p.size());
@@ -50,9 +51,9 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
     return (num_monotone + 1) / 3;
 }
 
-// Bestimmt, ob eine Folge an maximal ubound gamma-Operationen zum Sortieren
-// von p existiert (zweites Element). Falls ja, wird diese im ersten Element
-// zurückgegeben.
+// Bestimmt rekursiv die kürzestmögliche Folge and gamma-Operationen zum
+// Sortieren von p. Falls keine kürzere als ubound existiert, wird das zweite
+// Element der Rückgabe auf 0 gesetzt.
 pair<vector<unsigned>, bool> shortest_op_dfs_r(
     vector<unsigned> const &p, vector<unordered_set<size_t>> &vis,
     unsigned ubound = UINT_MAX)
@@ -73,9 +74,9 @@ pair<vector<unsigned>, bool> shortest_op_dfs_r(
     vector<unsigned> res;
     bool found_solution = 0;
 
-    // Gehe die durch eine gamma-Operation erreichbaren Permutationen
-    // aufsteigend nach unterer Schranke durch und bestimme rekursiv die
-    // kürzeste Operationenfolge.
+    // Gehe die Nachfolgerknoten (Permutationen, die durch eine gamma-Operation
+    // erreichbar sind) aufsteigend nach unterer Schranke durch und bestimme
+    // rekursiv die kürzeste Operationenfolge.
     while (!q.empty() && q.top().first < ubound)
     {
         auto [op, found] =
@@ -105,6 +106,8 @@ vector<unsigned> shortest_op_dfs(vector<unsigned> const &p)
     return res;
 }
 
+// Läuft den durch pre gegebenen Suchbaum hoch und sammelt die gamma-Operationen
+// auf dem Pfad ein.
 vector<unsigned> reconstruct_op(
     vector<unordered_map<size_t, size_t>> const &pre, size_t res_n, size_t res_i)
 {
@@ -115,6 +118,8 @@ vector<unsigned> reconstruct_op(
     {
         vector<unsigned> p = ith_permutation(n + 1, pre[n - 1].at(i));
 
+        // Suche nach der gamma-Operation, die den Vorgänger (p) in den
+        // Nachfolger (i-te Permutation der Länge n) umwandelt.
         for (size_t j = 0; j < n + 1; j++)
             if (ind_gamma(p, j) == i)
             {
@@ -143,6 +148,9 @@ struct node
     }
 };
 
+// Gibt die kürzestmögliche Folge an Gamma-Operationen zurück. Wie im A*-
+// Algorithmus werden die Blätter des Suchbaums in einer Prioritätswarte-
+// schlange gespeichert und aufsteigend nach unterer Schranke abgearbeitet.
 vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
 {
     // Speichert für jede Permutationsgröße die Indizes besuchter Permutationen
@@ -154,7 +162,7 @@ vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
     q.push({p.size(), ind(p), get_lbound(p)});
 
     unsigned ubound = p.size(); // aktuelle Oberschranke
-    size_t res_n = p.size(), res_i;
+    size_t res_n = SIZE_MAX;
 
     while (!q.empty() && q.top().lbound < ubound)
     {
@@ -167,7 +175,6 @@ vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
             if (p.size() - x.n < ubound)
             {
                 res_n = x.n;
-                res_i = x.i;
                 ubound = p.size() - x.n;
             }
             continue;
@@ -189,7 +196,7 @@ vector<unsigned> shortest_op_bfs(vector<unsigned> const &p)
         }
     }
 
-    return reconstruct_op(pre, res_n, res_i);
+    return reconstruct_op(pre, res_n, 0);
 }
 
 // Findet die kürzeste Folge an gamma-Operationen, um p in eine identische
@@ -223,7 +230,7 @@ vector<unsigned> shortest_op_bf(vector<unsigned> const &p)
         }
     }
 
-    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE); // Sollte nie erreicht werden.
 }
 
 int main(int argc, char *argv[])
@@ -238,7 +245,6 @@ int main(int argc, char *argv[])
         x--;
     }
 
-    precalc_factorial(n);
     vector<unsigned> op;
 
     if (argc == 2 && !strcmp(argv[1], "--dfs"))
