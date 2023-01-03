@@ -561,11 +561,79 @@ Eine obere Schranke ist für die Worst-Case Laufzeit ist folglich $O(n^3 \log n)
      & = c \frac {n^3 - 2n^2 + n} 8 (\log n - \Theta (1))
 \end{align*}
 Nach unten kann die Laufzeit also mit $\Omega(n^3 \log n)$ beschränkt werden. Da obere und untere Schranke übereinstimmen beträgt die Worst-Case Zeitkomplexität von \textsc{ReconstructOperations} $\Theta(n^3 \log n)$. Im Best Case gilt $m = n$ und die Zeitkomplexität beträgt $\Theta(1)$, da die while-Schleife nie ausgeführt wird.
+\bigskip
 
+\noindent \emph{Eine Unterschranke für $A(p)$.} Mit einer Unterschranke für die Anzahl an benötigten $\gamma_i$-Operationen wird es möglich sein, während der Suche manche Permutationen außer Acht zu lassen, da sie nicht zu einem besseren Ergebnis führen können. Wir betrachten die Anzahl an monoton steigenden oder fallenden Teilstrings in einer Permutation. Ein monoton steigender Teilstring $T$ von Länge $k$ einer Permutation $p$ ist eine Menge an Indizes $\{i, i + 1, \dots, i + k - 1\}$, so, dass $p_{j+1} > p_j$ für $i \le j \le i+ k - 2$ und $T$ bezüglich dieser Eigenschaft maximale Länge hat. Ein monton fallender Teilstring ist ähnlich definiert, nur gilt $p_{j + 1} < p_j$ für $i \le j \le i + k - 2$. Ein monotoner Teilstring ist ein monoton steigender oder fallender Teilstring. Nach dieser Definition ist ein Element von $p$, dessen Nachbarn beide größer oder kleiner sind, Teil von 2 monotonen Teilstrings. Die identische Permutation besteht offensichtlich nur aus einem monoton steigenden Teilstring. Mithilfe von folgendem Lemma kann dann einfach eine untere Schranke für $A(p)$ bestimmt werden.
 
-\noindent \emph{Eine Unterschranke für $A(p)$.}
+\begin{lemma}
+    Pro $\gamma_i$-Operation kann die Anzahl monotoner Teilstrings einer Permutation $p$ maximal um 3 reduziert werden.
+\end{lemma}
 
+\begin{proof}
+    Die Anzahl monotoner Teilstrings in $p$ wird im Folgenden $x$ genannt. Die Veränderung von $x$ durch eine $\gamma_i$-Operation wird $\Delta x$ genannt. Zunächst bemerkt man, dass sich die Zahl monotoner Teilstrings nur durch Hinzufügen bzw. Entfernen von Teilstrings, die $p_0$ oder $p_i$ enthalten, verändern kann. Wir unterscheiden zwei Fälle: Entweder ist $p_i$ Teil von zwei oder von einem monotonen Teilstring.
 
+    Im ersten Fall werden wieder einige Fälle unterschieden. Zunächst wird nur der Beitrag zu $\Delta x$ von Teilstrings mit $p_i$ betrachtet.
+
+    \begin{enumerate}
+        \item $p_{i + 1}$ ist Teil von zwei monotonen Teilstrings. Das bedeutet, $p_i, p_{i + 1}$ ist ein monotoner Teilstring von Länge 2.
+              \begin{enumerate}
+                  \item $p_{i - 1}$ ist Teil von zwei monotonen Teilstrings $\Longrightarrow \Delta x = - 2$.
+                  \item $p_{i - 1}$ ist Teil von einem monotonen Teilstring $\Longrightarrow \Delta x = - 1$.
+              \end{enumerate}
+        \item $p_{i + 1}$ ist Teil von einem montonen Teilstring.
+              \begin{enumerate}
+                  \item $p_{i - 1}$ ist Teil von zwei monotonen Teilstrings $\Longrightarrow \Delta x = - 1$.
+                  \item $p_{i - 1}$ ist Teil von einem monotonen Teilstring $\Longrightarrow \Delta x = 0$.
+              \end{enumerate}
+    \end{enumerate}
+
+    \noindent   Für den Beitrag von $p_0$ werden folgende Fälle unterschieden.
+
+    \begin{enumerate}
+        \item $p_0 < p_{i + 1}$
+              \begin{enumerate}
+                  \item $p_0 < p_1$
+                        \begin{enumerate}
+                            \item $p_{i + 1} < p_{i + 2} \Longrightarrow \Delta x = 0$
+                            \item $p_{i + 1} > p_{i + 2} \Longrightarrow \Delta x = 1$
+                        \end{enumerate}
+                  \item $p_0 > p_1$
+                        \begin{enumerate}
+                            \item $p_{i + 1} < p_{i + 2} \Longrightarrow \Delta x = -1$
+                            \item $p_{i + 1} > p_{i + 2} \Longrightarrow \Delta x = 0$
+                        \end{enumerate}
+              \end{enumerate}
+        \item $p_0 > p_{i + 1}$ Der Fall ist symmetrisch zu $p_0 < p_{i + 1}$.
+    \end{enumerate}
+
+    \noindent Man sieht, dass $\Delta x$ insgesamt nicht kleiner als $-3$ sein kann. Für den Fall, dass $p_i$ Teil von einem monotonen Teilstring ist, muss nur der Beitrag von $p_i$ neu betrachtet werden. Da aber bereits festgestellt wurde, dass nur Teilstrings, die $p_0$ oder $p_i$ enthalten, verschwinden können und $p_i$ nur Teil von einem monotonen Teilstring ist, gilt $\Delta x \ge -1$, sodass in allen Fällen $\Delta x \ge - 3$ ist.
+
+    Bisher wurde implizit angenommen, dass $1 \le i \le n - 3$ gilt, da $p_{i-1}, p_{i + 1}$ und $p_{i + 2}$ in Betracht gezogen wurden. Wenn $i = 1$ oder $i = n - 1$, gilt offensichtlich $\Delta x \in \{0, -1\}$. Wenn $i = n - 2$, gilt $\Delta x \ge -2$, was mit der gleichen Fallunterscheidung wie oben überprüft werden kann.
+\end{proof}
+
+Damit kann nun Folgendes gezeigt werden.
+
+\begin{theorem}
+    Sei $x$ die Anzahl monotoner Teilstrings einer Permutation $p$. Dann gilt
+    $$ A(p) \ge \bigg{\lfloor} \frac {x + 1} 3 \bigg{\rfloor} $$.
+\end{theorem}
+
+\begin{proof}
+    Die identische Permutation besitzt genau einen monotonen Teilstring, d. h. durch die $\gamma_i$-Operationen müssen insgesamt $x - 1$ monotone Teilstrings entfernt werden. Wenn $x - 1$ durch 3 teilbar ist, sind dafür nach Lemma 3 mindestens
+    \begin{align*}
+        \frac {x - 1} 3 = \frac {x - 1} 3 + \bigg{\lfloor} \frac 2 3 \bigg{\rfloor}
+        = \bigg{\lfloor} \frac {x - 1} 3 + \frac 2 3 \bigg{\rfloor} =
+        \bigg{\lfloor} \frac {x + 1} 3 \bigg{\rfloor}
+    \end{align*}
+    Operationen nötig. Wenn $x - 1 \equiv 1 \bmod 3$, ist neben den mindestens $(x - 2)/3$ Operationen mit $\Delta x = -3$ noch mindestens eine weitere Operation nötig. Insgesamt ergibt sich eine Unterschranke von
+    \begin{align*}
+        \frac {x - 2} 3 + 1 = \frac {x - 2} 3 + \frac 3 3 = \frac {x + 1} 3
+    \end{align*}
+    Für $x - 1 \equiv 2 \bmod 3$ sind mindestens $x - 3$ Operationen mit $\Delta x = -3$ und eine weitere erforderlich.
+    \begin{align*}
+        \frac {x - 3} 3 + 1 = \frac x 3 = \bigg{\lfloor} \frac {x + 1} 3 \bigg{\rfloor} \quad (\text{da } x \equiv 0 \bmod 3)
+    \end{align*}
+\end{proof}
 
 \subsection{Berechnung der PWUE-Zahl}
 
