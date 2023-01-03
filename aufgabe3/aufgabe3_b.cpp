@@ -2,104 +2,83 @@
 #include "util.hpp"
 using namespace std;
 
-unsigned perm_type(
-    vector<unsigned> const &p, array<vector<size_t>, 3> const &y)
+struct node
 {
-    if (!ind(p))
-        return 3;
-
-    unsigned type = 0;
-
-    for (size_t i = 0; i < p.size(); i++)
-    {
-        size_t j = ind_gamma(p, i);
-
-        if (binary_search(y[0].begin(), y[0].end(), j))
-            type = max(type, 0U);
-        else if (binary_search(y[1].begin(), y[1].end(), j))
-            type = max(type, 1U);
-        else if (binary_search(y[2].begin(), y[2].end(), j))
-            type = max(type, 2U);
-        else
-            type = 3;
-    }
-
-    return type;
-}
+    uint8_t a, c;
+};
 
 int main()
 {
-    size_t n;
-    cin >> n;
+    size_t n, m;
+    cin >> n >> m;
 
-    if (n == 1)
+    array<vector<uint8_t>, 2> y;
+    y[0] = {0};
+
+    for (size_t k = 2; k <= m; k++)
     {
-        cout << "P(1) = 0\n"
-             << "Beispiel für eine Permutation p mit A(p) = 0: 1\n";
-        return 0;
-    }
-    if (n == 2)
-    {
-        cout << "P(2) = 1\n"
-             << "Beispiel für eine Permutation p mit A(p) = 1: 2 1\n";
-        return 0;
-    }
+        y[1].resize(y[0].size() * k);
+        vector<unsigned> p(k);
 
-    precalc_factorial(n);
-    array<vector<size_t>, 3> y, z;
-    y[0] = {3};
-    y[1] = {1, 2, 4, 5};
-    y[2] = {0};
-    unsigned y_steps = 2, z_steps = 2;
+        for (size_t i = 0; i < k; i++)
+            p[i] = i;
+        size_t j = 0;
 
-    for (size_t k = 4; k <= n; k++)
-    {
-        vector<unsigned> p(k - 1);
-        vector<pair<size_t, unsigned>> q;
-
-        for (unsigned a = 0; a < 3; a++)
-            for (size_t l : y[a])
-            {
-                ith_permutation(k - 1, l, p);
-                for (size_t i = 0; i < k; i++)
-                    for (size_t r = 0; r < k; r++)
-                        q.emplace_back(make_pair(ind_gamma_inv(p, i, r), a));
-            }
-
-        cout << q.size() << '\n';
-        sort(q.begin(), q.end());
-        for (size_t i = 0; i < q.size(); i++)
+        do
         {
-            if (i + k - 1 < q.size() && q[i + k - 1].first == q[i].first)
-                z[q[i + k - 1].second].push_back(q[i].first);
+            y[1][j] = k;
+            for (size_t i = 0; i < k; i++)
+                y[1][j] = min<uint8_t>(y[1][j], y[0][ind_gamma(p, i)] + 1);
+            j++;
+        } while (next_permutation(p.begin(), p.end()));
+
+        y[1][0] = 0;
+        swap(y[0], y[1]);
+    }
+
+    array<unordered_map<size_t, node>, 2> z;
+    for (size_t i = 0; i < y[0].size(); i++)
+        z[0][i] = {y[0][i], 0};
+    y[0].clear();
+    y[1].clear();
+
+    for (size_t k = m; k < n; k++)
+    {
+        for (auto const &[i, x] : z[0])
+        {
+            vector<unsigned> p = ith_permutation(k, i);
+            for (size_t j = 0; j < k; j++)
+                for (size_t r = 0; r < k; r++)
+                {
+                    auto it = z[1].find(ind(gamma_inv(p, j, r)));
+                    if (it == z[1].end())
+                        z[1][ind(gamma_inv(p, j, r))] = (node){x.a + 1, 1};
+                    else
+                    {
+                        it->second.a = min<uint8_t>(it->second.a, x.a + 1);
+                        it->second.c++;
+                    }
+                }
         }
 
-        swap(y, z);
-
-        if (!y[2][0])
-            y[2].erase(y[2].begin());
-
-        if (y[0].empty())
-        {
-            swap(y[0], y[1]);
-            swap(y[1], y[2]);
-        }
-        else
-            z_steps++;
-
-        if (k == 4)
-            y[2].push_back(0);
-
-        z[0].clear();
-        z[1].clear();
-        z[2].clear();
-
-        y_steps = z_steps;
+        for (auto const &[i, x] : z[1])
+            if (i && x.c == k)
+                z[0][i] = x;
     }
 
-    cout << "P(" << n << ") = " << y_steps << '\n'
-         << "Beispiel für eine Permutation p mit A(p) = " << y_steps << ": ";
-    for (unsigned x : ith_permutation(n, y[0][0]))
-        cout << x + 1 << ' ';
+    size_t max_a = 0, example_i = -1;
+    for (auto const &[i, x] : z[0])
+    {
+        if (x.a > max_a)
+        {
+            max_a = x.a;
+            example_i = i;
+        }
+    }
+
+    cout << "P(" << n << ") = " << max_a << '\n'
+         << "Beispiel für eine Permutation p mit A(p) = " << max_a << ": ";
+    for (unsigned x : ith_permutation(n, example_i))
+        cout << x << ' ';
     cout << '\n';
 }
