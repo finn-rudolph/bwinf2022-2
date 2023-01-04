@@ -2,15 +2,15 @@
 #include "util.hpp"
 using namespace std;
 
-struct node
-{
-    uint8_t a, c;
-};
-
 int main()
 {
     size_t n, m;
     cin >> n >> m;
+
+    vector<uint64_t> factorial(n + 1);
+    factorial[0] = 1;
+    for (size_t i = 1; i <= n; i++)
+        factorial[i] = factorial[i - 1] * i;
 
     array<vector<uint8_t>, 2> y;
     y[0] = {0};
@@ -36,49 +36,72 @@ int main()
         swap(y[0], y[1]);
     }
 
-    array<unordered_map<size_t, node>, 2> z;
-    for (size_t i = 0; i < y[0].size(); i++)
-        z[0][i] = {y[0][i], 0};
-    y[0].clear();
-    y[1].clear();
+    vector<unordered_map<size_t, pair<uint8_t, uint8_t>>> z(n + 1);
+    size_t a_max = 0, example = 0;
 
-    for (size_t k = m; k < n; k++)
+    for (size_t i_m = 0; i_m < y[0].size(); i_m++)
     {
-        for (auto const &[i, x] : z[0])
+        queue<pair<size_t, uint8_t>> q;
+        q.push({i_m, y[0][i_m]});
+
+        for (size_t k = m; k < n; k++)
         {
-            vector<unsigned> p = ith_permutation(k, i);
-            for (size_t j = 0; j < k; j++)
-                for (size_t r = 0; r < k; r++)
+            while (!q.empty())
+            {
+                auto const [i, a] = q.front();
+                q.pop();
+
+                vector<unsigned> const p = ith_permutation(k, i);
+
+                for (size_t j = 0; j < k + 1; j++)
                 {
-                    auto it = z[1].find(ind(gamma_inv(p, j, r)));
-                    if (it == z[1].end())
-                        z[1][ind(gamma_inv(p, j, r))] = (node){x.a + 1, 1};
-                    else
+                    vector<unsigned> const s = inv_permutation(gamma_inv(p, j, k));
+                    size_t mu = ind(gamma_inv(p, j, 0));
+
+                    for (size_t r = 0; r < k + 1; r++)
                     {
-                        it->second.a = min<uint8_t>(it->second.a, x.a + 1);
-                        it->second.c++;
+                        auto it = z[k + 1].find(mu);
+                        if (it == z[k + 1].end())
+                            z[k + 1].emplace(mu, make_pair<uint8_t, uint8_t>(a + 1, 1));
+                        else
+                        {
+                            it->second.first = min<uint8_t>(it->second.first, a + 1);
+                            it->second.second++;
+                        }
+
+                        if (s[r] < j)
+                            mu -= factorial[k - s[r]];
+                        else if (s[r] > j)
+                            mu += factorial[k - j];
                     }
                 }
+            }
+
+            auto it = z[k + 1].begin();
+            while (it != z[k + 1].end())
+            {
+                if (it->second.second == k + 1)
+                {
+                    if (it->first)
+                        q.emplace(it->first, it->second.first);
+                    it = z[k + 1].erase(it);
+                }
+                else
+                    it++;
+            }
         }
 
-        for (auto const &[i, x] : z[1])
-            if (i && x.c == k)
-                z[0][i] = x;
-    }
-
-    size_t max_a = 0, example_i = -1;
-    for (auto const &[i, x] : z[0])
-    {
-        if (x.a > max_a)
+        if (!q.empty())
         {
-            max_a = x.a;
-            example_i = i;
+            example = q.front().first;
+            a_max = q.front().second;
+            break;
         }
     }
 
-    cout << "P(" << n << ") = " << max_a << '\n'
-         << "Beispiel für eine Permutation p mit A(p) = " << max_a << ": ";
-    for (unsigned x : ith_permutation(n, example_i))
-        cout << x << ' ';
+    cout << "P(" << n << ") = " << a_max << '\n'
+         << "Beispiel für eine Permutation p mit A(p) = " << a_max << ": ";
+    for (unsigned x : ith_permutation(n, example))
+        cout << x + 1 << ' ';
     cout << '\n';
 }
