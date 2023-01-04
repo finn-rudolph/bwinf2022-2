@@ -4,104 +4,58 @@ using namespace std;
 
 int main()
 {
-    size_t n, m;
-    cin >> n >> m;
+    size_t n;
+    cin >> n;
 
-    vector<uint64_t> factorial(n + 1);
-    factorial[0] = 1;
-    for (size_t i = 1; i <= n; i++)
-        factorial[i] = factorial[i - 1] * i;
+    uint8_t *y = (uint8_t *)malloc(sizeof(uint8_t)),
+            *z = (uint8_t *)malloc(sizeof(uint8_t));
+    y[0] = 0;
+    size_t u = 1, v = 1;
 
-    array<vector<uint8_t>, 2> y;
-    y[0] = {0};
-
-    for (size_t k = 2; k <= m; k++)
+    for (size_t k = 2; k < n; k++)
     {
-        y[1].resize(y[0].size() * k);
-        vector<unsigned> p(k);
+        u *= k;
+        z = (uint8_t *)realloc(z, u * sizeof(uint8_t));
 
+        vector<unsigned> p(k);
         for (size_t i = 0; i < k; i++)
             p[i] = i;
-        size_t j = 0;
 
-        do
+        for (size_t i = 0; i < u / 2; i++)
         {
-            y[1][j] = k;
-            for (size_t i = 0; i < k; i++)
-                y[1][j] = min<uint8_t>(y[1][j], y[0][ind_gamma(p, i)] + 1);
-            j++;
-        } while (next_permutation(p.begin(), p.end()));
+            z[i] = k;
+            z[u - i - 1] = k;
+            for (size_t j = 0; j < k; j++)
+            {
+                size_t const l = ind_gamma(p, j);
+                z[i] = min<uint8_t>(z[i], y[l] + 1);
+                z[u - i - 1] = min<uint8_t>(z[u - i - 1], y[v - l - 1] + 1);
+            }
 
-        y[1][0] = 0;
-        swap(y[0], y[1]);
+            next_permutation(p.begin(), p.end());
+        }
+
+        z[0] = 0;
+        swap(y, z);
+        v *= k;
     }
 
-    vector<unordered_map<size_t, pair<uint8_t, uint8_t>>> z(n + 1);
-    size_t a_max = 0, example = 0;
+    u *= n;
+    unsigned max_a = 0;
+    vector<unsigned> p(n);
+    for (size_t i = 0; i < n; i++)
+        p[i] = i;
 
-    for (size_t i_m = 0; i_m < y[0].size(); i_m++)
+    for (size_t i = 0; i < u; i++)
     {
-        queue<pair<size_t, uint8_t>> q;
-        q.push({i_m, y[0][i_m]});
+        unsigned a = n;
 
-        for (size_t k = m; k < n; k++)
-        {
-            while (!q.empty())
-            {
-                auto const [i, a] = q.front();
-                q.pop();
+        for (size_t j = 0; j < n; j++)
+            a = min<unsigned>(a, y[ind_gamma(p, j)] + 1);
 
-                vector<unsigned> const p = ith_permutation(k, i);
-
-                for (size_t j = 0; j < k + 1; j++)
-                {
-                    vector<unsigned> const s = inv_permutation(gamma_inv(p, j, k));
-                    size_t mu = ind(gamma_inv(p, j, 0));
-
-                    for (size_t r = 0; r < k + 1; r++)
-                    {
-                        auto it = z[k + 1].find(mu);
-                        if (it == z[k + 1].end())
-                            z[k + 1].emplace(mu, make_pair<uint8_t, uint8_t>(a + 1, 1));
-                        else
-                        {
-                            it->second.first = min<uint8_t>(it->second.first, a + 1);
-                            it->second.second++;
-                        }
-
-                        if (s[r] < j)
-                            mu -= factorial[k - s[r]];
-                        else if (s[r] > j)
-                            mu += factorial[k - j];
-                    }
-                }
-            }
-
-            auto it = z[k + 1].begin();
-            while (it != z[k + 1].end())
-            {
-                if (it->second.second == k + 1)
-                {
-                    if (it->first)
-                        q.emplace(it->first, it->second.first);
-                    it = z[k + 1].erase(it);
-                }
-                else
-                    it++;
-            }
-        }
-
-        if (!q.empty())
-        {
-            example = q.front().first;
-            a_max = q.front().second;
-            break;
-        }
+        max_a = max(max_a, a);
+        next_permutation(p.begin(), p.end());
     }
 
-    cout << "P(" << n << ") = " << a_max << '\n'
-         << "Beispiel für eine Permutation p mit A(p) = " << a_max << ": ";
-    for (unsigned x : ith_permutation(n, example))
-        cout << x + 1 << ' ';
-    cout << '\n';
+    cout << "P(" << n << ") = " << max_a << '\n';
 }
