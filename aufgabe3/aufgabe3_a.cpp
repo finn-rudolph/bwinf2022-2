@@ -116,7 +116,7 @@ vector<unsigned> reconstruct_op(
 
     while (m < pre.size())
     {
-        vector<unsigned> s = ith_permutation(m + 1, pre[m - 1].at(i));
+        vector<unsigned> const s = ith_permutation(m + 1, pre[m - 1].at(i));
 
         // Suche nach der gamma-Operation, die den Vorgänger (p) in den
         // Nachfolger (i-te Permutation der Länge n) umwandelt.
@@ -135,7 +135,7 @@ vector<unsigned> reconstruct_op(
     return op;
 }
 
-// Speichert Index, Länge, untere Schranke
+// Speichert Index, Länge, untere Schranke.
 typedef tuple<size_t, unsigned, unsigned> node;
 
 inline bool node_compare(node const &x, node const &y)
@@ -147,9 +147,9 @@ inline bool node_compare(node const &x, node const &y)
     return get<2>(x) > get<2>(y);
 }
 
-// Gibt die kürzestmögliche Folge an Gamma-Operationen zurück. Wie im A*-
-// Algorithmus werden die Blätter des Suchbaums in einer Prioritätswarte-
-// schlange gespeichert und aufsteigend nach unterer Schranke abgearbeitet.
+// Gibt die kürzestmögliche Folge an gamma-Operationen zurück. Wie im A*-
+// Algorithmus werden die Blätter der Suche in einer Prioritätswarteschlange
+// gespeichert und aufsteigend nach unterer Schranke abgearbeitet.
 vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 {
     // Speichert für jede Permutationsgröße die Indizes besuchter Permutationen
@@ -207,6 +207,7 @@ vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 {
     vector<unordered_map<size_t, size_t>> pre(p.size());
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
+
     // Speichert Länge und Index jedes Blatts im Suchbaum.
     queue<pair<size_t, size_t>> q;
     q.push({p.size(), ind(p)});

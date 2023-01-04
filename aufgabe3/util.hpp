@@ -12,8 +12,6 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i);
 
 vector<unsigned> gamma_inv(vector<unsigned> const &p, size_t i, unsigned r);
 
-void ith_permutation(size_t n, size_t i, vector<unsigned> &p);
-
 vector<unsigned> ith_permutation(size_t n, size_t i);
 
 vector<unsigned> rev_and_eat(vector<unsigned> const &p, size_t i);

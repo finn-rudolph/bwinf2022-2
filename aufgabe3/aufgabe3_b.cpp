@@ -55,10 +55,13 @@ int main()
     size_t n;
     cin >> n;
 
+    // Arrays zum Speichern von A(p) aller Permutationen einer bestimmten Länge.
+    // y[i] = A(p), wenn ind(p) = i. In z werden dann die A(p) der
+    // nächstgrößeren Permutationen hineingeschrieben.
     uint8_t *y = (uint8_t *)malloc(sizeof(uint8_t)),
             *z = (uint8_t *)malloc(sizeof(uint8_t));
     y[0] = 0;
-    size_t u = 1, v = 1; // In der Schleife k!, (k - 1)!
+    size_t u = 1, v = 1; // In der for-Schleife gilt u = k!, v = (k - 1)!
     unsigned const n_threads = thread::hardware_concurrency();
 
     for (size_t k = 2; k < n; k++)

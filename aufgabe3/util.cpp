@@ -2,9 +2,11 @@
 #include "util.hpp"
 using namespace std;
 
+// Berechnet den Index von p in einer lexikographisch sortierten Liste aller
+// |p|! Permutationen der Länge |p|.
 size_t ind(vector<unsigned> const &p)
 {
-    size_t k = 0;
+    size_t k = 0; // Der Index von p.
     size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
     unsigned tree[2 * m];
     memset(tree, 0, 2 * m * sizeof(unsigned));
@@ -14,8 +16,12 @@ size_t ind(vector<unsigned> const &p)
         size_t z = m + p[j];
         k *= (p.size() - j);
         k += p[j];
+
+        // Angefangen beim p[j]-ten Blatt wird der Segmentbaum nach oben
+        // durchlaufen.
         for (size_t l = 0; l < lgn; l++)
         {
+            // Die Anzahl links gelegener, kleinerer Elemente wird abgezogen.
             if (z & 1)
                 k -= tree[z - 1];
             tree[z]++;
@@ -39,6 +45,7 @@ vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
     return q;
 }
 
+// Berechnet den Index von gamma_i p.
 size_t ind_gamma(vector<unsigned> const &p, size_t i)
 {
     size_t k = 0;
@@ -46,6 +53,8 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     unsigned tree[2 * m];
     memset(tree, 0, 2 * m * sizeof(unsigned));
 
+    // Die Elemente vor i werden in umgekehrter Reihenfolge bearbeitet. Das j-te
+    // Element gamma_i p ist das (i - j - 1)-te Element von p, für j < i.
     for (size_t j = 0; j < i; j++)
     {
         unsigned const x = p[i - j - 1] - (p[i - j - 1] > p[i]);
@@ -81,6 +90,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     return k;
 }
 
+// Gibt eine Permutation q zurück, sodass gamma_i q = p und q_i = r.
 vector<unsigned> gamma_inv(vector<unsigned> const &p, size_t i, unsigned r)
 {
     assert(i < p.size() + 1);
@@ -97,9 +107,11 @@ vector<unsigned> gamma_inv(vector<unsigned> const &p, size_t i, unsigned r)
     return q;
 }
 
-void ith_permutation(size_t n, size_t i, vector<unsigned> &p)
+vector<unsigned> ith_permutation(size_t n, size_t i)
 {
-    // Berechne die Ziffern von i im fakultätsbasierten Zahlensystem.
+    vector<unsigned> p(n);
+
+    // Die Ziffern von i im fakultätsbasierten Zahlensystem werden berechnet.
     for (size_t j = 1; j <= n; j++)
     {
         p[n - j] = i % j;
@@ -108,7 +120,7 @@ void ith_permutation(size_t n, size_t i, vector<unsigned> &p)
 
     size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
     unsigned tree[2 * m];
-    for (size_t l = 0; l <= lgn; l++)
+    for (size_t l = 0; l <= lgn; l++) // Initialisiere den Baum mit Einsen.
         for (size_t j = 0; j < (1ULL << l); j++)
             tree[(1 << l) + j] = 1 << (lgn - l);
 
@@ -119,21 +131,19 @@ void ith_permutation(size_t n, size_t i, vector<unsigned> &p)
         {
             tree[z]--;
             z <<= 1;
+            // Wenn nach rechts gegangen wird, muss die Anahl benötigter,
+            // kleinerer Elemente entsprechend verringert werden.
             if (p[j] >= tree[z])
                 p[j] -= tree[z++];
         }
         tree[z] = 0;
         p[j] = z - m;
     }
-}
 
-vector<unsigned> ith_permutation(size_t n, size_t i)
-{
-    vector<unsigned> p(n);
-    ith_permutation(n, i, p);
     return p;
 }
 
+// Die eigentliche Wende-und-Ess-Operation.
 vector<unsigned> rev_and_eat(vector<unsigned> const &p, size_t i)
 {
     vector<unsigned> q(p.size() - 1);
