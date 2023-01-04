@@ -505,7 +505,7 @@ Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisi
         }
     }
 
-    \caption{\textsc{MinOperationsBF}$(p)$}
+    \caption{\textsc{MinOperationsBFS}$(p)$}
 \end{algorithm}
 
 \noindent Um die durchgeführten $\gamma_i$-Operationen aus \emph{pre} zu rekonstruieren, wird der aus der Breitensuche entstehende Baum von unten nach oben durchlaufen. Auf dem direkten Vorgänger wird jede mögliche $\gamma_i$-Operation ausprobiert, bis die Richtige gefunden ist.
@@ -513,7 +513,7 @@ Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisi
 \begin{algorithm}
     $t \gets$ empty Array \;
 
-    \While{$m < \mathrm{size}$ $\mathrm{of}$ $pre$}{
+    \While{$m < n$}{
         $s \gets$ \textsc{IthPermutation}$(m + 1, pre[m - 1][i])$ \;
 
         \For{$j \gets 0$ \KwTo $m + 1$}
@@ -538,29 +538,6 @@ Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisi
 Zur Berechnung von $\mu(p)$ wird wieder das fakultätsbasierte Zahlensystem zur Hilfe gezogen, indem zunächst die Ziffern von $\mu(p)$ berechnet werden. Dafür wird folgende Eigenschaft verwendet: $\mu(p)_i$ entspricht genau $p_i$ minus der Anzahl links gelegener, kleinerer Elemente in $p$ \cite{permutationranking}. Damit redziert sich das Problem darauf, die Anzahl kleinerer, links gelegener Elemente von $p_i$ zu zählen. Das kann mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element gelöst werden, sodass sich insgesamt eine Zeitkomplexität von $\Theta(n \log n)$ ergibt.
 
 Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Ziffern von $\mu(p)$ im fakultätsbasierten Zahlensystem durch wiederholtes Teilen mit Rest bestimmt. Wie bei der Berechnung der Ziffern einer Zahl im Binärsystem sind die Ziffern die Reste der Folge von Divisionen, nur dass der Divisor nicht konstant ist, sondern zuerst 1, dann 2, 3 und so weiter. Die Indizes von $p$ werden anschließend aufsteigend bearbeitet, man nehme also im Folgenden an, dass $p_i$ gerade bestimmt werden soll und $p_j$ für $j < i$ bereits bekannt ist. Mit der Tatsache, dass $\mu(p)_i$ genau $p_i$ minus der Anzahl kleinerer, links gelegener Elemente ist, reduziert sich das Problem darauf, zu bestimmen, welchen Wert $p_i$ annehmen muss, sodass es genau $\mu(p)_i$ kleinere Elemente links davon gibt. Auch das lässt sich mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element lösen. Für ihn gilt folgende Invariante: Ist ein Element $y$ noch nicht aufgetreten, steht eine 1 bei Index $y-1$, andernfalls eine 0. Zur Bestimmung von $p_i$ wird der Segmentbaum von oben nach unten heruntergelaufen und die Schritte so gewählt, dass die Summe links gelegener Elemente genau $\mu(p)_i$ ist. Aber dadurch landet man genau bei dem $p_i$-ten Element des Segmentbaums, denn links liegen $\mu(p)_i$ Einsen plus die Anzahl bereits aufgetretener, kleinerer Elemente, die im Segmentbaum bereits auf 0 gesetzt wurden. Nun wird auch $p_i$ im Segmentbaum auf 0 gesetzt und so die Invariante erhalten. Insgesamt erhält man auch hier eine Zeitkomplexität von $\Theta(n \log n)$.
-\bigskip
-
-\noindent \emph{Laufzeitanalyse.} Die Gesamtlaufzeit des Brute-Force Algorithms wird durch die Anzahl besuchter Knoten auf jeder Ebene und die Zeit pro Knoten abgeschätzt. Anschließend wird die Zeit von \textsc{ReconstructOperations} addiert. Von Länge $n$ wird genau eine Permutation, $p$, besucht. Davon ausgehend gibt es $n$ Möglichkeiten für eine $\gamma_i$-Operation, also werden maximal $n$ Permutationen der Länge $n - 1$ besucht. Diese Argumentation lässt sich rekursiv fortführen, es werden also maximal $n! / k!$ Knoten der Länge $k$ besucht. Für kleine $k$ ist $n! / k!$ jedoch größer als $k!$, da es aber nur $k!$ Permutationen der Länge $k$ gibt und kein Knoten doppelt besucht wird, kann die Anzahl besuchter Knoten durch $\min(n! / k!, k!)$ beschränkt werden. Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$.
-
-In \textsc{ReconstructOperations} wird die while-Schleife maximal $n - m$ Mal durchgeführt, da $m$ in jeder Iteration um 1 erhöht wird. Die for-Schleife durchläuft jeweils $m + 2$ Iterationen und in jeder wird einmal $\mu(s)$ berechnet, wobei $|s| = m+1$ gilt. Im schlechtesten Fall, wenn $m = 1$, kann die Laufzeit wie folgt beschränkt werden, wobei $c$ eine positive Konstante ist.
-\begin{align*}
-    \sum_{m = 1}^n \sum_{j = 0}^{m+1} \Theta(m \log m)
-     & = \sum_{m = 1}^n \sum_{j = 0}^{m+1} cm \log m \\
-     & = c \sum_{m = 1}^n (m + 2)m \log m            \\
-     & = c \sum_{m = 1}^n m^2 \log m + 2 m \log m    \\
-     & \le c \sum_{m = 1}^n n^2 \log n  + 2 n \log n \\
-     & = cn^3 \log n + 2cn^2 \log n                  \\
-\end{align*}
-Eine obere Schranke ist für die Worst-Case Laufzeit ist folglich $O(n^3 \log n)$. Für eine untere Schranke gilt
-\begin{align*}
-    \sum_{m = 1}^n \sum_{j = 0}^{m+1} cm \log m
-     & = c \sum_{m = 1}^n m^2 \log m                                                                                                          \\
-     & \ge c \sum_{m = \lfloor n / 2 \rfloor}^{n} \bigg{\lfloor} \frac {n} {2} \bigg{\rfloor} ^2 \log \bigg{\lfloor} \frac n 2 \bigg{\rfloor} \\
-     & = c \bigg{\lceil} \frac n 2 \bigg{\rceil} \bigg{\lfloor} \frac n 2 \bigg{\rfloor} ^2 (\log n - \Theta (1))                             \\
-     & \ge c \frac {n(n - 1)^2}  8 (\log n - \Theta (1))                                                                                      \\
-     & = c \frac {n^3 - 2n^2 + n} 8 (\log n - \Theta (1))
-\end{align*}
-Nach unten kann die Laufzeit also mit $\Omega(n^3 \log n)$ beschränkt werden. Da obere und untere Schranke übereinstimmen beträgt die Worst-Case Zeitkomplexität von \textsc{ReconstructOperations} $\Theta(n^3 \log n)$. Im Best Case gilt $m = n$ und die Zeitkomplexität beträgt $\Theta(1)$, da die while-Schleife nie ausgeführt wird.
 \bigskip
 
 \noindent \emph{Eine Unterschranke für $A(p)$.} Mit einer Unterschranke für die Anzahl an benötigten $\gamma_i$-Operationen wird es möglich sein, während der Suche manche Permutationen außer Acht zu lassen, da sie nicht zu einem besseren Ergebnis führen können. Wir betrachten die Anzahl an monoton steigenden oder fallenden Teilstrings in einer Permutation. Ein monoton steigender Teilstring $T$ von Länge $k$ einer Permutation $p$ ist eine Menge an Indizes $\{i, i + 1, \dots, i + k - 1\}$, so, dass $p_{j+1} > p_j$ für $i \le j \le i+ k - 2$ und $T$ bezüglich dieser Eigenschaft maximale Länge hat. Ein monton fallender Teilstring ist ähnlich definiert, nur gilt $p_{j + 1} < p_j$ für $i \le j \le i + k - 2$. Ein monotoner Teilstring ist ein monoton steigender oder fallender Teilstring. Nach dieser Definition ist ein Element von $p$, dessen Nachbarn beide größer oder kleiner sind, Teil von 2 monotonen Teilstrings. Die identische Permutation besteht offensichtlich nur aus einem monoton steigenden Teilstring. Mithilfe von folgendem Lemma kann dann einfach eine untere Schranke für $A(p)$ bestimmt werden.
@@ -754,6 +731,63 @@ Die Knoten werden in $Q$ als 3-Tupels mit Index, Länge und unterer Schranke ges
 \end{algorithm}
 
 \noindent Beim rekursiven Aufruf muss \emph{ubound} um 1 verringert werden, da durch die $\gamma_i$-Operation auf $p$ nun eine $\gamma_i$-Operation weniger zur Verfügung steht. In \emph{better} wird gespeichert, ob einer der Nachfolgerknoten zu einem neuen besten Ergebnis führen kann.
+\bigskip
+
+\noindent \emph{Laufzeitanalyse.} Zunächst wird die Laufzeit von \textsc{ReconstructOperations} abgeschätzt. In \textsc{ReconstructOperations} wird die while-Schleife maximal $n - m$ Mal durchgeführt, da $m$ in jeder Iteration um 1 erhöht wird. Die for-Schleife durchläuft jeweils $m + 2$ Iterationen und in jeder wird einmal $\mu(s)$ berechnet, wobei $|s| = m+1$ gilt. Im schlechtesten Fall, wenn $m = 1$, kann die Laufzeit wie folgt beschränkt werden. ($c$ ist eine positive Konstante.)
+\begin{align*}
+    \sum_{m = 1}^n \sum_{j = 0}^{m+1} \Theta(m \log m)
+     & = \sum_{m = 1}^n \sum_{j = 0}^{m+1} cm \log m \\
+     & = c \sum_{m = 1}^n (m + 2)m \log m            \\
+     & = c \sum_{m = 1}^n m^2 \log m + 2 m \log m    \\
+     & \le c \sum_{m = 1}^n n^2 \log n  + 2 n \log n \\
+     & = cn^3 \log n + 2cn^2 \log n                  \\
+\end{align*}
+Eine obere Schranke ist für die Worst Case-Laufzeit ist folglich $O(n^3 \log n)$. Für eine untere Schranke im Worst Case gilt
+\begin{align*}
+    \sum_{m = 1}^n \sum_{j = 0}^{m+1} cm \log m
+     & = c \sum_{m = 1}^n m^2 \log m                                                                                                          \\
+     & \ge c \sum_{m = \lfloor n / 2 \rfloor}^{n} \bigg{\lfloor} \frac {n} {2} \bigg{\rfloor} ^2 \log \bigg{\lfloor} \frac n 2 \bigg{\rfloor} \\
+     & = c \bigg{\lceil} \frac n 2 \bigg{\rceil} \bigg{\lfloor} \frac n 2 \bigg{\rfloor} ^2 (\log n - \Theta (1))                             \\
+     & \ge c \frac {n(n - 1)^2}  8 (\log n - \Theta (1))                                                                                      \\
+     & = c \frac {n^3 - 2n^2 + n} 8 (\log n - \Theta (1))
+\end{align*}
+Nach unten kann die Laufzeit also mit $\Omega(n^3 \log n)$ beschränkt werden. Da obere und untere Schranke übereinstimmen beträgt die Worst-Case Zeitkomplexität von \textsc{ReconstructOperations} $\Theta(n^3 \log n)$. Im Best Case gilt $m = n$ und die Zeitkomplexität beträgt $\Theta(1)$, da die while-Schleife nie ausgeführt wird.
+
+Um die Laufzeit der drei Algorithmen für Teilaufgabe a) begrenzen zu können, wird eine obere Schranke für die Suchtiefe benötigt. Die beste Schranke wäre natürlich $P(n)$, die Funktion kann aber nicht als geschlossener Ausdruck geschrieben werden. Daher wird folgende Oberschranke für $A(p)$ verwendet.
+
+\begin{lemma}
+    $A(p) \le \Big{\lceil} \frac {2n} 3 \Big{\rceil}$
+\end{lemma}
+
+\begin{proof}
+    Wir betrachten folgenden Algorithmus zum Sortieren von $p$:
+    \begin{enumerate}
+        \item Sei $i$ der Index des größten Elements von $p$, das nicht in einem sortierten Suffix liegt. Führe die Operation $\gamma_{i+1}$ aus. Damit wird das größte, noch nicht einsortierte Element nach vorne gebracht.
+        \item Führe die Operation $\gamma_{j-1}$ aus, wobei $j$ der kleinste Index eines Elements im sortierten Suffix ist.
+    \end{enumerate}
+    Da immer das größte Element, das nicht im sortierten Suffix liegt, gewählt wird, wird das sortierte Suffix mit jeder Ausführung dieser zwei Schritte um ein Element vergrößtert. Da gleichzeitig zwei Elemente aus $p$ entfernt werden, besteht $p$ spätestens nach $\lceil 2n / 3 \rceil$ Schritten nur noch aus dem sortierten Suffix.
+\end{proof}
+
+Dass die Oberschranke nicht schlecht ist, zeigt das Beispiel $n = 3$. Denn $P(3) = 2$, und die Oberschranke für 3 wäre ebensfalls 2.
+
+Die Gesamtlaufzeit von \textsc{MinOperationsBFS} wird durch die Anzahl besuchter Knoten auf jeder Ebene und die Zeit pro Knoten abgeschätzt. Von Länge $n$ wird genau eine Permutation, $p$, besucht. Davon ausgehend gibt es $n$ Möglichkeiten für eine $\gamma_i$-Operation, also werden maximal $n$ Permutationen der Länge $n - 1$ besucht. Von diesen werden durch $\gamma_i$-Operationen maximal $n(n-1)$ Permutationen der Länge $n - 2$ erreicht. Diese Argumentation lässt sich rekursiv fortführen, es werden also maximal $n! / k!$ Knoten der Länge $k$ besucht. Für kleine $k$ ist $n! / k!$ jedoch größer als $k!$, da es aber nur $k!$ Permutationen der Länge $k$ gibt und kein Knoten doppelt besucht wird, kann die Anzahl besuchter Knoten durch $\min(n! / k!, k!)$ beschränkt werden. Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$. Wir analysieren nun den Worst Case, dass die Suchtiefe tatsächlich $\lceil 2n / 3 \rceil$ beträgt. Die Anzahl an Knoten pro Ebene mal $\Theta(k \log k)$ wird für jede Ebene ab $\lceil n/ 3 \rceil$ aufsummiert. $c$ steht für eine positive Konstante, zur Auswertung der Fakultät wird die Stirlingformel verwendet.
+\begin{align*}
+    \sum_{k = \lfloor n/3 \rfloor}^n \min \bigg ( \frac {n!}{k!}, k! \bigg ) \Theta(k \log k) & \le \sum_{k = \lfloor n/3 \rfloor}^n  \frac {n!} {(n/3)!} \Theta(k \log k)
+    \\ & \approx  \sum_{k = \lfloor n/3 \rfloor}^n
+    \frac {\sqrt{2 \pi n} \cdot (n/e)^n} {\sqrt{2 \pi n/3} \cdot (n/3e)^n} \Theta(k \log k)
+    \\ & =  \sum_{k = \lfloor n/3 \rfloor}^n
+    \frac {n^n / e^n} {\sqrt{1/3} \cdot n^n / (3e)^n} \Theta (k \log k)
+    \\ & =  \sum_{k = \lfloor n/3 \rfloor}^n
+    \sqrt 3 \cdot 3^n \cdot \Theta(k \log k)
+    \\ & \le  \sum_{k = \lfloor n/3 \rfloor}^n
+    \sqrt 3 \cdot 3^n \cdot \Theta (n \log n)
+    \\ & \le
+    \sqrt 3 \cdot 3^n \cdot \Theta(n^2 \log n)
+\end{align*}
+
+Die Worst-Case Zeitkomplexität von \textsc{MinOperationsBFS} ist also $O(3^n \cdot n^2 \log n)$. Beim Einsetzen des kleinstmöglichen $k = \lfloor n/3 \rfloor$ in der ersten Zeile wurde die Rundungsfunktion der Einfachheit halber weggelassen. Das asymptotische Laufzeitverhalten wird dadurch nicht verändert. Da die Laufzeit expoentiell steigt, ist der Beitrag von $\Theta(n^3 \log n)$ von \textsc{ReconstructOperations} nicht relevant. Die Laufzeit von \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} ist im Worst Case nicht besser, da dort ebenfalls alle Knoten besucht werden können. Im Abschnitt \emph{Beispiele} wird gezeigt, dass sich real allerdings deutliche Verbesserungen ergeben, sowohl in der Ausführungszeit des Programms als auch in der Anzahl besuchter Knoten.
+
+Im Best Case, wenn die Eingabe eine identische Permutation ist, beträgt die Laufzeit aller drei Verfahren $\Theta(n \log n)$, da einmal $\mu(p)$ berechnet bzw. \textsc{IthPermutation} ausgeführt wird.
 
 \subsection{Berechnung der PWUE-Zahl}
 
