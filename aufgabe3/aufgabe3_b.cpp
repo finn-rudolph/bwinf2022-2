@@ -2,6 +2,9 @@
 #include "util.hpp"
 using namespace std;
 
+// Schreibt A(p) für jede Permutation der Länge k mit Index zwischen i1 und i2
+// in z. In y muss A(q) für jede Permutation q der Länge k - 1 stehen.
+// u = k!, v = (k - 1)!
 void update_z(
     size_t k, size_t u, size_t v, uint8_t const *const y, uint8_t *const z,
     size_t i1, size_t i2)
@@ -17,6 +20,7 @@ void update_z(
         {
             size_t const l = ind_gamma(p, j);
             z[i] = min<uint8_t>(z[i], y[l] + 1);
+            // Hier wird die Symmetrie des Pancake-Graphen ausgenutzt.
             z[u - i - 1] = min<uint8_t>(z[u - i - 1], y[v - l - 1] + 1);
         }
 
@@ -24,6 +28,8 @@ void update_z(
     }
 }
 
+// Findet ein maximales A(p) unter den Permutationen der Länge n mit Index
+// zwischen i1 und i2. Zurückgegeben wird A(p) und der Index von p.
 pair<unsigned, size_t> get_max_a(
     size_t n, uint8_t const *const y, size_t i1, size_t i2)
 {
@@ -52,22 +58,23 @@ int main()
     uint8_t *y = (uint8_t *)malloc(sizeof(uint8_t)),
             *z = (uint8_t *)malloc(sizeof(uint8_t));
     y[0] = 0;
-    size_t u = 1, v = 1;
+    size_t u = 1, v = 1; // In der Schleife k!, (k - 1)!
     unsigned const n_threads = thread::hardware_concurrency();
 
     for (size_t k = 2; k < n; k++)
     {
         u *= k;
         z = (uint8_t *)realloc(z, u * sizeof(uint8_t));
-
         vector<thread> threads;
 
+        // Die k! Permutationen werden gleichmäßig unter den n_threads Threads
+        // aufgeteilt.
         for (unsigned i = 0; i < n_threads; i++)
             threads.emplace_back(update_z, k, u, v, y, z,
                                  (u / 2) * i / n_threads,
                                  (u / 2) * (i + 1) / n_threads);
 
-        for (thread &t : threads)
+        for (thread &t : threads) // Warte, bis alle Threads beendet sind.
             t.join();
 
         z[0] = 0;
@@ -79,6 +86,8 @@ int main()
     pair<unsigned, size_t> res = {0, -1};
     vector<future<pair<unsigned, size_t>>> fut;
 
+    // Für n ist es nicht mehr nötig, A(p) zu speichern, daher wird get_max_a
+    // verwendet.
     for (unsigned i = 0; i < n_threads; i++)
         fut.emplace_back(
             async(get_max_a, n, y, u * i / n_threads, u * (i + 1) / n_threads));
