@@ -39,13 +39,13 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
                : (i == 1 ? (p[i + 1] > p[i - 1]) : (p[i + 2] > p[i + 1]));
     unsigned num_monotone = 1;
 
-    for (size_t j = 2; j < i; j++)
+    for (size_t j = 2; j < i; j++) // umgekehrte Elemente vor i
         incr = is_increasing(incr, p[i - j], p[i - j - 1], num_monotone);
 
-    if (i && i + 1 < p.size())
+    if (i && i + 1 < p.size()) // neu benachbarte Elemente (p[0], p[i + 1])
         incr = is_increasing(incr, p[0], p[i + 1], num_monotone);
 
-    for (size_t j = i + 2; j < p.size(); j++)
+    for (size_t j = i + 2; j < p.size(); j++) // Elemente nach i
         incr = is_increasing(incr, p[j - 1], p[j], num_monotone);
 
     return (num_monotone + 1) / 3;
@@ -72,30 +72,31 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
         q.push({get_lbound_gamma(p, i), i});
 
     vector<unsigned> res;
-    bool found_solution = 0;
+    bool found_better = 0;
 
     // Gehe die Nachfolgerknoten (Permutationen, die durch eine gamma-Operation
     // erreichbar sind) aufsteigend nach unterer Schranke durch und bestimme
     // rekursiv die kürzeste Operationenfolge.
     while (!q.empty() && q.top().first < ubound)
     {
-        auto [op, found] =
-            min_operations_bnb_r(gamma(p, q.top().second), vis, ubound - 1);
+        auto const [lbound, i] = q.top();
+        q.pop();
+
+        auto const [op, found] =
+            min_operations_bnb_r(gamma(p, i), vis, ubound - 1);
 
         if (found && op.size() + 1 < ubound)
         {
             // Neue kürzeste Folge gefunden.
             ubound = op.size() + 1;
             res = op;
-            res.push_back(q.top().second);
-            found_solution = 1;
+            res.push_back(i);
+            found_better = 1;
         }
-
-        q.pop();
     }
 
     vis[p.size() - 1].insert(ind(p));
-    return {res, found_solution};
+    return {res, found_better};
 }
 
 vector<unsigned> min_operations_bnb(vector<unsigned> const &p)
@@ -134,18 +135,17 @@ vector<unsigned> reconstruct_op(
     return op;
 }
 
-struct node
-{
-    size_t i;
-    unsigned n, lbound;
+// Speichert Index, Länge, untere Schranke
+typedef tuple<size_t, unsigned, unsigned> node;
 
-    bool operator<(node const &x) const
+inline bool node_compare(node const &x, node const &y)
+{
+    if (get<2>(x) == get<2>(y))
     {
-        if (lbound == x.lbound)
-            return n > x.n;
-        return lbound > x.lbound;
+        return get<1>(x) > get<1>(y);
     }
-};
+    return get<2>(x) > get<2>(y);
+}
 
 // Gibt die kürzestmögliche Folge an Gamma-Operationen zurück. Wie im A*-
 // Algorithmus werden die Blätter des Suchbaums in einer Prioritätswarte-
@@ -154,45 +154,46 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 {
     // Speichert für jede Permutationsgröße die Indizes besuchter Permutationen
     // und deren Vorgänger im Suchbaum.
-    vector<unordered_map<size_t, size_t>>
-        pre(p.size());
+    vector<unordered_map<size_t, size_t>> pre(p.size());
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
-    priority_queue<node> q;
+    priority_queue<node, vector<node>, decltype(&node_compare)>
+        q(&node_compare);
     q.push({ind(p), (unsigned)p.size(), get_lbound(p)});
 
     unsigned ubound = p.size(); // aktuelle Oberschranke
     size_t res_n = SIZE_MAX;
 
-    while (!q.empty() && q.top().lbound < ubound)
+    while (!q.empty() && get<2>(q.top()) < ubound)
     {
-        node const x = q.top();
+        auto const [i, m, lbound] = q.top();
         q.pop();
 
-        if (!x.i)
+        if (!i)
         {
             // Eine identische Permutation wurde gefunden.
-            if (p.size() - x.n < ubound)
+            if (p.size() - m < ubound)
             {
-                res_n = x.n;
-                ubound = p.size() - x.n;
+                res_n = m;
+                ubound = p.size() - m;
             }
             continue;
         }
 
-        vector<unsigned> const s = ith_permutation(x.n, x.i);
+        vector<unsigned> const s = ith_permutation(m, i);
 
         // Füge jede durch eine gamma-Operation erreichbare Permutation zur
         // Warteschlange hinzu, die das Ergebnis noch verbessern kann.
-        for (size_t i = 0; i < x.n; i++)
+        for (size_t j = 0; j < m; j++)
         {
-            node const y =
-                {ind_gamma(s, i), x.n - 1,
-                 (unsigned)p.size() - x.n + get_lbound_gamma(s, i) + 1};
-            if (y.lbound < ubound && pre[y.n - 1].find(y.i) == pre[y.n - 1].end())
+            node const y = {ind_gamma(s, j), m - 1,
+                            p.size() - m + get_lbound_gamma(s, j) + 1};
+
+            if (get<2>(y) < ubound &&
+                pre[m - 2].find(get<0>(y)) == pre[m - 2].end())
             {
                 q.push(y);
-                pre[y.n - 1][y.i] = x.i;
+                pre[m - 2][get<0>(y)] = i;
             }
         }
     }
