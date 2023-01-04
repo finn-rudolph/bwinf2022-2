@@ -1,0 +1,7 @@
+2 Operationen nötig. Dafür hinter folgenden Indizes wenden:
+4, 3
+
+Index |  p
+4     |  3   2   4   5   1   
+3     |  5   4   2   3   
+      |  2   4   5   
