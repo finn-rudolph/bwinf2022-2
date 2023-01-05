@@ -852,7 +852,7 @@ Die Gesamtlaufzeit von \textsc{MinOperationsBFS} wird durch die Anzahl besuchter
 
 Die Anzahl besuchter Knoten ist also $O(3^n \cdot n)$. Beim Einsetzen des kleinstmöglichen $k = \lfloor n/3 \rfloor$ in der ersten Zeile wurde die Abrundungsfunktion der Einfachheit halber weggelassen, am asymptotischen Verhalten ändert das jedoch nichts.
 
-Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$. Mit der Oberschranke für die Anzahl besuchter Knoten l��sst sich die Worst Case-Laufzeit von \textsc{MinOperationsBFS} durch
+Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$. Mit der Oberschranke für die Anzahl besuchter Knoten lässt sich die Worst Case-Laufzeit von \textsc{MinOperationsBFS} durch
 \begin{align*}
     O(3^n \cdot n^2 \log n)
 \end{align*}
@@ -875,6 +875,20 @@ Im Best Case, wenn die Eingabe eine identische Permutation ist, beträgt die Lau
 
 \subsection{Teilaufgabe b)}
 
+In \textsc{Pwue} werden für eine Permutation der Länge $k$ $\Theta(k^2 \log k)$ Schritte durchgeführt, da in der dritten verschachtelten for-Schleife in jeder Iteration $\mu(\gamma_i p)$ berechnet wird. Für jedes $2 \le k \le n - 1$ geschieht das für $k! / 2$ Permutationen. Bezüglich \emph{swap} wird eine konstante Laufzeit angenommen, da einfach die Speicheradressen der Arrays getauscht werden können. Anschließend werden nochmal $\Theta(n^2 \log n)$ für alle $n!$ Permutationen der Länge $n$ ausgeführt. Summiert man für alle $k$ von $2$ bis $n - 1$ auf, ergibt sich folgende Gesamtlaufzeit.
+\begin{align*}
+    \sum_{k = 2}^{n - 1} \frac {k!} 2 \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)
+     & = \sum_{k = 2}^{n-1} k! \cdot \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)           \\
+     & \le \sum_{k = 2}^{n - 1} (n - 1)! \cdot \Theta(n^2 \log n) + n! \cdot \Theta(n^2 \log n) \\
+     & \le n! \cdot \Theta(n^2 \log n)
+\end{align*}
+Die Laufzeit ist also durch $O(n! \cdot n^2 \log n)$ nach oben beschränkt. Tatsächlich entspricht das auch der Unterschranke, da
+\begin{align*}
+    \sum_{k = 2}^{n - 1} \frac {k!} 2 \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)
+    \ge n! \cdot \Theta(n^2 \log n)
+\end{align*}
+ist. Folglich beträgt die Laufzeit von \textsc{Pwue} im Best und Worst Case $\Theta(n! \cdot n^2 \log n)$.
+
 \section{Implementierung}
 
 \subsection{Hilfsfunktionen}
@@ -890,6 +904,28 @@ Im Best Case, wenn die Eingabe eine identische Permutation ist, beträgt die Lau
 \subsection{Eigene Beispiele}
 
 \subsection{Werte von $P(n)$}
+
+Mit dem Programm für Teilaufgabe b) konnte die PWUE-Zahl bis $n = 13$ berechnet werden. Die Ergebnisse sind in folgender Tabelle dargestellt.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c c l}
+        $n$ & $P(n)$ & Beispiel mit $A(p) = P(n)$       \\
+        \hline
+        8   & 5      & 6 3 8 5 2 7 4 1                  \\
+        9   & 5      & 9 7 3 8 5 2 6 4 1                \\
+        10  & 6      & 10 3 5 9 4 6 8 2 7 1             \\
+        11  & 6      & 11 10 4 6 9 3 8 2 7 5 1          \\
+        12  & 7      & 12 9 4 11 5 8 3 6 10 2 7 1       \\
+        13  & 7      & 13 12 9 4 11 8 3 7 2 6 10 5 1    \\
+        14  & 8      & 9 2 12 4 11 5 14 6 3 13 8 10 7 1 \\
+    \end{tabular}
+    \caption{PWUE-Zahlen bis $n = 14$ mit Beispielen}
+\end{table}
+
+Dass $P(14) = 8$ ist, wurde nicht wie die anderen PWUE-Zahlen berechnet, kann aber wie folgt begründet werden. Es gilt $P(n) \le P(n - 1) + 1$ für $n \ge 2$, da jede Permutation der Länge $n$ durch eine Operation in eine Permutation der Länge $n - 1$ umgewandelt werden kann. Des weiteren gilt $P(n) \ge P(n - 1)$. Wäre das nicht der Fall, könnte an eine Permutation der Länge $n - 1$ das Element $n$ hinten anhängen und sie mit weniger Schritten als zuvor sortieren, ein Widerspruch. Gilt also $P(13) = 7$ muss $P(14) = 7$ oder $P(14) = 8$ sein. Da von dem in der Tabelle genannten Beispiel aber mithilfe des Programms für a) überprüft werden kann, dass $A(p) = 8$, muss $P(14) = 8$ gelten.
+
+\emph{Das tatsächliche Laufzeitverhalten des Programms.} Im Verhältnis zur sehr schlechten asymptotischen Laufzeit von $\Theta(n! \cdot n^2 \log n)$ lief das Programm von Teilaufgabe b) relativ schnell. Zur Berechnung von $P(13)$ sollten nach der theoretischen Abschätzung in der Größenordnung von $13! \cdot 13^2 \cdot \log_2 13 \approx 3,89 \cdot 10^{12}$ Schritte nötig sein. Auf einem Laptop mit dem Prozessor AMD Ryzen 7 3700U (Mobile, weit von der Leistung des Ryzen 7 für Desktop-PCs entfernt) und 8 Threads konnte $P(13)$ in nur 40 min berechnet werden. Für $P(12)$ wurden 3 min 20 s benötigt, für $P(11)$ ca. 9 s.
 
 \section{Quellcode}
 
