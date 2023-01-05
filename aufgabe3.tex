@@ -734,6 +734,57 @@ Die Knoten werden in $Q$ als 3-Tupels mit Index, Länge und unterer Schranke ges
 
 \subsection{Berechnung der PWUE-Zahl}
 
+Für diese Teilaufgabe wird Dynamische Programmierung verwendet. Man nehme an, ein Array $y$ enthält bei Index $i$ $A(p)$, für jedes $0 \le i \le (k - 1)! - 1$, wobei $|p| = k - 1$ und $\mu(p) = i$. Den Wert von $A(q)$ einer Permutation $q$ der Länge $k$ zu berechnen, ist mithilfe von $y$ einfach.
+\begin{align*}
+    A(q) = \min_{0 \le i \le k - 1}  y[\mu(\gamma_i q)] + 1
+\end{align*}
+Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(q)$ für jede Permutation der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Während $A(p)$ für jede Permutation der Länge $n$ berechnet wird, kann $P(n)$ als laufendes Maximum aktualisiert werden, und der Index einer Permutation mit $A(p) = P(n)$ gespeichert werden. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor die Werte von $A(p)$ der Permutationen von Länge $k$ in $y$ geschrieben werden können, müssen alle berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Um die Effizienz des Algorithmus zu erhöhen, kann hier die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können diese Berechnungen auf die Hälfte reduziert werden. Des weiteren muss $A(p)$ für Permutationen der Länge $n$ nicht mehr in $z$ gespeichert werden, sondern nur das laufende Maximum $a_{\max}$ aktualisiert werden. Es ergibt sich folgender Algorithms. $u$ und $v$ enthalten in der äußeren for-Schleife immer $k!$ bzw. $(k - 1)!$.
+
+\begin{algorithm}
+    $y \gets \{0\}, z \gets$ empty array \;
+    $u \gets 1, v \gets 1$ \;
+
+    \For{$k \gets 2$ \KwTo $n - 1$}
+    {
+        $u \gets u \cdot k$ \;
+
+        \For{$i \gets 0$ \KwTo $u / 2$}
+        {
+            $p \gets$ \textsc{IthPermutation}$(k, i)$ \;
+
+            \For{$j \gets 0$ \KwTo $k$} {
+                $l \gets \mu(\gamma_j p)$ \;
+                $z[i] \gets \min(z[i], y[l] + 1)$ \;
+                $z[u - i - 1] \gets \min(z[u - i - 1], y[v - l - 1] + 1)$ \;
+            }
+        }
+
+        $z[0] \gets 0$ \;
+        swap($y, z$) \;
+        $v \gets v \cdot k$ \;
+    }
+    $u \gets u \cdot n$ \;
+    $a_{\max} \gets 0$, \emph{example} $\gets 0$ \;
+    \For {$i \gets 0$ \KwTo $u$}
+    {
+        $a \gets n$ \;
+        $p \gets$ \textsc{IthPermutation}$(n, i)$ \;
+        \For{$j \gets 0$ \KwTo $n$}
+        {
+            $a \gets \min(a, y[\mu(\gamma_j p)])$ \;
+        }
+        \If{$a > a_{\max}$}
+        {
+            $a_{\max} \gets a$ \;
+            \emph{example} $\gets i$ \;
+        }
+    }
+
+    \Return{\emph{(}$a_{\max}, example$\emph{)}} \;
+
+    \caption{\textsc{PWUE}$(n)$}
+\end{algorithm}
+
 \section{Laufzeitanalyse}
 
 \subsection{Teilaufgabe a)}
