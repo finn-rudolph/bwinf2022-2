@@ -90,33 +90,21 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     return k;
 }
 
-// Gibt eine Permutation q zurück, sodass gamma_i q = p und q_i = r.
-vector<unsigned> gamma_inv(vector<unsigned> const &p, size_t i, unsigned r)
+// Schreibt die Ziffern von i im fakultätsbasierten Zahlensystem in s. Es muss
+// i < (s.size())! gelten.
+void calc_factorial_digits(size_t i, vector<unsigned> &s)
 {
-    assert(i < p.size() + 1);
-    assert(r <= p.size() + 1);
-
-    vector<unsigned> q(p.size() + 1);
-
-    for (size_t j = 0; j < i; j++)
-        q[j] = p[i - j - 1] + (p[i - j - 1] >= r);
-    q[i] = r;
-    for (size_t j = i + 1; j < q.size(); j++)
-        q[j] = p[j - 1] + (p[j - 1] >= r);
-
-    return q;
+    for (size_t j = 1; j <= s.size(); j++)
+    {
+        s[s.size() - j] = i % j;
+        i /= j;
+    }
 }
 
 vector<unsigned> ith_permutation(size_t n, size_t i)
 {
     vector<unsigned> p(n);
-
-    // Die Ziffern von i im fakultätsbasierten Zahlensystem werden berechnet.
-    for (size_t j = 1; j <= n; j++)
-    {
-        p[n - j] = i % j;
-        i /= j;
-    }
+    calc_factorial_digits(i, p);
 
     size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
     unsigned tree[2 * m];

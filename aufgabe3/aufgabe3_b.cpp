@@ -85,6 +85,7 @@ int main()
         v *= k;
     }
 
+    free(z);
     u *= n;
     pair<unsigned, size_t> res = {0, -1};
     vector<future<pair<unsigned, size_t>>> fut;
@@ -97,6 +98,7 @@ int main()
 
     for (auto &f : fut)
         res = max(res, f.get());
+    free(y);
 
     cout << "P(" << n << ") = " << res.first << '\n';
     cout << "Beispiel mit A(p) = P(" << n << "): ";
