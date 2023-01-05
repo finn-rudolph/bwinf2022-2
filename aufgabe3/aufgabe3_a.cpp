@@ -244,7 +244,7 @@ void print_operations(vector<unsigned> p, vector<unsigned> const &op)
 {
     if (!op.empty())
     {
-        cout << op.size() << " Operationen notwendig. Hinter folgenden"
+        cout << op.size() << " Operationen notwendig. Dazu hinter folgenden"
                              " Indizes wenden:\n";
         for (auto it = op.cbegin(); it != --op.cend(); it++)
             cout << *it << ", ";
