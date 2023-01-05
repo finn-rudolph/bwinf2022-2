@@ -537,7 +537,7 @@ Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisi
 
 Zur Berechnung von $\mu(p)$ wird wieder das fakultätsbasierte Zahlensystem zur Hilfe gezogen, indem zunächst die Ziffern von $\mu(p)$ berechnet werden. Dafür wird folgende Eigenschaft verwendet: $\mu(p)_i$ entspricht genau $p_i$ minus der Anzahl links gelegener, kleinerer Elemente in $p$ \cite{permutationranking}. Damit redziert sich das Problem darauf, die Anzahl kleinerer, links gelegener Elemente von $p_i$ zu zählen. Das kann mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element gelöst werden, sodass sich insgesamt eine Zeitkomplexität von $\Theta(n \log n)$ ergibt.
 
-Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Ziffern von $\mu(p)$ im fakultätsbasierten Zahlensystem durch wiederholtes Teilen mit Rest bestimmt. Wie bei der Berechnung der Ziffern einer Zahl im Binärsystem sind die Ziffern die Reste der Folge von Divisionen, nur dass der Divisor nicht konstant ist, sondern zuerst 1, dann 2, 3 und so weiter. Die Indizes von $p$ werden anschließend aufsteigend bearbeitet, man nehme also im Folgenden an, dass $p_i$ gerade bestimmt werden soll und $p_j$ für $j < i$ bereits bekannt ist. Mit der Tatsache, dass $\mu(p)_i$ genau $p_i$ minus der Anzahl kleinerer, links gelegener Elemente ist, reduziert sich das Problem darauf, zu bestimmen, welchen Wert $p_i$ annehmen muss, sodass es genau $\mu(p)_i$ kleinere Elemente links davon gibt. Auch das lässt sich mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element lösen. Für ihn gilt folgende Invariante: Ist ein Element $y$ noch nicht aufgetreten, steht eine 1 bei Index $y-1$, andernfalls eine 0. Zur Bestimmung von $p_i$ wird der Segmentbaum von oben nach unten heruntergelaufen und die Schritte so gewählt, dass die Summe links gelegener Elemente genau $\mu(p)_i$ ist. Aber dadurch landet man genau bei dem $p_i$-ten Element des Segmentbaums, denn links liegen $\mu(p)_i$ Einsen plus die Anzahl bereits aufgetretener, kleinerer Elemente, die im Segmentbaum bereits auf 0 gesetzt wurden. Nun wird auch $p_i$ im Segmentbaum auf 0 gesetzt und so die Invariante erhalten. Insgesamt erhält man auch hier eine Zeitkomplexität von $\Theta(n \log n)$.
+Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Ziffern von $\mu(p)$ im fakultätsbasierten Zahlensystem durch wiederholtes Teilen mit Rest bestimmt. Wie bei der Berechnung der Ziffern einer Zahl im Binärsystem sind die Ziffern die Reste der Folge von Divisionen, nur dass der Divisor nicht konstant ist, sondern zuerst 1, dann 2, 3 und so weiter. Die Indizes von $p$ werden anschließend aufsteigend bearbeitet, man nehme also im Folgenden an, dass $p_i$ gerade bestimmt werden soll und $p_j$ für $j < i$ bereits bekannt ist. Mit der Tatsache, dass $\mu(p)_i$ genau $p_i$ minus der Anzahl kleinerer, links gelegener Elemente ist, reduziert sich das Problem darauf, zu bestimmen, welchen Wert $p_i$ annehmen muss, sodass es genau $\mu(p)_i$ kleinere Elemente links davon gibt. Auch das lässt sich mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element lösen. Für ihn gilt folgende Invariante: Ist ein Element $y$ noch nicht aufgetreten, steht eine 1 bei Index $y$, andernfalls eine 0. Zur Bestimmung von $p_i$ wird der Segmentbaum von oben nach unten heruntergelaufen und die Schritte so gewählt, dass die Summe links gelegener Elemente genau $\mu(p)_i$ ist. Aber dadurch landet man genau bei dem $p_i$-ten Element des Segmentbaums, denn links liegen $\mu(p)_i$ Einsen plus die Anzahl bereits aufgetretener, kleinerer Elemente, die im Segmentbaum bereits auf 0 gesetzt wurden. Nun wird auch $p_i$ im Segmentbaum auf 0 gesetzt und so die Invariante erhalten. Insgesamt erhält man auch hier eine Zeitkomplexität von $\Theta(n \log n)$.
 \bigskip
 
 \noindent \emph{Eine Unterschranke für $A(p)$.} Mit einer Unterschranke für die Anzahl an benötigten $\gamma_i$-Operationen wird es möglich sein, während der Suche manche Permutationen außer Acht zu lassen, da sie nicht zu einem besseren Ergebnis führen können. Wir betrachten die Anzahl an monoton steigenden oder fallenden Teilstrings in einer Permutation. Ein monoton steigender Teilstring $T$ von Länge $k$ einer Permutation $p$ ist eine Menge an Indizes $\{i, i + 1, \dots, i + k - 1\}$, so, dass $p_{j+1} > p_j$ für $i \le j \le i+ k - 2$ und $T$ bezüglich dieser Eigenschaft maximale Länge hat. Ein monton fallender Teilstring ist ähnlich definiert, nur gilt $p_{j + 1} < p_j$ für $i \le j \le i + k - 2$. Ein monotoner Teilstring ist ein monoton steigender oder fallender Teilstring. Nach dieser Definition ist ein Element von $p$, dessen Nachbarn beide größer oder kleiner sind, Teil von 2 monotonen Teilstrings. Die identische Permutation besteht offensichtlich nur aus einem monoton steigenden Teilstring. Mithilfe von folgendem Lemma kann dann einfach eine untere Schranke für $A(p)$ bestimmt werden.
@@ -588,7 +588,7 @@ Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Zif
     Bisher wurde implizit angenommen, dass $1 \le i \le n - 3$ gilt, da $p_{i-1}, p_{i + 1}$ und $p_{i + 2}$ in Betracht gezogen wurden. Wenn $i = 1$ oder $i = n - 1$, gilt offensichtlich $\Delta x \in \{0, -1\}$. Wenn $i = n - 2$, gilt $\Delta x \ge -2$, was mit der gleichen Fallunterscheidung wie oben überprüft werden kann.
 \end{proof}
 
-Damit kann nun Folgendes gezeigt werden.
+\noindent Damit kann nun Folgendes gezeigt werden.
 
 \begin{theorem}
     Sei $x$ die Anzahl monotoner Teilstrings einer Permutation $p$. Dann gilt
@@ -612,7 +612,7 @@ Damit kann nun Folgendes gezeigt werden.
     \end{align*}
 \end{proof}
 
-Die untere Schranke kann mit folgendem Algorithmus berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit beträgt wegen der for-Schleife $\Theta(n)$.
+\noindent Die untere Schranke kann mit folgendem Algorithmus berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit beträgt wegen der for-Schleife $\Theta(n)$.
 
 \begin{algorithm}
     \If{$n = 1$}
@@ -815,7 +815,7 @@ Eine obere Schranke ist für die Worst Case-Laufzeit ist folglich $O(n^3 \log n)
      & \ge c \frac {n(n - 1)^2}  8 (\log n - \Theta (1))                                                                                      \\
      & = c \frac {n^3 - 2n^2 + n} 8 (\log n - \Theta (1))
 \end{align*}
-Nach unten kann die Laufzeit also mit $\Omega(n^3 \log n)$ beschränkt werden. Da obere und untere Schranke übereinstimmen beträgt die Worst-Case Zeitkomplexität von \textsc{ReconstructOperations} $\Theta(n^3 \log n)$. Im Best Case gilt $m = n$ und die Zeitkomplexität beträgt $\Theta(1)$, da die while-Schleife nie ausgeführt wird.
+Nach unten kann die Laufzeit also mit $\Omega(n^3 \log n)$ beschränkt werden. Da obere und untere Schranke übereinstimmen beträgt die Worst-Case Zeitkomplexität von \textsc{ReconstructOperations} $\Theta(n^3 \log n)$.
 
 Um die Laufzeit der drei Algorithmen für Teilaufgabe a) begrenzen zu können, wird eine obere Schranke für die Suchtiefe benötigt. Die beste Schranke wäre natürlich $P(n)$, die Funktion kann aber nicht als geschlossener Ausdruck geschrieben werden. Daher wird folgende Oberschranke für $A(p)$ verwendet.
 
@@ -824,7 +824,7 @@ Um die Laufzeit der drei Algorithmen für Teilaufgabe a) begrenzen zu können, w
 \end{lemma}
 
 \begin{proof}
-    Wir betrachten folgenden Algorithmus zum Sortieren von $p$:
+    Wir betrachten folgenden Algorithmus zum Sortieren von $p$: Die Schritte 1 und 2 werden solange abwechselnd ausgeführt, bis $p$ sortiert ist.
     \begin{enumerate}
         \item Sei $i$ der Index des größten Elements von $p$, das nicht in einem sortierten Suffix liegt. Führe die Operation $\gamma_{i+1}$ aus. Damit wird das größte, noch nicht einsortierte Element nach vorne gebracht.
         \item Führe die Operation $\gamma_{j-1}$ aus, wobei $j$ der kleinste Index eines Elements im sortierten Suffix ist.
@@ -887,7 +887,54 @@ ist. Folglich beträgt die Laufzeit von \textsc{Pwue} im Best und Worst Case $\T
 
 \section{Implementierung}
 
+Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \emph{aufgabe3\_a.cpp} und \emph{aufgabe3\_b.cpp} steht der Quellcode speziell für die Teilaufgaben, in \emph{util.cpp} Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux einfach \emph{make a} bzw \emph{make b} im Ordner \emph{aufgabe3} ausführen. Mit nur \emph{make} werden beide Teilaufgaben kompiliert.
+\bigskip
+
+\noindent Grundsätzlich gilt, dass eine Permutation als C$++$ \emph{vector} von \emph{unsigned} repräsentiert wird und meist \emph{p} heißt. Wenn \emph{p} bereits vergeben ist, heißt eine Permutation auch \emph{s}. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
+
 \subsection{Hilfsfunktionen}
+
+Hier wird der Inhalt von \emph{util.cpp} beschrieben.
+\bigskip
+
+\noindent \verb|size_t ind(vector<unsigned> const &p)|
+\smallskip
+
+\noindent Die Funktion \verb|ind| gibt $\mu(p)$ zurück. Wie bereits beschrieben, ist das mit einem Segmentbaum in $\Theta(n \log n)$ Zeit möglich. Es gilt $lgn = \lceil \log_2 n \rceil$ und $m = 2^{\lceil \log_2 n \rceil}$. Der Segmentbaum wird in dem Array \emph{tree} in Heap-Anordnung gespeichert, d. h. die Wurzel liegt bei Index 1, der linke Nachfolger von $i$ bei $2 \cdot i$ und der rechte Nachfolger von $i$ bei $2 \cdot i + 1$. Da der Segmentbaum eine 1 bei Index $i$ stehen hat, wenn Element $i$ bereits auftrat, wird er zu Beginn mit 0 initialisiert. In der for-Schleife steht \verb|z| für den aktuellen Knoten im Segmentbaum, der zu Beginn das Blatt zugehörig zu $p_j$ ist. Für $k$, die Rückgabe von \verb|ind|, gilt bezüglich der äußeren for-Schleife folgende Invariante: Wenn $j = j'$, gilt nach dem Schleifendurchlauf
+\begin{align*}
+    k = \mu(p)_0 \frac {(n - 1)!} {(n - 1 - j')!} + \mu(p)_1 \frac {(n - 2)!} {(n - 1 - j')!} + \dots + \mu(p)_{j'}
+\end{align*}
+Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffizienten jedes $\mu(p)_i$ wird durch Multiplikation mit \verb|p.size() - j| erhalten. Da $\mu(p)_j$ gleich $p_j$ minus der Anzahl links gelegener, kleinerer Elemente ist, muss nach der Addition von $p_j$ nur noch diese Zahl mithilfe des Segmentbaums abgezogen werden. Dazu wird dieser vom Blatt von $p_j$ beginnend nach oben gelaufen und die Summe des linken Geschwisterknoten, falls man aktuell bei einem rechten Nachfolger steht, abgezogen. Der Wert jedes Knotens auf dem Weg wird um 1 erhöht, da $p_j$ nun selbst vorgekommen ist. Nachdem das für alle $0 \le j \le n - 1$ geschehen ist, wird $k$ zurückgegeben.
+\bigskip
+
+\noindent \verb|vector<unsigned> gamma(vector<unsigned> const &p, size_t i)|
+\smallskip
+
+\noindent Es wird $\gamma_i p$ berechnet. $(\gamma_i p)_j$ für $j < i$ ist $p_{i - j - 1}$ und für $j > i$ $p_{j + 1}$. Bei Elementen größer als $p_i$ wird 1 abgezogen.
+\bigskip
+
+\noindent \verb|size_t ind_gamma(vector<unsigned> const &p, size_t i)|
+\smallskip
+
+\noindent Diese Funktion berechnet $\mu(\gamma_i p)$. Da diese Komposition vor allem in Teilaufgabe a) häufig verwendet wird, wurde eine separate Funktion geschrieben, die das Erstellen eines neuen Vektors für $\gamma_i p$ vermeidet. Die Funktionsweise ist identisch zu der von \verb|ind|, nur werden Elemente vor $i$ in entsprechend umgekehrter Reihenfolge bearbeitet und gegebenenfalls 1 von ihrem Wert abgezogen. $x$ bezeichnet in beiden for-Schleifen den Wert von $(\gamma_i p)_j$, ansonsten ist die Namensgebung gleich.
+\bigskip
+
+\noindent \verb|void calc_factorial_digits(size_t i, vector<unsigned> &s)|
+\smallskip
+
+\noindent Berechnet die Ziffern von $i$ und speichert sie in $s$, wobei die $0!$-Ziffer in an letzer Stelle von $s$ steht. Die Berechnung geschieht analog zur Berechnung der Ziffern einer Zahl im Binärsystem: Zuerst wird durch 1 geteilt, dann durch 2, 3, usw. wobei die jeweiligen Reste den Ziffern von rechts nach links gelesen entsprechen.
+\bigskip
+
+\noindent \verb|vector<unsigned> ith_permutation(size_t n, size_t i)|
+\smallskip
+
+\noindent Gibt eine Permutation $p$ der Länge $n$ zurück, sodass $\mu(p) = i$. Zunächst wird $p$ als Vektor angelegt und darin die Ziffern von $i$ im fakultätsbasierten Zahlensystem gespeichert. Wie in der Lösungsidee beschrieben enthält der Segmentbaum \emph{tree} hier eine 1 bei Index $j$, wenn der Wert $j$ noch nicht aufgetreten ist, weshalb der Baum mit Einsen initialisiert wird. Bei Bearbeitung $j$-ten Elements wird von der Wurzel ($z = 1$) gestartet, und $p_j$ enthält immer die nötigen links gelegenen Einsen. Im Segmentbaum wird nach rechts gegangen, wenn im linken Nachfolger weniger Einsen als nötig vorhanden sind, oder genauso viele, andernfalls nach links. Der Wert des $j$-ten Elements der Permutation entspricht dann $z - m$, also dem Index des Blatts, bei dem man gelandet ist. Hier werden auf dem Weg nach unten die Werte aller Knoten um 1 reduziert, da $p_j$ danach vorhanden ist.
+\bigskip
+
+\noindent \verb|vector<unsigned> rev_and_eat(vector<unsigned> const &p, size_t i)|
+\smallskip
+
+\noindent Gibt die Permutation zurück, wenn eine Wende-und-Ess-Operation bei Index $i$ auf $p$ angewandt wird, wie sie im Aufgabenblatt beschrieben ist. Die Funktion wird nur in Teilaufgabe a) zur Ausgabe der entstehenden Permutationen während des Sortierens benötigt.
 
 \subsection{Teilaufgabe a)}
 
