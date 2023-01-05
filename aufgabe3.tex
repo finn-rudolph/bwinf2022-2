@@ -782,8 +782,20 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
 
     \Return{\emph{(}$a_{\max}, example$\emph{)}} \;
 
-    \caption{\textsc{PWUE}$(n)$}
+    \caption{\textsc{Pwue}$(n)$}
 \end{algorithm}
+
+\emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen. Diese stellten sich jedoch als praktisch wenig brauchbar heraus. Hier soll kurz eines davon erläutert werden. Wir nennen
+\begin{align*}
+    \Gamma(p) = \{\gamma_i p : 0 \le i \le |p|\}
+\end{align*}
+die Menge aller von $p$ durch eine $\gamma_i$-Operation erreichbaren Permutationen der Länge $|p| - 1$. Daneben wird $S_m^n$ als die Menge aller Permutationen von Länge $n$ mit $A(p) = m$ definiert. Eine Permutation $p$ gehört zu den schwierigsten Permutationen seiner Länge, wenn $\Gamma(p) \subseteq S_{n - 1}^{P(n-1)}$. Wenn keine solche Permutation der Länge $n$ existiert, gehört $p$ zu den schwierigsten Permutationen, wenn $\Gamma(p) \subseteq S_{n - 1}^{P(n-1)} \cup S_{n - 1}^{P(n-1) - 1}$. Das heißt, von $p$ aus sind nur schwierigste (oder zweitschwierigste) Permutationen der Länge $n - 1$ erreichbar. Basierend auf der Idee, dass zur Berechnung von $P(n)$ eigentlich nur die schwierigsten Permutationen der Länge $n$ berechnet werden müssen, kann man sich wieder einen DP-Algorithmus überlegen. Zur Berechnung der schwierigsten Permutationen der Länge $n$ benötigt man $S_{n - 1}^{P(n)}$, aber möglicherweise auch $S_{n - 1}^{P(n)-1}$. Zu deren Berechnung benötigt man wiederum $S_{n - 2}^{P(n - 2)}$, aber möglicherweise auch $S_{n - 2}^{P(n - 2) - 1}$ und $S_{n - 2}^{P(n - 2) - 2}$. Führt man das fort, sind irgendwann alle Permutationen einer bestimmten Länge nötig. Wir nennen diese Länge $m$. Nun wird die Umkehrung von $\gamma_i$ definiert: $\gamma_{i, r}^{-1} p$ ist eine Permutation der Länge $n + 1$, sodass $\gamma_i q = p$ und $q_i = r$. Der Algorithmus sieht dann wie folgt aus: Man startet mit allen Permutationen der Länge $m$, und verwendet $\gamma_{j, r}^{-1}$ für jedes $0 \le, j, r \le m + 1$ um $S_{m + 1}^{1}, S_{m + 1}^2, \dots, S_{m + 1}^{P(m+1)}$ zu berechnen. Hier müssen noch fast alle Permutationen der Länge $m + 1$, außer $I^{m + 1}$ gespeichert werden. Führt man das Verfahren aber fort und wendet $\gamma_{i, r}^{-1}$ auf jede Permutation in einer der eben berechneten Mengen an, erhält man $S_{m + 2}^2, S_{m + 2}^3, \dots, S_{m + 2}^{P(m +2)}$. Mit jeder Iteration müssen verhältnismäßig weniger Permutationen gespeichert werden. Nach $n - m$ Iterationen wird so $S_n^{P(n)}$ berechnet. Praktisch ergeben sich jedoch folgende Probleme.
+
+\begin{itemize}
+    \item Wenn nicht mehr jede Permutation abgespeichert wird und kein Array der Länge $n!$ angelegt werden soll, muss zu jedem $A(p)$ der Index von $p$ gespeichert werden. Während $A(p)$ problemlos in 8 Bits passt, sind für $\mu(p)$ 64 Bits nötig, mit $|p| \ge 12$. Der Speicherverbrauch wird so 8 Mal größer. Es werden natürlich auch weniger Permutationen gespeichert, aber die Reduktion ist nicht so stark wie der Anstieg des Speicherverbrauchs.
+    \item Das Ausnutzen der Symmetrie des Pancake-Graphen wird schwierig. Bevor $A(p^*)$ für den symmetrischen Partner $p^*$ abgespeichert werden kann, muss überprüft werden, ob dieser überhaupt noch in einer der betrachteten Mengen von Permutationen liegt. Auch wenn zum Abspeichern der Permutationen ein balancierter Binärbaum, ein Hashset oder einfach ein nach Index sortiertes Array verwendet wird, ist das in jedem Fall aufwändig.
+    \item Parallelisierung wird ineffizient. Eine parallele Ausführung der $\gamma_{i, r}^{-1}$-Operationen auf Permutationen der Länge $k - 1$ führt zu gleichzeitigen Veränderungen der Datenstrukturen, die $S_k^j, S_{k}^{j + 1}, \dots, S_{k}^{P(k)}$ verwalten. Dagegen kann der Algorithms \textsc{Pwue} einfach parallelisiert werden.
+\end{itemize}
 
 \section{Laufzeitanalyse}
 
@@ -840,7 +852,7 @@ Die Gesamtlaufzeit von \textsc{MinOperationsBFS} wird durch die Anzahl besuchter
 
 Die Anzahl besuchter Knoten ist also $O(3^n \cdot n)$. Beim Einsetzen des kleinstmöglichen $k = \lfloor n/3 \rfloor$ in der ersten Zeile wurde die Abrundungsfunktion der Einfachheit halber weggelassen, am asymptotischen Verhalten ändert das jedoch nichts.
 
-Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$. Mit der Oberschranke für die Anzahl besuchter Knoten lässt sich die Worst Case-Laufzeit von \textsc{MinOperationsBFS} durch
+Für einen Knoten der Länge $k$ ergeben sich zweimal $\Theta(k \log k)$ Schritte: Erstens durch den Aufruf von \textsc{IthPermutation}, und zweitens durch die Berechnung von $\mu(p)$, als die Permutation von ihrem Vorgänger zur Warteschlange hinzugefügt wurde. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Folglich ergeben sich $\Theta(k \log k)$ Schritte für eine Permutation der Länge $k$. Mit der Oberschranke für die Anzahl besuchter Knoten l��sst sich die Worst Case-Laufzeit von \textsc{MinOperationsBFS} durch
 \begin{align*}
     O(3^n \cdot n^2 \log n)
 \end{align*}
