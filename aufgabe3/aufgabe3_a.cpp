@@ -142,7 +142,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
     unsigned ubound = p.size(); // aktuelle Oberschranke
-    size_t res_n = SIZE_MAX;
+    size_t n_res = SIZE_MAX;
 
     while (!q.empty() && get<2>(q.top()) < ubound)
     {
@@ -154,7 +154,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
             // Eine identische Permutation wurde gefunden.
             if (p.size() - m < ubound)
             {
-                res_n = m;
+                n_res = m;
                 ubound = p.size() - m;
             }
             continue;
@@ -178,7 +178,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
         }
     }
 
-    return reconstruct_operations(pre, res_n, 0);
+    return reconstruct_operations(pre, n_res, 0);
 }
 
 // Bestimmt rekursiv die kürzestmögliche Folge and gamma-Operationen zum

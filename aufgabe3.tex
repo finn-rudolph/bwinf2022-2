@@ -480,7 +480,7 @@ In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt
 
 \noindent \emph{Brute-Force Lösung.} Wie der Name bereits sagt, werden einfach alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. Als einzige Ausnahme von dieser Definition enthält $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
 
-Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisiert, die bei $\mu(p)$ den $\mu$-Wert des Vorgängers von $p$ speichert. Um Speicher zu sparen, wird in der Warteschlange außerdem nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
+Die Vorgängerliste wird durch eine Hashmap für jede Permutationslänge realisiert, die bei $\mu(p)$ den $\mu$-Wert des Vorgängers von $p$ speichert. Es wird ein Array von Hashmaps angelegt, das bei Index $k - 1$ die Hashmap für Knoten der Länge $k$ enthält. Um Speicher zu sparen, wird in der Warteschlange außerdem nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
 
 \begin{algorithm}
     $Q \gets$ Queue containing $(|p|, \mu(p))$ \;
@@ -691,7 +691,7 @@ Aus graphentheoretischer Sicht entspricht das einer Ausführung des A*-Algorithm
 Die Knoten werden in $Q$ als 3-Tupels mit Index, Länge und unterer Schranke gespeichert. Beim Einfügen eines neuen Knotens in $Q$ wird dessen untere Schranke auf die Anzahl bisher ausgeführter $\gamma_i$-Operationen plus der von \textsc{LowerBound} geschätzten Zahl plus 1 für die gerade durchgeführte Operation gesetzt. $n'$ speichert die Länge der aktuell besten gefunden identischen Permutation.
 \bigskip
 
-\noindent \emph{Branch and Bound.} Zum Vergleich mit dem A*-Verfahren wird noch ein Branch and Bound-Algorithmus vorgestellt. Er nutzt ebensfalls die hergeleitete untere Schranke für $A(p)$. Es wird keine Prioritätswarteschlange über alle Äste der Suche verwaltet, sondern lediglich über die direkten Nachfolger eines Knotens. Die Prioritätswarteschlange $Q$ enthält Paare bestehend aus der unteren Schranke des Nachfolgers und dem $i$ der $\gamma_i$-Operation, die zu ihm führt. Die Nachfolger sind in $Q$ aufsteigend nach unterer Schranke geordnet und werden in Reihenfolge abgearbeitet. Während A* auf Breitensuche basiert ist, arbeitet dieses Verfahren eher wie Tiefensuche: Bevor der nächste Nachfolgerknoten abgearbeitet wird, wird der aktuelle vollständig abgeschlossen. Das heißt, es wird entweder eine identische Permutation erreicht oder festgestellt, dass keine bessere Lösung als die akutelle Oberschranke existiert. Wenn in der Prioritätswarteschlange nur noch Knoten mit einer größeren Unterschranke als der aktuellen Oberschranke vorhanden sind, wird abgebrochen und die aktuell beste Lösung zurückgegeben. Die Rückgabe besteht aus einem Paar: Ein Array von Wendeoperationen und ein Wahrheitswert, der angibt, ob eine bessere Lösung gefunden wurde. Da der Algorithmus, wie für Tiefensuche üblich, rekursiv arbeitet, wird die Datenstruktur $pre$ zum Speichern des Vorgängers nicht benötigt, das geschieht implizit durch den Stapel rekursiver Aufrufe. Um dennoch zu wissen, welche Knoten bereits besucht wurden, wird ein Array von Hashsets $vis$ angelegt, in dem für jede Permutationslänge die Indizes besuchter Permutationen enthalten sind. Der Pseudocode sieht wie folgt aus.
+\noindent \emph{Branch and Bound.} Zum Vergleich mit dem A*-Verfahren wird noch ein Branch and Bound-Algorithmus vorgestellt. Er nutzt ebensfalls die hergeleitete untere Schranke für $A(p)$. Es wird keine Prioritätswarteschlange über alle Äste der Suche verwaltet, sondern lediglich über die direkten Nachfolger eines Knotens. Die Prioritätswarteschlange $Q$ enthält ein Paar für jeden Nachfolger, bestehend aus dessen unterer Schranke und dem $i$ der $\gamma_i$-Operation, die zu ihm führt. Die Nachfolger sind in $Q$ aufsteigend nach unterer Schranke geordnet und werden in Reihenfolge abgearbeitet. Während A* auf Breitensuche basiert ist, arbeitet dieses Verfahren eher wie Tiefensuche: Bevor der nächste Nachfolgerknoten abgearbeitet wird, wird der aktuelle vollständig abgeschlossen. Das heißt, es wird entweder eine identische Permutation erreicht oder festgestellt, dass keine bessere Lösung als die akutelle Oberschranke existiert. Die aktuelle Oberschranke \emph{ubound} wird rekursiven Aufrufen als Argument mitgegeben. Wenn in der Prioritätswarteschlange nur noch Knoten mit einer größeren Unterschranke als der aktuellen Oberschranke vorhanden sind, wird abgebrochen und die aktuell beste Lösung zurückgegeben. Die Rückgabe besteht aus einem Paar: Ein Array von Wendeoperationen und ein Wahrheitswert, der angibt, ob eine bessere Lösung gefunden wurde. Da der Algorithmus, wie für Tiefensuche üblich, rekursiv arbeitet, wird die Datenstruktur $pre$ zum Speichern des Vorgängers nicht benötigt, das geschieht implizit durch den Stapel rekursiver Aufrufe. Um dennoch zu wissen, welche Knoten bereits besucht wurden, wird ein Array von Hashsets $vis$ angelegt, in dem für jede Permutationslänge die Indizes besuchter Permutationen enthalten sind. Der Pseudocode sieht wie folgt aus.
 
 \begin{algorithm}
     \If{$\mu(p) = 0$}
@@ -887,7 +887,7 @@ ist. Folglich beträgt die Laufzeit von \textsc{Pwue} im Best und Worst Case $\T
 
 \section{Implementierung}
 
-Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \emph{aufgabe3\_a.cpp} und \emph{aufgabe3\_b.cpp} steht der Quellcode speziell für die Teilaufgaben, in \emph{util.cpp} Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux einfach \emph{make a} bzw \emph{make b} im Ordner \emph{aufgabe3} ausführen. Mit nur \emph{make} werden beide Teilaufgaben kompiliert.
+Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \emph{aufgabe3\_a.cpp} und \emph{aufgabe3\_b.cpp} steht der Quellcode speziell für die Teilaufgaben, in \emph{util.cpp} Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann einfach \emph{make a} bzw. \emph{make b} im Ordner \emph{aufgabe3} geführt werden. Mit nur \emph{make} werden beide Teilaufgaben kompiliert.
 \bigskip
 
 \noindent Grundsätzlich gilt, dass eine Permutation als C$++$ \emph{vector} von \emph{unsigned} repräsentiert wird und meist \emph{p} heißt. Wenn \emph{p} bereits vergeben ist, heißt eine Permutation auch \emph{s}. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
@@ -937,6 +937,38 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 \noindent Gibt die Permutation zurück, wenn eine Wende-und-Ess-Operation bei Index $i$ auf $p$ angewandt wird, wie sie im Aufgabenblatt beschrieben ist. Die Funktion wird nur in Teilaufgabe a) zur Ausgabe der entstehenden Permutationen während des Sortierens benötigt.
 
 \subsection{Teilaufgabe a)}
+
+\noindent \verb|vector<unsigned> min_operations_bfs(vector<unsigned> const &p)|
+\smallskip
+
+\noindent Die Funktion implementiert das in der Lösungsidee beschriebene Brute-Force Verfahren. Zum Abspeichern des Vorgängers jeder besuchten Permutation wird ein Vektor von \emph{unordered\_map} verwendet, womit gleichzeitig überprüft werden kann, ob ein Knoten schon besucht wurde. Ansonsten entspricht die Implementierung nahezu exakt dem Pseudocode, weshalb sie nicht weiter erläutert wird.
+\bigskip
+
+\noindent \verb|vector<unsigned> min_operations_astar(vector<unsigned> const &p)|
+\smallskip
+
+\noindent Mit dieser Funktion wird der Algorithmus \textsc{MinOperationsA*} implementiert. Für die Prioritätswarteschlange wird eine \emph{priority\_queue} aus der C$++$ Standardbibliothek verwendet, die wie im Pseudocode 3-Tupels von Index Länge und unterer Schranke enthält. Für eine Tupel wird die \emph{tuple} aus der C$++$ Standardbibliothek verwendet, mit einem \emph{size\_t} und zwei \emph{unsigned}. Da der Datentyp sehr lang ist, wird eine Kurzform \emph{node} für ihn definiert. Dazu gibt es auch eine Vergleichsfunktion \emph{node\_compare} für \emph{node}, da die Prioritätswarteschlange die Tupels absteigend nach Index, Länge und unterer Schranke sortieren würde, sie aber aufsteigend nach unterer Schranke und Länge sortiert werden sollen. Bei gleicher unterer Schranke eine kürzere Permutation zu bevorzugen ist sinnvoll, da man so tendenziell schneller die Suchtiefe vergrößert und durch das Finden einer identischen Permutation eine obere Schranke festlegen kann. \emph{n\_res} entspricht $n'$ aus dem Pseudocode und speichert die Länge der längsten erreichbaren identischen Permutation. Die Überprüfung, ob das oberste Element der Prioritätswarteschlange noch innerhalb der aktuellen Oberschranke liegt, wurde im Vergleich zum Pseudocode in die Abbruchbedingung der while-Schleife verlegt.
+\bigskip
+
+\noindent \verb|vector<unsigned> min_operations_bnb(vector<unsigned> const &p)|
+\smallskip
+
+\noindent Das Branch and Bound-Verfahren benötigt in der Implementierung zwei Funktionen. In dieser wird das Array von \emph{unordered\_set}, das der rekursiven Funktion \verb|min_operations_bnb_r| als Parameter mitgegeben wird, angelegt. Des Weiteren wird der erhaltene Vektor an $\gamma_i$-Operationen vor der Rückgabe umgekehrt, da die Operationen in der Implementierung im Gegensatz zum Pseudocode hinten an \emph{op} angefügt werden. In Vektoren Elemente vorne anzufügen benötigt $\Theta(n)$ Zeit, während es hinten in amortisiert konstanter Zeit möglich ist.
+\bigskip
+
+\noindent \verb|pair<vector<unsigned>, bool> min_operations_bnb_r(| \\
+\verb|    vector<unsigned> const &p, vector<unordered_set<size_t>> &vis,)| \\
+\verb|    unsigned ubound = UINT_MAX)|
+\smallskip
+
+\noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt. Eine Besonderheit ist hier, dass für die Prioritätswarteschlange ein Vergleichsoperator \emph{greater} angegeben werden muss, da sie ansonsten absteigend anstatt aufsteigend nach unterer Schranke sortieren würde.
+\bigskip
+
+\noindent \verb|vector<unsigned> reconstruct_operations(| \\
+\verb|    vector<unordered_map<size_t, size_t>> const &pre, size_t m, size_t i)|
+\smallskip
+
+\noindent Gibt die Folge an $\gamma_i$-Operationen zurück, mit denen man zur Permutation $p$ der Länge $m$ mit $\mu(p) = i$ gelangt. $t$ wird vor Rückgabe umgekehrt, da die Operationen in umgekehrter Reihenfolge hinten angefügt wurden.
 
 \subsection{Teilaufgabe b)}
 
