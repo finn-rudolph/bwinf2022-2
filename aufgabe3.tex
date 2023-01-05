@@ -11,6 +11,8 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{listings}
+\usepackage{color}
 
 \newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort}
 \newcommand{\TeilnahmeId}{67571}
@@ -27,6 +29,23 @@
 \date{\large 28. Dezember 2022}
 
 \setlist[enumerate]{label*={\arabic*.}}
+
+\definecolor{keyword}{rgb}{0.4, 0.0, 0.7}
+\definecolor{comment}{rgb}{0.5, 0.5, 0.5}
+\definecolor{number}{rgb}{0.5, 0.5, 0.5}
+\definecolor{string}{rgb}{0.3, 0.65, 0.0}
+
+\lstset
+{
+    basicstyle=\scriptsize\ttfamily,
+    keywordstyle=\color{keyword},
+    commentstyle=\color{comment},
+    numberstyle=\tiny\color{number},
+    stringstyle=\color{string},
+    numbers=left,
+    showspaces=false,
+    showstringspaces=false
+}
 
 \begin{document}
 
@@ -738,7 +757,7 @@ Für diese Teilaufgabe wird Dynamische Programmierung verwendet. Man nehme an, e
 \begin{align*}
     A(q) = \min_{0 \le i \le k - 1}  y[\mu(\gamma_i q)] + 1
 \end{align*}
-Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(q)$ für jede Permutation der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Während $A(p)$ für jede Permutation der Länge $n$ berechnet wird, kann $P(n)$ als laufendes Maximum aktualisiert werden, und der Index einer Permutation mit $A(p) = P(n)$ gespeichert werden. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor die Werte von $A(p)$ der Permutationen von Länge $k$ in $y$ geschrieben werden können, müssen alle berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Um die Effizienz des Algorithmus zu erhöhen, kann hier die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können diese Berechnungen auf die Hälfte reduziert werden. Des weiteren muss $A(p)$ für Permutationen der Länge $n$ nicht mehr in $z$ gespeichert werden, sondern nur das laufende Maximum $a_{\max}$ aktualisiert werden. Es ergibt sich folgender Algorithms. $u$ und $v$ enthalten in der äußeren for-Schleife immer $k!$ bzw. $(k - 1)!$.
+Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(q)$ für jede Permutation der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Während $A(p)$ für jede Permutation der Länge $n$ berechnet wird, kann $P(n)$ als laufendes Maximum aktualisiert werden, und der Index einer Permutation mit $A(p) = P(n)$ gespeichert werden. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor $y$ mit den Werten aller Permutationen von Länge $k$ überschrieben werden kann, müssen alle davon berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Hier kann außerdem die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können die Berechnungen von $\mu$ auf die Hälfte reduziert werden. Für Permutationen der Länge $n$ gilt außerdem, dass $A(p)$ nicht mehr in $z$ gespeichert werden muss, sondern nur ein laufendes Maximum $a_{\max}$ aller $A(p)$ aktualisiert werden muss. Der Ansatz ist im Algorithmus \textsc{Pwue} zusammengefasst. $u$ und $v$ enthalten in der äußeren for-Schleife immer $k!$ bzw. $(k - 1)!$.
 
 \begin{algorithm}
     $y \gets \{0\}, z \gets$ empty array \;
@@ -765,18 +784,25 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
     }
     $u \gets u \cdot n$ \;
     $a_{\max} \gets 0$, \emph{example} $\gets 0$ \;
-    \For {$i \gets 0$ \KwTo $u$}
+    \For {$i \gets 0$ \KwTo $u/2$}
     {
-        $a \gets n$ \;
+        $a_1 \gets n, a_2 \gets n$ \;
         $p \gets$ \textsc{IthPermutation}$(n, i)$ \;
         \For{$j \gets 0$ \KwTo $n$}
         {
-            $a \gets \min(a, y[\mu(\gamma_j p)])$ \;
+            $l \gets \mu(\gamma_j p)$ \;
+            $a_1 \gets \min(a_1, y[l])$ \;
+            $a_2 \gets \min(a_2, y[v - l - 1])$ \;
         }
-        \If{$a > a_{\max}$}
+        \If{$a_1 > a_{\max}$}
         {
-            $a_{\max} \gets a$ \;
+            $a_{\max} \gets a_1$ \;
             \emph{example} $\gets i$ \;
+        }
+        \If{$a_2 > a_{\max}$}
+        {
+            $a_{\max} \gets a_2$ \;
+            \emph{example} $\gets u - i - 1$ \;
         }
     }
 
@@ -785,10 +811,10 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
     \caption{\textsc{Pwue}$(n)$}
 \end{algorithm}
 
-\noindent \emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen, sondern die Berechnung für offensichtlich ,,einfachere'' Permutationen vermeiden. In der Praxis waren sie jedoch wesentlich ineffizienter als der vorgestellte Algorithmus. Im Folgenden soll eines kurz erläutert werden. Es basiert darauf, dass für eine Permutation $p$ der Länge $n$, sodass $A(p) = P(n)$ jeder kürzeste Pfad zu einer identischen Permutation bei $I^{m}$ endet, wobei $m = n - P(n)$. Für jede Permutation der Länge $k$ mit $m \le k \le n$, die von einem solchen $p$ durch eine Folge von $\gamma_i$-Operationen erreicht werden kann, gilt außerdem, dass ihr kürzester Pfad zu einer identischen Permutation zu $I^m$ oder kleiner führt. Wir nennen im Folgenden die Menge an Permutationen der Länge $k$, deren kürzester Pfad zu $I^m$ oder einer kleineren identischen Permutation führt, $S_k$. Offensichtlich ist $S_n$ genau die gewünschte Menge von Permutationen mit $A(p) = P(n)$. Der Algorithmus arbeitet wie folgt: Man startet mit $S_m$, das aus allen Permutationen der Länge $m$ besteht. Nun definieren wir die Umkehrung von $\gamma_i$: Mit $q = \gamma_{i, r}^{-1} p$ wird die Permutation $q$ der Länge $|p| + 1$ bezeichnet, sodass $\gamma_i q = p$ und $q_i = r$. Der Parameter $r$ ist nötig, da die Umkehrung andernfalls nicht eindeutig wäre. Nun führt man $\gamma_{i, r}^{-1}$ für jede Permutation in $S_m$ aus und speichert für jede Permutation der Länge $m + 1$, die mindestens einmal Ergebnis einer solchen Operation war, wie oft sie Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war. Effizient lässt sich das mit einer Hashmap oder einem balancierten Binärbaum realisieren, wobei ein Zähler für jede betroffene Permutation verwaltet wird. Jede Permutation der Länge $m+ 1$, die $m + 1$ Mal Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war, muss Teil von $S_{m + 1}$ sein und wird dort eingefügt. Nun wird das Verfahren für $S_{m+ 1}$, wiederholt, dann $S_{m + 2}$ usw. bis $n - 1$. Schließlich enthält $S_n$ genau die gewünschte Menge von Permutationen. Bisher wurde angenommen, dass $m = n - P(n)$ bekannt ist, was nicht stimmt, da $P(n)$ berechnet werden soll. Wenn das beschriebene Verfahren aber von einem $k < m$ gestartet wird, ist $S_n$ am Ende leer, da es keine Permutationen der Länge $n$ gibt, deren kürzeste Pfade zu einer identischen Permutation zu $I^k$ oder kleiner führen, für $k < m$. Es wird folglich eine Binärsuche durchgeführt, um das tatsächliche $m$ zu finden. Da nicht für jede Permutation jeder Länge Speicher benötigt wird, und $A(p)$ nur für bestimmte Permutationen berechnet wird, sollten sowohl Laufzeit als auch Speicherverbrauch gegenüber \textsc{Pwue} verbessert sein. Es ergaben sich jedoch folgende praktische Probleme, die insgeamt zu höherer Laufzeit und höherem Speicherverbrauch führen.
+\noindent \emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen, sondern die Berechnung für ,,einfacher sortierbare'' Permutationen vermeiden. In der Praxis waren sie jedoch wesentlich ineffizienter als der vorgestellte Algorithmus. Im Folgenden soll eines kurz erläutert werden. Es basiert darauf, dass für eine Permutation $p$ der Länge $n$, sodass $A(p) = P(n)$ jeder kürzeste Pfad zu einer identischen Permutation bei $I^{m}$ endet, wobei $m = n - P(n)$. Für jede Permutation der Länge $k$ mit $m \le k \le n$, die von einem solchen $p$ durch eine Folge von $\gamma_i$-Operationen erreicht werden kann, gilt außerdem, dass ihr kürzester Pfad zu einer identischen Permutation zu $I^m$ oder kleiner führt. Wir nennen im Folgenden die Menge an Permutationen der Länge $k$, deren kürzester Pfad zu $I^m$ oder einer kleineren identischen Permutation führt, $S_k$. Offensichtlich ist $S_n$ genau die gewünschte Menge von Permutationen mit $A(p) = P(n)$. Der Algorithmus arbeitet wie folgt: Man startet mit $S_m$, das aus allen Permutationen der Länge $m$ besteht. Nun definieren wir die Umkehrung von $\gamma_i$: Mit $q = \gamma_{i, r}^{-1} p$ wird die Permutation $q$ der Länge $|p| + 1$ bezeichnet, sodass $\gamma_i q = p$ und $q_i = r$. Der Parameter $r$ ist nötig, da die Umkehrung andernfalls nicht eindeutig wäre. Nun führt man $\gamma_{i, r}^{-1}$ für jede Permutation in $S_m$ aus und speichert für jede Permutation der Länge $m + 1$, die mindestens einmal Ergebnis einer solchen Operation war, wie oft sie Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war. Effizient lässt sich das mit einer Hashmap oder einem balancierten Binärbaum realisieren, wobei ein Zähler für jede betroffene Permutation verwaltet wird. Jede Permutation der Länge $m+ 1$, die $m + 1$ Mal Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war, muss Teil von $S_{m + 1}$ sein und wird dort eingefügt. Nun wird das Verfahren für $S_{m+ 1}$, wiederholt, dann $S_{m + 2}$ usw. bis $n - 1$. Schließlich enthält $S_n$ genau die gewünschte Menge von Permutationen. Bisher wurde angenommen, dass $m = n - P(n)$ bekannt ist, was nicht stimmt, da $P(n)$ berechnet werden soll. Wenn das beschriebene Verfahren aber von einem $k < m$ gestartet wird, ist $S_n$ am Ende leer, da es keine Permutationen der Länge $n$ gibt, deren kürzeste Pfade zu einer identischen Permutation zu $I^k$ oder kleiner führen, für $k < m$. Es wird folglich eine Binärsuche durchgeführt, um das tatsächliche $m$ zu finden. Da nicht für jede Permutation jeder Länge Speicher benötigt wird, und $A(p)$ nur für bestimmte Permutationen berechnet wird, sollten sowohl Laufzeit als auch Speicherverbrauch gegenüber \textsc{Pwue} verbessert sein. Es ergaben sich jedoch folgende praktische Probleme, die insgeamt zu höherer Laufzeit und höherem Speicherverbrauch führen.
 
 \begin{itemize}
-    \item Wenn nicht jede Permutation gespeichert wird, muss zu $A(p)$ auch $\mu(p)$ gespeichert werden. Während $A(p)$ problemlos in 8 Bits passt, benötigt $\mu(p)$ 64 Bits, soadss der Speicherverbrauch pro Permutation 8 Mal größer wird. Daneben wird, wie bereits erwähnt, eine komplexere Datenstruktur zum Speichern der Zähler benötigt, die einen hohen konstanten bzw. logarithmischen Faktor zur Laufzeit beiträgt.
+    \item Wenn nicht jede Permutation gespeichert wird und kein Array der Länge $n!$ angelegt werden möchte, muss zu $A(p)$ auch $\mu(p)$ gespeichert werden. Während $A(p)$ problemlos in 8 Bits passt, benötigt $\mu(p)$ 64 Bits, soadss der Speicherverbrauch pro Permutation 8 Mal größer wird. Daneben wird, wie bereits erwähnt, eine komplexere Datenstruktur zum Speichern der Zähler benötigt, die einen hohen konstanten bzw. logarithmischen Faktor zur Laufzeit beiträgt.
     \item Das Ausnutzen der Symmetrie des Pancake-Graphen wird weniger effizient, da zu einer Permutation gespeichert werden muss, ob ihr symmetrischer Partner überhaupt in $S_k$ enthalten ist.
     \item Eine Parallelisierung des Verfahrens ist schwierig. Wenn $\gamma_{i, r}^{-1}$-Operationen von mehreren Permutationen gleichzeitig ausgeführt werden, muss die Datenstruktur zum Speichern der Zähler für Permutationen der Länge $k + 1$ gleichzeitig verändert werden. Dagegen kann \textsc{Pwue} vollständig parallelisiert werden.
 \end{itemize}
@@ -871,17 +897,18 @@ Im Best Case, wenn die Eingabe eine identische Permutation ist, beträgt die Lau
 
 \subsection{Teilaufgabe b)}
 
-In \textsc{Pwue} werden für eine Permutation der Länge $k$ $\Theta(k^2 \log k)$ Schritte durchgeführt, da in der dritten verschachtelten for-Schleife in jeder Iteration $\mu(\gamma_i p)$ berechnet wird. Für jedes $2 \le k \le n - 1$ geschieht das für $k! / 2$ Permutationen. Bezüglich \emph{swap} wird eine konstante Laufzeit angenommen, da einfach die Speicheradressen der Arrays getauscht werden können. Anschließend werden nochmal $\Theta(n^2 \log n)$ für alle $n!$ Permutationen der Länge $n$ ausgeführt. Summiert man für alle $k$ von $2$ bis $n - 1$ auf, ergibt sich folgende Gesamtlaufzeit.
+In \textsc{Pwue} werden für eine Permutation der Länge $k$ $\Theta(k^2 \log k)$ Schritte durchgeführt, da in der dritten verschachtelten for-Schleife in jeder Iteration $\mu(\gamma_i p)$ berechnet wird. Für jedes $2 \le k \le n$ geschieht das für $k! / 2$ Permutationen. Bezüglich \emph{swap} wird eine konstante Laufzeit angenommen, da einfach die Speicheradressen der Arrays getauscht werden können. Summiert man für alle $k$ von $2$ bis $n$ auf, ergibt sich folgende Gesamtlaufzeit.
 \begin{align*}
-    \sum_{k = 2}^{n - 1} \frac {k!} 2 \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)
-     & = \sum_{k = 2}^{n-1} k! \cdot \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)           \\
-     & \le \sum_{k = 2}^{n - 1} (n - 1)! \cdot \Theta(n^2 \log n) + n! \cdot \Theta(n^2 \log n) \\
-     & \le n! \cdot \Theta(n^2 \log n)
+    \sum_{k = 2}^{n} \frac {k!} 2 \Theta(k^2 \log k)
+     & = \frac 1 2 \sum_{k = 2}^{n} k! \cdot \Theta(k^2 \log k)                                                     \\
+     & \le \frac 1 2 \sum_{k = 2}^{n - 1} (n - 1)! \cdot \Theta(n^2 \log n) + \frac {n!} 2 \cdot \Theta(n^2 \log n) \\
+     & \le \frac n 2 \cdot (n - 1)! \cdot \Theta(n^2 \log n) + \frac{n!} 2 \cdot \Theta(n^2 \log n)                 \\
+     & = n! \cdot \Theta(n^2 \log n)
 \end{align*}
-Die Laufzeit ist also durch $O(n! \cdot n^2 \log n)$ nach oben beschränkt. Tatsächlich entspricht das auch der Unterschranke, da
+Die Laufzeit ist also durch $O(n! \cdot n^2 \log n)$ nach oben beschränkt. Tatsächlich entspricht das auch der asymptotischen Unterschranke, da
 \begin{align*}
-    \sum_{k = 2}^{n - 1} \frac {k!} 2 \Theta(k^2 \log k) + n! \cdot \Theta(n^2 \log n)
-    \ge n! \cdot \Theta(n^2 \log n)
+    \sum_{k = 2}^{n} \frac {k!} 2 \Theta(k^2 \log k)
+    \ge \frac {n!} 2 \cdot \Theta(n^2 \log n)
 \end{align*}
 ist. Folglich beträgt die Laufzeit von \textsc{Pwue} im Best und Worst Case $\Theta(n! \cdot n^2 \log n)$.
 
@@ -938,6 +965,9 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 
 \subsection{Teilaufgabe a)}
 
+Dem Programm \emph{aufgabe3\_a} kann in der Kommandozeile als Argument \verb|--bfs| oder \verb|--bnb| mitgegeben werden, um \textsc{MinOperationsBFS} bzw. \textsc{MinOperationsBnB} als Algorithms zu verwenden. Standardmäßig wird \textsc{MinOperationsA*} verwendet.
+\bigskip
+
 \noindent \verb|vector<unsigned> min_operations_bfs(vector<unsigned> const &p)|
 \smallskip
 
@@ -961,7 +991,7 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 \verb|    unsigned ubound = UINT_MAX)|
 \smallskip
 
-\noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt. Eine Besonderheit ist hier, dass für die Prioritätswarteschlange ein Vergleichsoperator \emph{greater} angegeben werden muss, da sie ansonsten absteigend anstatt aufsteigend nach unterer Schranke sortieren würde.
+\noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt. Eine Besonderheit ist, dass für die Prioritätswarteschlange ein Vergleichsoperator \emph{greater} angegeben werden muss, da sie ansonsten absteigend anstatt aufsteigend nach unterer Schranke sortieren würde.
 \bigskip
 
 \noindent \verb|vector<unsigned> reconstruct_operations(| \\
@@ -969,8 +999,50 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 \smallskip
 
 \noindent Gibt die Folge an $\gamma_i$-Operationen zurück, mit denen man zur Permutation $p$ der Länge $m$ mit $\mu(p) = i$ gelangt. $t$ wird vor Rückgabe umgekehrt, da die Operationen in umgekehrter Reihenfolge hinten angefügt wurden.
+\bigskip
+
+\noindent \verb|unsigned get_lbound(vector<unsigned> const &p)|
+\smallskip
+
+\noindent Gibt die untere Schranke von $\lfloor (x + 1)/ 3 \rfloor$ für die Anzahl benötigter $\gamma_i$-Operationen für $p$, zurück, wobei $x$ die Anzahl monotoner Teilstrings ist. Die Überprüfung, ob bei Index $i$ ein neuer monotoner Teilstring beginnt, wurde in die Funktion \verb|is_increasing| ausgelagert.
+\bigskip
+
+\noindent \verb|unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)|
+\smallskip
+
+\noindent Berechnet \textsc{LowerBound}$(\gamma_i p)$. Eine separate Funktion dafür vermeidet das Anlegen eines Vektors für $\gamma_i p$.
+\bigskip
+
+\noindent \verb|bool is_increasing(bool incr, unsigned a, unsigned b, unsigned &x)|
+\smallskip
+
+\noindent Gibt zurück, ob $a, b$ steigt und erhöht $x$ um 1, falls sich das Steigungsverhalten gegenüber vorher verändert hat.
 
 \subsection{Teilaufgabe b)}
+
+Nach Ausführung des Programms \emph{aufgabe3\_b} muss $n$ als Eingabe gegeben werden.
+\bigskip
+
+\noindent \verb|pair<unsigned, size_t> pwue(size_t n)|
+\smallskip
+
+\noindent Gibt $P(n)$ sowie den Index einer Permutation der Länge $n$ mit $A(p) = P(n)$ zurück. Die Berechnung wird parallelisiert: Wenn gerade $A(p)$ für alle Permutationen der Länge $k$ bestimmt werden soll, wird das Intervall $[0, k!/2 - 1]$ in \emph{n\_threads} gleich große Teile geteilt und jedem Thread der Index seiner ersten und letzten Permutation mitgegeben. \emph{n\_threads} bezeichnet eine geeignete Anzahl an Threads für den Computer, auf dem das Programm ausgeführt wird. Sie kann mithilfe von \verb|thread::hardware_concurrency()| aus der C$++$ Standardbibliothek festgelegt werden. Die Funktion \verb|pwue| übernimmt in der Implementierung nur das Zuteilen der Threads und Sammeln der Ergebnisse, die eigentlichen Berechnungen finden in den zwei Threadfunktionen statt. Wie im Pseudocode ist die Berechnung in zwei Teile gegliedert: Für $k$ von 2 bis $n - 1$ wird $A(p)$ für jede Permutation in $z$ geschrieben, daher wird in diesem Teil \verb|update_z| als Threadfunktion verwendet. Im zweiten Teil hat jeder Thread eine Rückgabe, das maximale von ihm gefundene $A(p)$ und ein Beispiel dazu. Daher werden die Threads hier mit \verb|async| gestartet, ihre Rückgabe kann dann über die zurückgegebenen \verb|future|-Objekte erhalten werden.
+\bigskip
+
+\noindent \verb|void update_z(| \\
+\verb|    size_t k, size_t u, size_t v, uint8_t const *const y, uint8_t *const z,| \\
+\verb|    size_t i1, size_t i2)|
+\smallskip
+
+\noindent Berechnet $A(p)$ für alle Permutationen der Länge $k$ mit $i_1 \le \mu(p) \le i_2 - 1$ und schreibt das Ergebnis in $z$ an Index $\mu(p)$. Da jeder Thread nur auf einen für ihn vorgegebenen Bereich von $z$ zugreift, muss keine Synchronisation stattfinden, was die Parallelisierung sehr effizient macht. Die Namensgebung und Funktionsweise ist genau so wie im Pseudocode, außer dass nicht in jeder Iteration der for-Schleife \verb|ith_permutation| aufgerufen wird, sondern \verb|next_permutation| aus der C$++$ Standardbibliothek zum Erhalten der lexikographisch nächsten Permutation verwendet wird. Die Laufzeit von \verb|next_permutation| beträgt nämlich nur $O(n)$. Asymptotisch ändert das aber nichts.
+\bigskip
+
+\noindent \verb|pair<unsigned, size_t> get_max_a(| \\
+\verb|    size_t n, size_t u, size_t v, uint8_t const *const y, size_t i1,| \\
+\verb|    size_t i2)|
+\smallskip
+
+\noindent Gibt das maximale $A(p)$ für Permutationen der Länge $n$ mit $i_1 \le \mu(p) \le i_2 - 1$ zurück, sowie ein Beispiel mit maximalem $A(p)$.
 
 \section{Beispiele}
 
@@ -1001,15 +1073,21 @@ Mit dem Programm für Teilaufgabe b) konnte die PWUE-Zahl bis $n = 13$ berechnet
 \noindent Dass $P(14) = 8$ ist, wurde nicht wie die anderen PWUE-Zahlen berechnet, kann aber wie folgt begründet werden. Es gilt $P(n) \le P(n - 1) + 1$ für $n \ge 2$, da jede Permutation der Länge $n$ durch eine Operation in eine Permutation der Länge $n - 1$ umgewandelt werden kann. Des weiteren gilt $P(n) \ge P(n - 1)$. Wäre das nicht der Fall, könnte an eine Permutation der Länge $n - 1$ das Element $n$ hinten anhängen und sie mit weniger Schritten als zuvor sortieren, ein Widerspruch. Gilt also $P(13) = 7$ muss $P(14) = 7$ oder $P(14) = 8$ sein. Da von dem in der Tabelle genannten Beispiel aber mithilfe des Programms für a) überprüft werden kann, dass $A(p) = 8$, muss $P(14) = 8$ gelten.
 \bigskip
 
-\noindent \emph{Das tatsächliche Laufzeitverhalten des Programms.} Im Verhältnis zur sehr schlechten asymptotischen Laufzeit von $\Theta(n! \cdot n^2 \log n)$ lief das Programm von Teilaufgabe b) relativ schnell. Zur Berechnung von $P(13)$ sollten nach der theoretischen Abschätzung in der Größenordnung von $13! \cdot 13^2 \cdot \log_2 13 \approx 3,89 \cdot 10^{12}$ Schritte nötig sein. Auf einem Laptop mit dem Prozessor AMD Ryzen 7 3700U (Mobile, weit von der Leistung des Ryzen 7 für Desktop-PCs entfernt) und 8 Threads konnte $P(13)$ in nur 40 min berechnet werden. Für $P(12)$ wurden 3 min 20 s benötigt, für $P(11)$ ca. 9 s.
+\noindent \emph{Das tatsächliche Laufzeitverhalten des Programms.} Im Verhältnis zur sehr schlechten asymptotischen Laufzeit von $\Theta(n! \cdot n^2 \log n)$ lief das Programm von Teilaufgabe b) relativ schnell. Zur Berechnung von $P(13)$ sollten nach der theoretischen Abschätzung in der Größenordnung von $13! \cdot 13^2 \cdot \log_2 13 \approx 3,89 \cdot 10^{12}$ Schritte nötig sein. Auf einem Laptop mit dem Prozessor AMD Ryzen 7 3700U (Mobile, weit von der Leistung des Ryzen 7 für Desktop-PCs entfernt) und 8 Threads konnte $P(13)$ in nur !!!!! min berechnet werden. Für $P(12)$ wurden 1 min und 13 s benötigt, für $P(11)$ ca. 5,5 s.
 
 \section{Quellcode}
 
 \subsection{util.cpp}
 
+\lstinputlisting[language=C++]{aufgabe3/util.cpp}
+
 \subsection{aufgabe3\_a.cpp}
 
+\lstinputlisting[language=C++]{aufgabe3/aufgabe3_a.cpp}
+
 \subsection{aufgabe3\_b.cpp}
+
+\lstinputlisting[language=C++]{aufgabe3/aufgabe3_b.cpp}
 
 \begin{thebibliography}{5}
     \bibitem{permutationranking}

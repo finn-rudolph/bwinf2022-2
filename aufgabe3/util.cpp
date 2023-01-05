@@ -3,7 +3,7 @@
 using namespace std;
 
 // Berechnet den Index von p in einer lexikographisch sortierten Liste aller
-// |p|! Permutationen der Länge |p|.
+// |p|! Permutationen der Laenge |p|.
 size_t ind(vector<unsigned> const &p)
 {
     size_t k = 0; // Der Index von p.
@@ -54,7 +54,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     memset(tree, 0, 2 * m * sizeof(unsigned));
 
     // Die Elemente vor i werden in umgekehrter Reihenfolge bearbeitet. Das j-te
-    // Element gamma_i p ist das (i - j - 1)-te Element von p, für j < i.
+    // Element gamma_i p ist das (i - j - 1)-te Element von p, fuer j < i.
     for (size_t j = 0; j < i; j++)
     {
         unsigned const x = p[i - j - 1] - (p[i - j - 1] > p[i]);
@@ -90,7 +90,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     return k;
 }
 
-// Schreibt die Ziffern von i im fakultätsbasierten Zahlensystem in s. Es muss
+// Schreibt die Ziffern von i im fakultaetsbasierten Zahlensystem in s. Es muss
 // i < (s.size())! gelten.
 void calc_factorial_digits(size_t i, vector<unsigned> &s)
 {
@@ -119,7 +119,7 @@ vector<unsigned> ith_permutation(size_t n, size_t i)
         {
             tree[z]--;
             z <<= 1;
-            // Wenn nach rechts gegangen wird, muss die Anahl benötigter,
+            // Wenn nach rechts gegangen wird, muss die Anahl benoetigter,
             // kleinerer Elemente entsprechend verringert werden.
             if (p[j] >= tree[z])
                 p[j] -= tree[z++];
