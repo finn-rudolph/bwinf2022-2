@@ -326,14 +326,43 @@ Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau d
     Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) = n! - \mu(p^*) - 1$.
 \end{definition}
 
-\noindent $p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgendes Lemma benötigt.
+\noindent $p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Aus der Definition folgt direkt, dass $\mu(p)_i + \mu(p^*)_i = n - i - 1$. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgender Zusammenhang zwischen $\nu(p)$ und $\nu(p^*)$ und ein weiteres Lemma benötigt.
+
+\begin{lemma}
+    $\nu(p) + \nu(p^*) = n! - 1$ 
+\end{lemma}
+
+\begin{proof}
+    Die Aussage ist äquivalent zu $\mu(p)_i + \mu(p^*)_i = i$. Der Beweis geschieht durch Induktion über $n$. Für $n = 1$ stimmt die Aussage offensichtlich. Man nehme an, die Aussage stimmt für Permutationen der Länge $k$. Man nehme außerdem an, $p$ ist eine Permutation der Länge $k$ und die Zahl $k$ wird vor Index $i$ in $p$ eingefügt, um die Permutation
+    \begin{align*}
+        q = p_0, p_1, \dots, p_{i - 1}, k, p_i, p_{i + 1}, \dots, p_{k - 1}
+    \end{align*}
+    der Länge $k + 1$ zu erhalten. Wenn dieses Verfahren für alle Permutationen der Länge $k$ und alle möglichen $0 \le i \le k$ durchgeführt wird, erhält man offensichtlich alle Permutationen der Länge $k + 1$. Es wird zunächst gezeigt, dass man durch Einfügen von 0 in $p^*$ vor Index $i$ und Erhöhen aller anderen Elemente von $p^*$ um 1 $q^*$ erhält.
+
+    Wir definieren die Permutation
+    \begin{align*}
+        x = p^*_0 + 1, p^*_1 + 1, \dots, p^*_{i - 1} + 1, 0, p^*_i + 1 p^*_{i + 1} + 1, \dots, p^*_{k - 1} + 1
+    \end{align*}
+    Für alle $i < j \le k$ ist offensichtlich $\mu(x)_j = \mu(p^*)_{j - 1}$, da sie um eine Stelle verschoben werden. Für $0 \le j < i$ ist $\mu(x)_j = \mu(p^*)_j + 1$, da 0 neu rechts von ihnen liegt. Da $\mu(q)_i = k - i$, muss $\mu(q^*)_i = 0$ sein, denn $\mu(q)_i + \mu(q^*)_i = k - i$. $\mu(x)_i$ ist ebenfalls 0. Daher gilt für alle $0 \le j \le k$
+    \begin{align*}
+        \mu(q)_j + \mu(x)_j = k - j
+    \end{align*}
+    und damit $x = q^*$.
+    
+    Da $\mu(q^*)_i = 0$, muss 0 in $q^*$ bei einem Index $j \le i$ liegen. Man nehme an 0 liegt in $q^*$ bei $0 \le j < i$, sodass $\mu(q^*)_j = 0$ und damit $\mu(q)_j = k - j$. Das ist ein Widerspruch, denn rechts von $q_j$ können nicht $k - j$ kleinere Elemente liegen, da $k$ bei $i > j$ liegt. Folglich ist $q^*_i = 0$ und damit $\nu(q^*)_i = i$. 
+    
+    Da $q_i = k$, ist $\nu(q)_i = 0$, sodass $\nu(q)_i + \nu(q^*)_i = i$. Für $0 \le j < i$ ist $\nu(q)_j = \nu(p)_j$ und $\nu(q^*)_j = \nu(p^*)_j$, da durch $\nu$ die größeren, links gelegenen Elemente gezählt werden, die für $0 \le j < i$ gleich denen in $p^*$ sind. Damit gilt $\nu(q)_j + \nu(q^*)_j = j$ für $0 \le j < i$ nach der Induktionsannahme. $\nu(q)_j = \nu(p)_{j - 1} + 1$ für alle $i < j \le k$, da die Elemente nach $i$ durch das Einfügen von $k$ um eine Stelle verschoben wurden und ein neues größeres Element, $k$, links von ihnen liegt. Für $i < j \le k$ ist $\nu(q^*)_j = \nu(p^*)_{j-1}$, da $q^*_i = 0$. Folglich gilt auch für $i < j \le k$
+    \begin{align*}
+        \nu(q)_j + \nu(q^*)_j = \nu(p)_{j - 1} + 1 + \nu(p^*)_{j - 1} = j - 1 + 1 = j 
+    \end{align*}
+\end{proof}
 
 \begin{lemma}
     Sei $p$ eine Permutation der Länge $n$ und $p_i$ ein Element von $p$ $(0 \le i \le n - 1)$. Für jedes $0 \le j \le n-1, j \ne i$ ist entweder ($p_i < p_j$ und $p^*_i > p^*_j$) oder ($p_i > p_j$ und $p^*_i < p^*_j$).
 \end{lemma}
 
 \begin{proof}
-    In anderen Worten sagt Lemma 1, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, die für den Beweis nötig ist.
+    In anderen Worten sagt das Lemma, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, die für den Beweis nötig ist.
 
     Aufgrund der Definition von $p^*$ gilt
     \begin{align*}
@@ -362,7 +391,7 @@ $$
         0 & \text{wenn } p_i \le p_h
     \end{cases}
 $$
-$\eta(p, i, j, k)$ zählt die Anzahl an Elementen mit Indizes in $[j, k]$, die kleiner als $p_i$ sind. Lemma 1 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berechnen, denn für jeden Index ist entweder das Element in $p$ oder in $p^*$ kleiner als $p_i$ bzw. $p^*_i$.
+$\eta(p, i, j, k)$ zählt die Anzahl an Elementen mit Indizes in $[j, k]$, die kleiner als $p_i$ sind. Lemma 2 ermöglicht es, die Summe von $\eta$ für $p$ und $p^*$ einfach zu berechnen, denn für jeden Index ist entweder das Element in $p$ oder in $p^*$ kleiner als $p_i$ bzw. $p^*_i$.
 \begin{align*}
     \eta(p, i, j, k) + \eta(p^*, i, j, k) & = \sum_{h = j}^k
     \begin{cases}
