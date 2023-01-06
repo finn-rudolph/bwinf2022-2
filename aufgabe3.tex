@@ -286,7 +286,7 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
 \end{figure}
 \newpage
 
-Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
+\noindent Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
 Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 0,2,3,1$ und $p^* = 3, 1, 0, 2$:
 \begin{align*}
     \gamma_0 p = 1, 2, 0 \quad \gamma_0 p^* = 1, 0, 2 \\
@@ -499,11 +499,11 @@ $\sigma_i = -1$ bedeutet, dass der $i$-te Pfannkuchen die verbrannte Seite oben 
 \subsection{Finden der kürzesten Folge an $\gamma_i$-Operationen}
 
 In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt. Zunächst wird ein Brute-Force Ansatz vorgestellt, der bereits alle vorgegebenen Beispiele gut lösen kann. Anschließend wird eine untere Schranke für die nötige Anzahl an $\gamma_i$-Operationen zum Erreichen einer identischen Permutation hergeleitet, mit der sich der Brute-Force Algorithmus auf zwei Arten verbessern lässt.
-\bigskip
+\smallskip
 
-\noindent \emph{Brute-Force Lösung.} Wie der Name bereits sagt, werden einfach alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
+\noindent \emph{Brute-Force Lösung.} Wie der Name bereits sagt, werden alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
 
-Die Vorgängerliste wird durch ein Array von Hashmaps \emph{pre} realisiert. Für jede Permutationslänge wird für eine besuchte Permutation $p$ bei $\mu(p)$ der $\mu$-Wert des Vorgängers von $p$ gespeichert. Bei Index $k - 1$ von \emph{pre} werden Knoten der Länge $k$ verwaltet. Um Speicher zu sparen, wird in der Warteschlange nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus kann als Pseudocode wie folgt zusammengefasst werden.
+Die Vorgängerliste wird durch ein Array von Hashmaps \emph{pre} realisiert. Für jede Permutationslänge wird für eine besuchte Permutation $p$ bei $\mu(p)$ der $\mu$-Wert des Vorgängers von $p$ gespeichert. Bei Index $k - 1$ von \emph{pre} werden Knoten der Länge $k$ verwaltet. Um Speicher zu sparen, wird in der Warteschlange nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus wird mit dem Pseudocode \textsc{MinOperationsBFS} zusammengefasst.
 
 \begin{algorithm}
     $Q \gets$ Queue containing $(|p|, \mu(p))$ \;
@@ -619,7 +619,8 @@ Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Zif
     \end{align*}
 \end{proof}
 
-\noindent Die untere Schranke kann mit folgendem Algorithmus berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit beträgt $\Theta(n)$.
+\noindent Die untere Schranke kann mit dem Algorithmus \textsc{LowerBound} berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit von \textsc{LowerBound} beträgt $\Theta(n)$.
+\bigskip
 
 \begin{algorithm}
     \If{$n = 1$}
@@ -814,7 +815,7 @@ Zunächst wird die Laufzeit von \textsc{ReconstructOperations} bestimmt. Die whi
      & = \sum_{m = 1}^n \sum_{j = 0}^{m+1} cm \log m \\
      & = c \sum_{m = 1}^n (m + 2)m \log m            \\
      & \le c \sum_{m = 1}^n n^2 \log n  + 2 n \log n \\
-     & = cn^3 \log n + 2cn^2 \log n                  \\
+     & = cn^3 \log n + 2cn^2 \log n                 
 \end{align*}
 Eine obere Schranke für die Laufzeit von \textsc{ReconstructOperations} ist folglich $O(n^3 \log n)$.
 
@@ -1119,6 +1120,22 @@ Index |  p
 1, 8, 11, 9, 1, 7, 13, 3, 7, 6, 8
 \end{lstlisting}
 
+\subsection*{pancake12}
+\scriptsize \emph{Eingabe: }\verb|19 9 14 1 17 7 15 2 5 16 10 4 3 12 6 19 8 11 18 13|
+\normalsize
+\begin{lstlisting}[numbers=none]
+10 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+14, 8, 16, 5, 11, 2, 11, 4, 5, 9
+\end{lstlisting}
+
+\subsection*{pancake13}
+\scriptsize \emph{Eingabe: }\verb|20 5 11 12 16 15 17 18 2 7 10 4 8 20 3 1 13 6 19 14 9|
+\normalsize
+\begin{lstlisting}[numbers=none]
+9 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+12, 1, 17, 9, 7, 11, 13, 6, 28
+\end{lstlisting}
+
 \subsection{Vergleich der drei Algorithmen}
 
 Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jeweils die Laufzeit (in s) sowie die Anzahl besuchter Permutationen gemessen. Diese Zahl wurde durch \emph{pre} bzw. \emph{vis} erhalten. Der verwendete Laptop hat einen AMD Ryzen 7 3700U (Mobile) Prozessor und ca. 5,7 GB verfügbaren Arbeitsspeicher.
@@ -1142,12 +1159,14 @@ Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jewei
         pancake8 & 0,121 & 83194 & 0,118 & 81564 & 0,209 & 80881 \\
         pancake9 & 2,490 & 1052794 & 2,782 & 1025096 & 4,524 & 1020675 \\
         pancake10 & 34,60 & 9071860 & 25,57 & 8088249 & 45,89 & 8597389 \\
-        pancake11 & $-$ & $-$ & 360,2 & 96756054 & 664,2 & 105275870
+        pancake11 & $-$ & $-$ & 360,2 & 96756054 & 664,2 & 105275870 \\
+        pancake12 & 262,6 & 50747370 & 115,5 & 37119639 & 197,9 & 38180960 \\
+        pancake13 & $-$ & $-$ & 23,80 & 15342000 & 72,98 & 21004993 \\
     \end{tabular}
     \caption{Laufzeit (in s) und Anzahl besuchter Knoten der drei Algorithmen für Teilaufgabe a)}
 \end{table}
 
-\noindent Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen deutlich verringern können. Sie ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei dem Beispiel bei ca. 5 GB.
+\noindent Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen deutlich verringern können. Sie ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} und \emph{pancake13} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei \emph{pancake11} bei ca. 5 GB und für \emph{pancake13} bei ca. 1 GB.
 
 \subsection{Werte von $P(n)$}
 
