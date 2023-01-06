@@ -13,6 +13,7 @@
 \usepackage{enumitem}
 \usepackage{listings}
 \usepackage{color}
+\usepackage{booktabs}
 
 \newcommand{\Aufgabe}{Aufgabe 3: Pancake Sort}
 \newcommand{\TeilnahmeId}{67571}
@@ -30,7 +31,7 @@
 
 \setlist[enumerate]{label*={\arabic*.}}
 
-\definecolor{keyword}{rgb}{0.4, 0.0, 0.7}
+\definecolor{keyword}{rgb}{0.2, 0.0, 0.7}
 \definecolor{comment}{rgb}{0.5, 0.5, 0.5}
 \definecolor{number}{rgb}{0.5, 0.5, 0.5}
 \definecolor{string}{rgb}{0.3, 0.65, 0.0}
@@ -1046,9 +1047,128 @@ Nach Ausführung des Programms \emph{aufgabe3\_b} muss $n$ als Eingabe gegeben w
 
 \section{Beispiele}
 
-\subsection{Beispiele der BWINF-Website}
+\subsection{Programmausgabe}
 
-\subsection{Eigene Beispiele}
+Das Programm für a) gibt neben den Indizes der nötigen $\gamma_i$-Operationen (0-indexiert) auch den aktuellen Stapel nach jedem Sortierschritt aus. Damit kann man nachvollziehen, dass tatsächlich gültige Wendeoperationen ausgeführt wurden. Aus Platzgründen wird das in der Dokumentation nur für \emph{pancake0} abgedruckt. Die Ausgaben stammen von \verb|min_operations_astar|, die anderen zwei Algorithmen geben im Allgemeinen andere, kürzeste Folgen aus. Die Beispiele \emph{pancake8} bis \emph{pancake11} wurden selbst hinzugefügt, wobei versucht wurde, möglichst schwierige Beispiele zu erstellen. ,,Schwierig'' bedeutet nicht unbedingt ein großes $n$, sondern eine hohe Anzahl nötiger Operationen, weil so die Suchtiefe groß wird. Die Beispiele \emph{pancake10} und \emph{pancake11} haben die Form
+\begin{align*}
+    1, n, 2, n - 1, 3, n - 2, 4, n - 3, \dots, \lfloor n/2 \rfloor + 1
+\end{align*}
+die meistens eine hohe Zahl an Operationen benötigt (nicht immer, $n = 14$ ist ein Gegenbeispiel). Für $n = 16$ benötigt diese Art ebenfalls 9 Operationen, wie \emph{pancake9}.
+
+\subsubsection*{pancake0}
+\begin{lstlisting}[numbers=none]
+2 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+4, 3
+
+Index |  p
+4     |  3   2   4   5   1   
+3     |  5   4   2   3   
+      |  2   4   5   
+\end{lstlisting}
+
+\subsubsection*{pancake1}
+\begin{lstlisting}[numbers=none]
+3 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+2, 3, 4
+\end{lstlisting}
+
+\subsubsection*{pancake2}
+\begin{lstlisting}[numbers=none]
+4 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+1, 3, 3, 4  
+\end{lstlisting}
+
+\subsubsection*{pancake3}
+\begin{lstlisting}[numbers=none]
+6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+10, 4, 5, 2, 2, 4 
+\end{lstlisting}
+
+\subsubsection*{pancake4}
+\begin{lstlisting}[numbers=none]
+7 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+3, 10, 9, 7, 3, 0, 6 
+\end{lstlisting}
+
+\subsubsection*{pancake5}
+\begin{lstlisting}[numbers=none]
+6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+0, 12, 6, 8, 4, 5  
+\end{lstlisting}
+
+\subsubsection*{pancake6}
+\begin{lstlisting}[numbers=none]
+8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+6, 9, 8, 3, 0, 4, 8, 0
+\end{lstlisting}
+
+\subsubsection*{pancake7}
+\begin{lstlisting}[numbers=none]
+8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+2, 2, 5, 9, 3, 10, 9, 5
+\end{lstlisting}
+
+\subsection*{pancake8}
+\scriptsize \emph{Eingabe:} \verb|14 9 2 12 4 11 5 14 6 3 13 8 10 7 1|
+\normalsize
+\begin{lstlisting}
+8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+12, 4, 8, 6, 4, 7, 6, 6
+\end{lstlisting}
+
+\subsection*{pancake9}
+\scriptsize \emph{Eingabe:} \verb|16 15 2 6 10 4 8 12 1 13 16 9 14 7 5 11 3|
+\normalsize
+\begin{lstlisting}[numbers=none]
+9 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+2, 10, 9, 5, 6, 4, 8, 6, 7
+\end{lstlisting}
+
+\subsection*{pancake10}
+\scriptsize \emph{Eingabe: }\verb|18 1 18 2 17 3 16 4 15 5 14 6 13 7 12 8 11 9 10|
+\normalsize
+\begin{lstlisting}[numbers=none]
+10 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+3, 10, 9, 5, 1, 5, 9, 8, 6, 5
+\end{lstlisting}
+
+\subsection*{pancake11}
+\scriptsize \emph{Eingabe: }\verb|20 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11|
+\normalsize
+\begin{lstlisting}[numbers=none]
+11 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
+1, 8, 11, 9, 1, 7, 13, 3, 7, 6, 8
+\end{lstlisting}
+
+\subsection{Vergleich der drei Algorithmen}
+
+Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jeweils die Laufzeit (in s) sowie die Anzahl besuchter Permutationen gemessen. Diese Zahl wurde durch \emph{pre} bzw. \emph{vis} erhalten.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c c c c c c c}
+        & \multicolumn{2}{c}{\textsc{MinOperationsBFS}} &
+        \multicolumn{2}{c}{\textsc{MinOperationsA*}} &
+        \multicolumn{2}{c}{\textsc{MinOperationsBnB}} \\
+        & Laufzeit & \# Knoten & Laufzeit & \# Knoten & Laufzeit & \# Knoten \\
+        \cmidrule{1-7}
+        pancake0 & 0,003 & 11 & 0,003 & 11 & 0,003 & 8 \\
+        pancake1 & 0,004 & 70 & 0,004 & 62 & 0,003 & 60  \\
+        pancake2 & 0,004 & 148 & 0,003 & 118 & 0,004 & 147  \\
+        pancake3 & 0,011 & 3063 & 0,010 & 2941 & 0,012 & 2941  \\
+        pancake4 & 0,063 & 26544 & 0,050 & 24385 & 0,054 & 23880 \\
+        pancake5 & 0,093 & 86718 & 0,059 & 42919 & 0,048 & 28865 \\
+        pancake6 & 0,507 & 293320 & 0,423 & 258198 & 0,718 & 263616 \\
+        pancake7 & 2,544 & 1056514 & 0,993 & 692598 & 1,973 & 693175 \\
+        pancake8 & 0,121 & 83194 & 0,118 & 81564 & 0,209 & 80881 \\
+        pancake9 & 2,490 & 1052794 & 2,782 & 1025096 & 4,524 & 1020675 \\
+        pancake10 & 34,60 & 9071860 & 25,57 & 8088249 & 45,89 & 8597389 \\
+        pancake11 & $-$ & $-$ & 360,2 & 96756054 & 664,2 & 105275870
+    \end{tabular}
+    \caption{Laufzeit (in s) und Anzahl besuchter Permutationen der drei Algorithmen für Teilaufgabe a)}
+\end{table}
+
+\noindent Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Knoten bzw. Permutationen deutlich verringern können. Sie liegt in allein Beispielen unter der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} war meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. Das letzte Beispiel konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden, auf dem verwendeten PC stehen 5,7 GB effektiv zur Verfügung. Der Speicherverbrauch der anderen zwei Verfahren lag bei ca. 5 GB.
 
 \subsection{Werte von $P(n)$}
 
@@ -1057,8 +1177,9 @@ Mit dem Programm für Teilaufgabe b) konnte die PWUE-Zahl bis $n = 13$ berechnet
 \begin{table}[H]
     \centering
     \begin{tabular}{c c l}
+        \toprule
         $n$ & $P(n)$ & Beispiel mit $A(p) = P(n)$       \\
-        \hline
+        \cmidrule{1-3}
         8   & 5      & 6 3 8 5 2 7 4 1                  \\
         9   & 5      & 9 7 3 8 5 2 6 4 1                \\
         10  & 6      & 10 3 5 9 4 6 8 2 7 1             \\
@@ -1066,6 +1187,7 @@ Mit dem Programm für Teilaufgabe b) konnte die PWUE-Zahl bis $n = 13$ berechnet
         12  & 7      & 12 9 4 11 5 8 3 6 10 2 7 1       \\
         13  & 7      & 13 12 9 4 11 8 3 7 2 6 10 5 1    \\
         14  & 8      & 9 2 12 4 11 5 14 6 3 13 8 10 7 1 \\
+        \bottomrule
     \end{tabular}
     \caption{PWUE-Zahlen bis $n = 14$ mit Beispielen}
 \end{table}
