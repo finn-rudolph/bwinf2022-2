@@ -16,7 +16,6 @@ size_t ind(vector<unsigned> const &p)
         size_t z = m + p[j]; // Aktueller Knoten.
         k *= (p.size() - j);
         k += p[j];
-
         // Angefangen beim p[j]-ten Blatt wird der Segmentbaum nach oben
         // durchlaufen.
         for (size_t l = 0; l < lgn; l++)
@@ -90,8 +89,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     return k;
 }
 
-// Schreibt die Ziffern von i im fakultaetsbasierten Zahlensystem in s. Es muss
-// i < (s.size())! gelten.
+// Schreibt die Ziffern von i im fakultaetsbasierten Zahlensystem in s.
 void calc_factorial_digits(size_t i, vector<unsigned> &s)
 {
     for (size_t j = 1; j <= s.size(); j++)

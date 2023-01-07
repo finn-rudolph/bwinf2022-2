@@ -4,13 +4,13 @@
 using namespace std;
 
 // Findet die kuerzeste Folge an gamma-Operationen, um p in eine identische
-// Permutation umzuformen, durch Austesten aller moeglichen Folgen.
+// Permutation umzuformen durch Austesten aller moeglichen Operationen.
 vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 {
     vector<unordered_map<size_t, size_t>> pre(p.size());
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
-    // Speichert Laenge und Index jedes Blatts im Suchbaum.
+    // Speichert Laenge und Index jedes zu besuchenden Knotens.
     queue<pair<size_t, size_t>> q;
     q.push({p.size(), ind(p)});
 
@@ -137,7 +137,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
     q.push({ind(p), (unsigned)p.size(), get_lbound(p)});
 
     // Speichert fuer jede Permutationslaenge die Indizes besuchter
-    // Permutationen und deren Vorgaenger im Suchbaum.
+    // Permutationen und deren Vorgaenger.
     vector<unordered_map<size_t, size_t>> pre(p.size());
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
@@ -204,9 +204,8 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
     vector<unsigned> res;
     bool found_better = 0;
 
-    // Gehe die Nachfolgerknoten (Permutationen, die durch eine gamma-Operation
-    // erreichbar sind) aufsteigend nach unterer Schranke durch und bestimme
-    // rekursiv die kuerzeste Operationenfolge.
+    // Gehe die Nachfolgerknoten aufsteigend nach unterer Schranke durch und
+    // bestimme rekursiv die kuerzeste Operationenfolge.
     while (!q.empty() && q.top().first < ubound)
     {
         auto const [lbound, i] = q.top();
@@ -229,9 +228,8 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
     return {res, found_better};
 }
 
-// Sollte zum Bestimmen von A(p) aufgerufen werden. Stellt vis fuer die
-// rekursive Funktion bereit und bringt die Operationen in die richtige
-// Reihenfolge.
+// Stellt vis fuer die rekursive Funktion min_operations_bnb_r bereit und bringt
+// die Operationen in die richtige Reihenfolge.
 vector<unsigned> min_operations_bnb(vector<unsigned> const &p)
 {
     vector<unordered_set<size_t>> vis(p.size());

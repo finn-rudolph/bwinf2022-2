@@ -59,8 +59,8 @@ pair<unsigned, size_t> pwue(size_t n)
     // Arrays zum Speichern von A(p) aller Permutationen einer bestimmten
     // Laenge. y[i] = A(p), wenn ind(p) = i. In z werden dann die A(p) der
     // naechst laengeren Permutationen hineingeschrieben.
-    uint8_t *y = (uint8_t *)malloc(sizeof(uint8_t)),
-            *z = (uint8_t *)malloc(sizeof(uint8_t));
+    uint8_t *y = (uint8_t *)malloc(sizeof *y),
+            *z = (uint8_t *)malloc(sizeof *z);
     y[0] = 0;
     size_t u = 1, v = 1; // In der for-Schleife gilt u = k!, v = (k - 1)!
     unsigned const n_threads = thread::hardware_concurrency();
@@ -68,7 +68,7 @@ pair<unsigned, size_t> pwue(size_t n)
     for (size_t k = 2; k < n; k++)
     {
         u *= k;
-        z = (uint8_t *)realloc(z, u * sizeof(uint8_t));
+        z = (uint8_t *)realloc(z, u * sizeof *z);
         vector<thread> threads;
 
         // Die k! Permutationen werden ausgeglichen unter den n_threads Threads
@@ -78,7 +78,7 @@ pair<unsigned, size_t> pwue(size_t n)
                                  (u / 2) * i / n_threads,
                                  (u / 2) * (i + 1) / n_threads);
 
-        for (thread &t : threads) // Warte, bis alle Threads beendet sind.
+        for (thread &t : threads)
             t.join();
 
         z[0] = 0;
