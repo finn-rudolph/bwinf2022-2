@@ -60,6 +60,8 @@ void add_degree_constraints(glp_prob *ip, size_t n)
         glp_set_row_bnds(ip, 2 * n + i + 1, GLP_DB, 0.0, 1.0);
     for (size_t i = 0; i < n; i++)
         glp_set_row_bnds(ip, 4 * n + i + 1, GLP_DB, 1.0, 2.0);
+    for (size_t i = 0; i < n; i++)
+        glp_set_row_bnds(ip, 5 * n + i + 1, GLP_FX, 0.0, 0.0);
 
     int *ind = malloc((2 * n - 1) * sizeof *ind);
     double *val = malloc((2 * n - 1) * sizeof *val);
@@ -83,13 +85,19 @@ void add_degree_constraints(glp_prob *ip, size_t n)
         glp_set_mat_row(ip, 4 * n + i + 1, 2 * n - 2, ind, val);
     }
 
+    for (size_t i = 0; i < n; i++)
+    {
+        ind[1] = i * n + i + 1;
+        glp_set_mat_row(ip, 5 * n + i + 1, 1, ind, val);
+    }
+
     free(ind);
     free(val);
 }
 
 void add_connectivity_constraint(glp_prob *ip, size_t n)
 {
-    glp_set_row_bnds(ip, 5 * n + 1, GLP_FX, n - 1, n - 1);
+    glp_set_row_bnds(ip, 6 * n + 1, GLP_FX, n - 1, n - 1);
     int *ind = malloc((n * n + 1) * sizeof *ind);
     double *val = malloc((n * n + 1) * sizeof *val);
 
@@ -99,7 +107,7 @@ void add_connectivity_constraint(glp_prob *ip, size_t n)
         val[i] = 1.0;
     }
 
-    glp_set_mat_row(ip, 5 * n + 1, n * n, ind, val);
+    glp_set_mat_row(ip, 6 * n + 1, n * n, ind, val);
     free(ind);
     free(val);
 }
@@ -139,7 +147,7 @@ int main()
 
     glp_prob *ip = glp_create_prob();
     glp_set_obj_dir(ip, GLP_MIN);
-    glp_add_rows(ip, 5 * n + 1);
+    glp_add_rows(ip, 6 * n + 1);
     glp_add_cols(ip, n * n + n);
 
     add_angle_constraints(ip, n, z);
@@ -154,8 +162,8 @@ int main()
 
     glp_iocp parameters;
     glp_init_iocp(&parameters);
-    parameters.tm_lim = 60000;
     parameters.presolve = GLP_ON;
+    parameters.ps_heur = GLP_ON;
 
     bool solution_found = 0;
     bool *visited = malloc(n * sizeof *visited);
@@ -196,7 +204,13 @@ int main()
             }
         }
 
-    } while (!solution_found);
+    } while (!solution_found && glp_mip_status(ip) != GLP_NOFEAS);
+
+    if (glp_mip_status(ip) == GLP_NOFEAS)
+    {
+        printf("Keine Tour mit Abbiegewinkeln kleiner gleich 90 Grad möglich.\n");
+        return 0;
+    }
 
     printf("Gesamtlänge: %lf\n", glp_mip_obj_val(ip));
 
