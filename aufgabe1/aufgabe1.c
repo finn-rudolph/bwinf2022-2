@@ -12,7 +12,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define min(x, y) ((x < y) ? (x) : (y))
+#define min(x, y) (((x) < (y)) ? (x) : (y))
+#define max(x, y) (((x) > (y)) ? (x) : (y))
 
 double dot_product(complex double const x, complex double const y)
 {
@@ -26,7 +27,7 @@ size_t nchoose2(size_t const n)
 
 size_t edge_index(size_t n, size_t u, size_t v)
 {
-    return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) + 1;
+    return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) - min(u, v);
 }
 
 void add_angle_constraints(
@@ -65,7 +66,7 @@ void add_degree_constraints(glp_prob *ip, size_t n)
     {
         for (size_t j = 0; j < n; j++)
             if (i != j)
-                ind[j + 1 - (j > i)] = edge_index(n, i, j);
+                ind[j + (j < i)] = edge_index(n, i, j);
         glp_set_mat_row(ip, i0 + i, n - 1, ind, val);
     }
 
@@ -109,6 +110,40 @@ void add_subtour_elimination_constraint(
     free(val);
 }
 
+void build_graph(glp_prob *ip, size_t n, size_t *const *const graph)
+{
+    for (size_t i = 0; i < n; i++)
+        graph[i][0] = graph[i][1] = SIZE_MAX;
+
+    for (size_t i = 0; i < n; i++)
+        for (size_t j = i + 1; j < n; j++)
+            if (glp_mip_col_val(ip, edge_index(n, i, j)) > 0.1)
+            {
+                graph[i][1] = graph[i][0];
+                graph[i][0] = j;
+                graph[j][1] = graph[j][0];
+                graph[j][0] = i;
+            }
+}
+
+size_t find_cycle_len(
+    size_t *const *const graph, size_t *const subtour, bool *const visited,
+    size_t u)
+{
+    size_t cycle_len = 0, v = u, w = u;
+
+    do
+    {
+        subtour[cycle_len++] = v;
+        visited[v] = 1;
+        size_t const next = graph[v][0] == w ? graph[v][1] : graph[v][0];
+        w = v;
+        v = next;
+    } while (v != SIZE_MAX && v != u);
+
+    return u == v ? cycle_len : 0;
+}
+
 int main()
 {
     complex double *z = malloc(sizeof *z);
@@ -128,6 +163,7 @@ int main()
     add_angle_constraints(ip, n, z);
     add_degree_constraints(ip, n);
     add_connectivity_constraint(ip, n);
+
     for (size_t i = 1; i < nchoose2(n) + 1; i++)
         glp_set_col_kind(ip, i, GLP_BV);
 
@@ -142,42 +178,27 @@ int main()
 
     bool solution_found = 0;
     bool *visited = malloc(n * sizeof *visited);
-    size_t *successor = malloc(n * sizeof *successor),
-           *cycle = malloc(n * sizeof *cycle);
+    size_t **graph = malloc(n * sizeof *graph),
+           *subtour = malloc(n * sizeof *subtour);
+    for (size_t i = 0; i < n; i++)
+        graph[i] = malloc(2 * sizeof *graph[i]);
 
     do
     {
         glp_intopt(ip, &parameters);
 
+        build_graph(ip, n, graph);
         memset(visited, 0, n * sizeof *visited);
-        for (size_t i = 0; i < n; i++)
-            successor[i] = SIZE_MAX;
-
-        for (size_t i = 0; i < n; i++)
-            for (size_t j = 0; j < n; j++)
-                if (glp_mip_col_val(ip, i * n + j + 1) > 0.1)
-                    successor[i] = j;
-
         solution_found = 1;
+
         for (size_t i = 0; i < n; i++)
-        {
             if (!visited[i])
             {
-                size_t cycle_len = 0, u = i;
-                do
-                {
-                    cycle[cycle_len++] = u;
-                    visited[u] = 1;
-                    u = successor[u];
-                } while (u != SIZE_MAX && u != i);
-
-                if (u == i)
-                {
-                    add_subtour_elimination_constraint(ip, n, cycle_len, cycle);
-                    solution_found = 0;
-                }
+                size_t const m = find_cycle_len(graph, subtour, visited, i);
+                solution_found = solution_found && !m;
+                if (m)
+                    add_subtour_elimination_constraint(ip, n, m, subtour);
             }
-        }
 
     } while (!solution_found && glp_mip_status(ip) != GLP_NOFEAS);
 
@@ -191,21 +212,22 @@ int main()
 
     size_t u;
     for (size_t i = 0; i < n; i++)
-        if (glp_mip_row_val(ip, 3 * n + i + 1) < 0.1)
+        if (graph[i][1] == SIZE_MAX)
             u = i;
 
-    for (size_t i = 0; i < n; i++)
-        printf("%zu: %zu\n", i, successor[i]);
-
+    memset(visited, 0, n * sizeof *visited);
     while (u != SIZE_MAX)
     {
         printf("%lf %lf\n", creal(z[u]), cimag(z[u]));
-        u = successor[u];
+        visited[u] = 1;
+        u = visited[graph[u][0]] ? graph[u][1] : graph[u][0];
     }
 
     glp_delete_prob(ip);
     free(z);
     free(visited);
-    free(successor);
-    free(cycle);
+    for (size_t i = 0; i < n; i++)
+        free(graph[i]);
+    free(graph);
+    free(subtour);
 }
