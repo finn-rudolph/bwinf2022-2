@@ -1,94 +1,56 @@
 #include <stdio.h>
 #include <complex.h>
+#include <tgmath.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <assert.h>
 #include <glpk.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
+#define min(x, y) ((x < y) ? (x) : (y))
+
+double dot_product(complex double const x, complex double const y)
+{
+    return fma(creal(x), creal(y), cimag(x) * cimag(y));
+}
+
+size_t nchoose2(size_t const n)
+{
+    return n * (n - 1) / 2;
+}
+
+size_t edge_index(size_t n, size_t u, size_t v)
+{
+    return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) + 1;
+}
+
 void add_angle_constraints(glp_prob *ip, size_t n, complex double const *const z)
 {
-    for (size_t i = 0; i < n; i++)
-        glp_set_row_bnds(ip, i + 1, GLP_LO, -M_PI / 2, 0.0);
-    for (size_t i = 0; i < n; i++)
-        glp_set_row_bnds(ip, n + i + 1, GLP_UP, 0.0, 2.5 * M_PI);
-
-    int *ind = malloc(2 * n * sizeof *ind);
-    double *val = malloc(2 * n * sizeof *val);
-
-    for (size_t i = 0; i < n; i++)
-    {
-        ind[2 * n - 1] = n * n + i + 1;
-        val[2 * n - 1] = 2 * M_PI;
-
-        size_t k = 1;
-        for (size_t j = 0; j < n; j++)
-        {
-            if (i == j)
-                continue;
-            ind[k] = i * n + j + 1;
-            val[k] = carg(z[j] - z[i]) - M_PI / 2;
-            ind[k + 1] = j * n + i + 1;
-            val[k + 1] = -carg(z[i] - z[j]) - M_PI / 2;
-            k += 2;
-        }
-        glp_set_mat_row(ip, i + 1, 2 * n - 1, ind, val);
-
-        k = 1;
-        for (size_t j = 0; j < n; j++)
-        {
-            if (i == j)
-                continue;
-            val[k] = carg(z[j] - z[i]) + M_PI / 2;
-            val[k + 1] = -carg(z[i] - z[j]) + M_PI / 2;
-            k += 2;
-        }
-        glp_set_mat_row(ip, n + i + 1, 2 * n - 1, ind, val);
-    }
-
-    free(ind);
-    free(val);
 }
 
 void add_degree_constraints(glp_prob *ip, size_t n)
 {
-    for (size_t i = 0; i < 2 * n; i++)
-        glp_set_row_bnds(ip, 2 * n + i + 1, GLP_DB, 0.0, 1.0);
+    size_t const i0 = glp_add_rows(ip, n);
     for (size_t i = 0; i < n; i++)
-        glp_set_row_bnds(ip, 4 * n + i + 1, GLP_DB, 1.0, 2.0);
-    for (size_t i = 0; i < n; i++)
-        glp_set_row_bnds(ip, 5 * n + i + 1, GLP_FX, 0.0, 0.0);
+        glp_set_row_bnds(ip, i0 + i, GLP_DB, 1, 2);
 
-    int *ind = malloc((2 * n - 1) * sizeof *ind);
-    double *val = malloc((2 * n - 1) * sizeof *val);
+    int *ind = malloc(n * sizeof *ind);
+    double *val = malloc(n * sizeof *val);
 
-    for (size_t i = 0; i < 2 * n - 1; i++)
-        val[i] = 1.0;
+    for (size_t i = 1; i < n; i++)
+        val[i] = 1;
 
     for (size_t i = 0; i < n; i++)
     {
-        size_t k = 1;
         for (size_t j = 0; j < n; j++)
-        {
-            if (i == j)
-                continue;
-            ind[k] = i * n + j + 1;
-            ind[n - 1 + k] = j * n + i + 1;
-            k++;
-        }
-        glp_set_mat_row(ip, 2 * n + i + 1, n - 1, ind, val);
-        glp_set_mat_row(ip, 3 * n + i + 1, n - 1, ind + n - 1, val + n - 1);
-        glp_set_mat_row(ip, 4 * n + i + 1, 2 * n - 2, ind, val);
-    }
-
-    for (size_t i = 0; i < n; i++)
-    {
-        ind[1] = i * n + i + 1;
-        glp_set_mat_row(ip, 5 * n + i + 1, 1, ind, val);
+            if (i != j)
+                ind[j + 1 - (j > i)] = edge_index(n, i, j);
+        glp_set_mat_row(ip, i0 + i, n - 1, ind, val);
     }
 
     free(ind);
@@ -97,17 +59,15 @@ void add_degree_constraints(glp_prob *ip, size_t n)
 
 void add_connectivity_constraint(glp_prob *ip, size_t n)
 {
-    glp_set_row_bnds(ip, 6 * n + 1, GLP_FX, n - 1, n - 1);
-    int *ind = malloc((n * n + 1) * sizeof *ind);
-    double *val = malloc((n * n + 1) * sizeof *val);
+    size_t const i0 = glp_add_rows(ip, 1);
+    glp_set_row_bnds(ip, i0, GLP_FX, n - 1, n - 1);
+    int *ind = malloc((nchoose2(n) + 1) * sizeof *ind);
+    double *val = malloc((nchoose2(n) + 1) * sizeof *val);
 
-    for (size_t i = 1; i <= n * n; i++)
-    {
-        ind[i] = i;
-        val[i] = 1.0;
-    }
+    for (size_t i = 1; i < nchoose2(n) + 1; i++)
+        ind[i] = i, val[i] = 1;
 
-    glp_set_mat_row(ip, 6 * n + 1, n * n, ind, val);
+    glp_set_mat_row(ip, i0, nchoose2(n), ind, val);
     free(ind);
     free(val);
 }
@@ -115,20 +75,20 @@ void add_connectivity_constraint(glp_prob *ip, size_t n)
 void add_subtour_elimination_constraint(
     glp_prob *ip, size_t n, size_t m, size_t const *const subtour)
 {
-    glp_add_rows(ip, 1);
-    glp_set_row_bnds(ip, glp_get_num_rows(ip), GLP_DB, 0.0, m - 1);
+    size_t const i0 = glp_add_rows(ip, 1);
+    glp_set_row_bnds(ip, i0, GLP_DB, 0, m - 1);
 
-    int *ind = malloc((m * m + 1) * sizeof *ind);
-    double *val = malloc((m * m + 1) * sizeof *val);
+    int *ind = malloc((nchoose2(m) + 1) * sizeof *ind);
+    double *val = malloc((nchoose2(m) + 1) * sizeof *val);
+
+    for (size_t i = 1; i < nchoose2(m) + 1; i++)
+        val[i] = 1;
 
     for (size_t i = 0; i < m; i++)
-        for (size_t j = 0; j < m; j++)
-            ind[i * m + j + 1] = subtour[i] * n + subtour[j] + 1;
+        for (size_t j = i + 1; j < m; j++)
+            ind[edge_index(m, i, j)] = edge_index(n, subtour[i], subtour[j]);
 
-    for (size_t i = 1; i <= m * m; i++)
-        val[i] = 1.0;
-
-    glp_set_mat_row(ip, glp_get_num_rows(ip), m * m, ind, val);
+    glp_set_mat_row(ip, i0, nchoose2(m), ind, val);
     free(ind);
     free(val);
 }
@@ -147,8 +107,7 @@ int main()
 
     glp_prob *ip = glp_create_prob();
     glp_set_obj_dir(ip, GLP_MIN);
-    glp_add_rows(ip, 6 * n + 1);
-    glp_add_cols(ip, n * n + n);
+    glp_add_cols(ip, nchoose2(n));
 
     add_angle_constraints(ip, n, z);
     add_degree_constraints(ip, n);
@@ -157,7 +116,7 @@ int main()
         glp_set_col_kind(ip, i + 1, GLP_BV);
 
     for (size_t i = 0; i < n; i++)
-        for (size_t j = 0; j < n; j++)
+        for (size_t j = i + 1; j < n; j++)
             glp_set_obj_coef(ip, i * n + j + 1, cabs(z[i] - z[j]));
 
     glp_iocp parameters;
