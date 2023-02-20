@@ -29,8 +29,24 @@ size_t edge_index(size_t n, size_t u, size_t v)
     return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) + 1;
 }
 
-void add_angle_constraints(glp_prob *ip, size_t n, complex double const *const z)
+void add_angle_constraints(
+    glp_prob *ip, size_t n, complex double const *const z)
 {
+    int ind[3];
+    double val[3];
+    val[1] = val[2] = 1;
+
+    for (size_t i = 0; i < n; i++)
+        for (size_t j = i + 1; j < n; j++)
+            for (size_t k = j + 1; k < n; k++)
+                if (dot_product(z[j] - z[i], z[k] - z[j]) < 0)
+                {
+                    size_t const i0 = glp_add_rows(ip, 1);
+                    glp_set_row_bnds(ip, i0, GLP_DB, 0, 1);
+                    ind[1] = edge_index(n, i, j);
+                    ind[2] = edge_index(n, j, k);
+                    glp_set_mat_row(ip, i0, 2, ind, val);
+                }
 }
 
 void add_degree_constraints(glp_prob *ip, size_t n)
@@ -112,12 +128,12 @@ int main()
     add_angle_constraints(ip, n, z);
     add_degree_constraints(ip, n);
     add_connectivity_constraint(ip, n);
-    for (size_t i = 0; i < n * n + n; i++)
-        glp_set_col_kind(ip, i + 1, GLP_BV);
+    for (size_t i = 1; i < nchoose2(n) + 1; i++)
+        glp_set_col_kind(ip, i, GLP_BV);
 
     for (size_t i = 0; i < n; i++)
         for (size_t j = i + 1; j < n; j++)
-            glp_set_obj_coef(ip, i * n + j + 1, cabs(z[i] - z[j]));
+            glp_set_obj_coef(ip, edge_index(n, i, j), cabs(z[i] - z[j]));
 
     glp_iocp parameters;
     glp_init_iocp(&parameters);
