@@ -8,10 +8,6 @@
 #include <assert.h>
 #include <glpk.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -154,9 +150,28 @@ void add_subtour_elimination_constraint(
     free(val);
 }
 
-// Erstellt die Adjazenzliste mit den von GLPK als Lösung vorgeschlagenen
-// Kanten.
-void build_graph(glp_prob *ip, size_t n, size_t *const *const graph)
+// Gibt die Länge des Zyklus, der u enthält zurück, oder 0, wenn u nicht Teil
+// eines Zyklus ist. Die Knoten des Zyklus werden in subtour geschrieben.
+size_t find_cycle_len(
+    size_t *const *const graph, size_t *const subtour, bool *const visited,
+    size_t u)
+{
+    size_t cycle_len = 0, v = u, last = u;
+
+    do
+    {
+        subtour[cycle_len++] = v;
+        visited[v] = 1;
+        size_t const next = graph[v][0] == last ? graph[v][1] : graph[v][0];
+        last = v;
+        v = next;
+    } while (v != SIZE_MAX && v != u);
+
+    return u == v ? cycle_len : 0;
+}
+
+bool check_for_subtours(
+    glp_prob *ip, size_t n, size_t *const *const graph)
 {
     // Da der Grad jedes Knoten nur 1 oder 2 sein kann, werden die Längen der
     // Adjazenzlisten nicht explizit gespeichert, sondern durch SIZE_MAX das
@@ -177,26 +192,26 @@ void build_graph(glp_prob *ip, size_t n, size_t *const *const graph)
             }
         }
     }
-}
 
-// Gibt die Länge des Zyklus, der u enthält zurück, oder 0, wenn u nicht Teil
-// eines Zyklus ist. Die Knoten des Zyklus werden in subtour geschrieben.
-size_t find_cycle_len(
-    size_t *const *const graph, size_t *const subtour, bool *const visited,
-    size_t u)
-{
-    size_t cycle_len = 0, v = u, last = u;
+    bool *visited = calloc(n, sizeof *visited);
+    size_t *subtour = malloc(n * sizeof *subtour);
+    bool has_subtours = 0;
 
-    do
+    for (size_t i = 0; i < n; i++)
     {
-        subtour[cycle_len++] = v;
-        visited[v] = 1;
-        size_t const next = graph[v][0] == last ? graph[v][1] : graph[v][0];
-        last = v;
-        v = next;
-    } while (v != SIZE_MAX && v != u);
+        if (!visited[i])
+        {
+            // Besuche jeden Knoten des Graphen und eliminiere ggf. Zyklen.
+            size_t const m = find_cycle_len(graph, subtour, visited, i);
+            has_subtours = has_subtours || m;
+            if (m)
+                add_subtour_elimination_constraint(ip, n, m, subtour);
+        }
+    }
 
-    return u == v ? cycle_len : 0;
+    free(visited);
+    free(subtour);
+    return has_subtours;
 }
 
 int main()
@@ -232,61 +247,53 @@ int main()
     glp_init_iocp(&parameters);
     parameters.presolve = GLP_ON;
     parameters.ps_heur = GLP_ON;
+    parameters.mip_gap = 0.5;
 
-    bool solution_found = 0;
-    bool *visited = malloc(n * sizeof *visited);
-    size_t **graph = malloc(n * sizeof *graph),
-           *subtour = malloc(n * sizeof *subtour);
+    bool has_subtours = 1;
+    size_t **graph = malloc(n * sizeof *graph);
     for (size_t i = 0; i < n; i++)
         graph[i] = malloc(2 * sizeof *graph[i]);
 
     do
     {
         glp_intopt(ip, &parameters);
+        has_subtours = check_for_subtours(ip, n, graph);
+    } while (has_subtours && glp_mip_status(ip) != GLP_NOFEAS);
 
-        build_graph(ip, n, graph);
-        memset(visited, 0, n * sizeof *visited);
-        solution_found = 1;
+    parameters.mip_gap = 0.0;
 
-        for (size_t i = 0; i < n; i++)
-        {
-            if (!visited[i])
-            {
-                // Besuche jeden Knoten des Graphen und eliminiere ggf. Zyklen.
-                size_t const m = find_cycle_len(graph, subtour, visited, i);
-                solution_found = solution_found && !m;
-                if (m)
-                    add_subtour_elimination_constraint(ip, n, m, subtour);
-            }
-        }
-
-    } while (!solution_found && glp_mip_status(ip) != GLP_NOFEAS);
+    do
+    {
+        glp_intopt(ip, &parameters);
+        has_subtours = check_for_subtours(ip, n, graph);
+    } while (has_subtours && glp_mip_status(ip) != GLP_NOFEAS);
 
     if (glp_mip_status(ip) == GLP_NOFEAS)
     {
         printf("Keine Tour mit Abbiegewinkeln von höchstens 90 Grad möglich.\n");
-        return 0;
     }
-
-    printf("Gesamtlänge: %lf\n", glp_mip_obj_val(ip));
-
-    size_t u;
-    for (size_t i = 0; i < n; i++)
-        if (graph[i][1] == SIZE_MAX)
-            u = i;
-    memset(visited, 0, n * sizeof *visited);
-    while (u != SIZE_MAX)
+    else
     {
-        printf("%lf %lf\n", creal(z[u]), cimag(z[u]));
-        visited[u] = 1;
-        u = visited[graph[u][0]] ? graph[u][1] : graph[u][0];
+        printf("Gesamtlänge: %lf\n", glp_mip_obj_val(ip));
+
+        size_t u;
+        for (size_t i = 0; i < n; i++)
+            if (graph[i][1] == SIZE_MAX)
+                u = i;
+        size_t *visited = calloc(n, sizeof *visited);
+        while (u != SIZE_MAX)
+        {
+            printf("%lf %lf\n", creal(z[u]), cimag(z[u]));
+            visited[u] = 1;
+            u = visited[graph[u][0]] ? graph[u][1] : graph[u][0];
+        }
+
+        free(visited);
     }
 
     glp_delete_prob(ip);
     free(z);
-    free(visited);
     for (size_t i = 0; i < n; i++)
         free(graph[i]);
     free(graph);
-    free(subtour);
 }
