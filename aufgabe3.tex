@@ -1,6 +1,6 @@
-\documentclass[a4paper, 11pt, ngerman]{article}
+\documentclass[a4paper, 10pt, ngerman]{article}
 \usepackage{tikz-network}
-\usepackage[left=3cm, right = 3cm, top=3cm, bottom=3cm, head=13.6pt]{geometry}
+\usepackage[left=3.5cm, right = 3.5cm, top=3.5cm, bottom=3.5cm, head=13.6pt]{geometry}
 \usepackage{babel}
 \usepackage[T1]{fontenc}
 \usepackage{inputenc}
@@ -25,9 +25,9 @@
 \lohead{\Aufgabe}
 \cfoot*{\thepage{}}
 
-\title{\LARGE \textbf{Aufgabe 3: Pancake Sort}}
+\title{\LARGE \textbf{\Aufgabe}}
 \author{\large Finn Rudolph \\ \\ \large Teilnahme-ID: 67571}
-\date{\large 28. Dezember 2022}
+\date{\large 11. Februar 2022}
 
 \setlist[enumerate]{label*={\arabic*.}}
 
@@ -38,7 +38,7 @@
 
 \lstset
 {
-    basicstyle=\scriptsize\ttfamily,
+    basicstyle=\footnotesize\ttfamily,
     keywordstyle=\color{keyword},
     commentstyle=\color{comment},
     numberstyle=\tiny\color{number},
@@ -85,7 +85,7 @@ definiert, wobei $0 \le p_i \le n-1$ und $p_i \ne p_j$, für $0 \le i, j \le n-1
     $$
 \end{definition}
 
-\noindent $\gamma_i p$ bezeichnet also die Permutation der Länge $n - 1$, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt. Zum Beispiel, wenn $p = 3, 0, 1, 2$, dann ist
+$\gamma_i p$ bezeichnet also die Permutation der Länge $n - 1$, die man erhält, wenn die ersten $i+1$ Elemente von $p$ umgekehrt werden und anschließend das erste entfernt wird. Um tatsächlich eine Permutation der Länge $n - 1$ zu erhalten, werden durch $\gamma_i$ außerdem alle Elemente von $p$, die größer als $p_i$ sind, um 1 verkleinert. Das erhält die relative Ordung der Elemente, sodass die optimale Folge an Wende-und-Ess-Operationen unverändert bleibt. Zum Beispiel, wenn $p = 3, 0, 1, 2$, dann ist
 $$
     \gamma_2 p = \gamma_2 (3, 0, 1, 2) = 0, 2, 1
 $$
@@ -99,9 +99,9 @@ Um später das in Teilaufgabe a$)$ vorliegende Problem klar benennen zu können,
     wird $\gamma_i$-Pancake Sort genannt. Das kleinstmögliche $k$ wird als $A(p)$ bezeichnet.
 \end{definition}
 
-\subsection{Der Pancake-Graph}
+\subsection{Die Symmetrie des Pancake-Graphen}
 
-Im Kontext des ursprünglichen Pancake-Sort ist der sogenannte Pancake-Graph für Permutationen der Länge $n$ wie folgt definiert: Für jede Permutation der Länge $n$ gibt es genau einen Knoten, und zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet. In diesem Abschnitt soll eine interessante Symmetrieeigenschaft von $G_n$ behandelt werden, die eine Optimierung der Lösung für Teilaufgabe b) ermöglicht.
+Im Kontext des ursprünglichen Pancake-Sort ist der sogenannte Pancake-Graph für Permutationen der Länge $n$ wie folgt definiert: Für jede Permutation der Länge $n$ gibt es genau einen Knoten, und zwischen den Knoten zweier Permutationen verläuft genau dann eine ungerichtete Kante, wenn sie durch das Umkehren eines Präfixes ineinander umgewandelt werden können. Analog dazu kann man einen Pancake-Graphen $G_n$ für das vorliegende Problem definieren: Jeder Permutation der Länge $n$ oder kleiner wird ein Knoten zugeordnet, und zwischen zwei Permutationen $p$ und $q$ wird eine von $p$ nach $q$ gerichtete Kante eingefügt, wenn $\gamma_i p = q$, für irgendein $0 \le i \le |p|-1$. $G_n$ ist also ein gerichteter, azyklischer Graph (DAG) mit $n$ ``Ebenen'', für jede Permutationslänge eine. Kanten verlaufen nur zur direkt folgenden Ebene, da $\gamma_i$ die Länge um genau 1 reduziert. In Abbildung 1 ist $G_4$ dargestellt, aufgrund seiner Größe wurde er auf 2 Seiten aufgeteilt und Knoten der kleinern Permutationen dupliziert. Die Knoten sind jeweils in lexikographischer Ordung von oben nach unten angeordnet.
 
 Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zweite Teil genau wie der erste Teil aussieht, nur vertikal gespiegelt. Auch die kleineren Pancake-Graphen $G_3, G_2$ und $G_1$, die Teilgraphen von $G_4$ sind, scheinen symmetrisch um ihre Mitte zu sein. Genauer sind die Kanten symmetrisch um die Mitte der lexikographisch sortierten Liste der Permutationen von Größe 4.
 
@@ -286,8 +286,7 @@ Betrachtet man die beiden Teile von $G_4$ gleichzeitig, fällt auf, dass der zwe
 \end{figure}
 \newpage
 
-\noindent Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt.
-Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 0,2,3,1$ und $p^* = 3, 1, 0, 2$:
+Wenn man $G_4$ an einem Stück ohne Duplikation von Knoten zeichnen würde, wäre tatsächlich der gesamte Graph achsensymmetrisch um seine Mitte. Dass die Symmetrie bei $G_1, G_2, G_3$ und $G_4$ auftritt, lässt vermuten, dass sie für $G_n$, mit $n \ge 1$, allgemein gilt. Bei genauerer Betrachtung des Effekts von $\gamma_i$ auf zwei zur Mitte symmetrisch liegende Permutationen fällt noch eine stärkere Eigenschaft auf. Wir betrachten als Beispiel die zwei symmetrisch liegenden Permutationen $p = 0,2,3,1$ und $p^* = 3, 1, 0, 2$:
 \begin{align*}
     \gamma_0 p = 1, 2, 0 \quad \gamma_0 p^* = 1, 0, 2 \\
     \gamma_1 p = 0, 2, 1 \quad \gamma_1 p^* = 2, 0, 1 \\
@@ -299,7 +298,7 @@ Die Ergebnisse der jeweiligen Anwendung von $\gamma_i$ liegen symmetrisch um die
 Für den Beweis sind allerdings einige weitere Mittel nötig. Zunächst wird das fakultätsbasierte Zahlensystem eingeführt, mithilfe dessen der $\gamma_i$-Operators aus einer anderen Perspektive betrachtet werden kann. Denn das fakultätsbasierte Zahlensystem erlaubt es, die Anzahl an Inversionen symmetrisch gelegener Paare von Permutationen miteinander in Verbindung zu bringen. Damit kann schließlich gezeigt werden, dass die Anwendung von $\gamma_i$ auf zwei symmetrisch gelegene Permutationen wieder zu einem symmetrischen Paar führt.
 \medskip
 
-\noindent \emph{Das fakultätsbasierte Zahlensystem.} Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsystem eine unterschiedliche Basis für jede Ziffer verwendet. Die $k$-te Ziffer (mit 0 beginnend und von rechts gelesen) verwendet $k!$ als Basis und kann die Werte 0 bis $k$ annehmen. Der Wert einer fakultätsbasiert geschriebenen Zahl ist die Summe der einzelnen Ziffern, multipliziert mit ihrer jeweiligen Basis. Beispielsweise ist
+\emph{Das fakultätsbasierte Zahlensystem.} Im fakultätsbasierten Zahlensystem wird im Gegenstz zum Dezimal- oder Binärsystem eine unterschiedliche Basis für jede Ziffer verwendet. Die $k$-te Ziffer (mit 0 beginnend und von rechts gelesen) verwendet $k!$ als Basis und kann die Werte 0 bis $k$ annehmen. Der Wert einer fakultätsbasiert geschriebenen Zahl ist die Summe der einzelnen Ziffern, multipliziert mit ihrer jeweiligen Basis. Beispielsweise ist
 \begin{align*}
     17_{10} & = 2210_!   = 2 \cdot 3! + 2 \cdot 2! + 1 \cdot 1! + 0 \cdot 0!             \\
     24_{10} & = 10000_! = 1 \cdot 4! + 0 \cdot 3! + 0 \cdot 2! + 0 \cdot 1! + 0 \cdot 0! \\
@@ -312,38 +311,38 @@ Da sich mit einer fakultätsbasierten Zahl mit $n$ Ziffern genau $n!$ Zahlen dar
     Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
 \end{definition}
 
-\noindent $\mu(p)$ ist auch als Lehmer-Code von $p$ bekannt \cite{factorial}.
+$\mu(p)$ ist auch als Lehmer-Code von $p$ bekannt \cite{factorial}.
 
 \begin{definition}
-    Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\nu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
+    Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von rechts) von $\nu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
 \end{definition}
 
-\noindent Bei Sortierung nach kolexikographischer Ordung werden die Permutationen von rechts anstatt von links beginnend verglichen \cite{lexicographic}.
+Bei Sortierung nach kolexikographischer Ordung werden die Permutationen von rechts anstatt von links beginnend verglichen \cite{lexicographic}. Man beachte, dass die Ziffern von $\mu(p)$ von links indexiert werden, wohingegen die Ziffern von $\nu(p)$ von rechts indexiert werden.
 
-Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau die Anzahl an kleineren Elementen rechts von $p_i$, und $\nu(p)_{|p| - i - 1}$ die Anzahl an größeren Elementen links von $p_i$ \cite{factorial}. Mit $\mu(p)$ ist es nun möglich, die zu $p$ symmetrisch gelegene Permutation zu definieren.
+Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau die Anzahl an kleineren Elementen rechts von $p_i$, und $\nu(p)_i$ die Anzahl an größeren Elementen links von $p_i$ \cite{factorial}. Mit $\mu(p)$ ist es nun möglich, die zu $p$ symmetrisch gelegene Permutation zu definieren.
 
 \begin{definition}
-    Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) = n! - \mu(p^*) - 1$.
+    Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) + \mu(p^*) = n! - 1$.
 \end{definition}
 
-\noindent $p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Aus der Definition folgt direkt, dass $\mu(p)_i + \mu(p^*)_i = n - i - 1$. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgender Zusammenhang zwischen $\nu(p)$ und $\nu(p^*)$ und ein weiteres Lemma benötigt.
+$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Aus der Definition folgt direkt, dass $\mu(p)_i + \mu(p^*)_i = n - i - 1$. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgender Zusammenhang zwischen $\nu(p)$ und $\nu(p^*)$ benötigt.
 
 \begin{lemma}
     $\nu(p) + \nu(p^*) = n! - 1$ 
 \end{lemma}
 
 \begin{proof}
-    Die Aussage ist äquivalent zu $\mu(p)_i + \mu(p^*)_i = i$. Der Beweis geschieht durch Induktion über $n$. Für $n = 1$ stimmt die Aussage offensichtlich. Man nehme an, die Aussage stimmt für Permutationen der Länge $k$. Man nehme außerdem an, $p$ ist eine Permutation der Länge $k$ und die Zahl $k$ wird vor Index $i$ in $p$ eingefügt, um die Permutation
+    Die Aussage ist äquivalent zu $\nu(p)_j + \nu(p^*)_j = j$ für $0 \le j \le n - 1$. Der Beweis geschieht durch Induktion über $n$. Für $n = 1$ stimmt die Aussage offensichtlich. Man nehme an, die Aussage stimmt für Permutationen der Länge $k$. Man nehme außerdem an, dass $p$ eine Permutation der Länge $k$ ist und die Zahl $k$ vor Index $i$ in $p$ eingefügt wird. Durch Einfügen von $k$ in $p$ erhält man die Permutation
     \begin{align*}
         q = p_0, p_1, \dots, p_{i - 1}, k, p_i, p_{i + 1}, \dots, p_{k - 1}
     \end{align*}
-    der Länge $k + 1$ zu erhalten. Wenn dieses Verfahren für alle Permutationen der Länge $k$ und alle möglichen $0 \le i \le k$ durchgeführt wird, erhält man offensichtlich alle Permutationen der Länge $k + 1$. Es wird zunächst gezeigt, dass man durch Einfügen von 0 in $p^*$ vor Index $i$ und Erhöhen aller anderen Elemente von $p^*$ um 1 $q^*$ erhält.
+    der Länge $k + 1$ zu erhalten. Wenn dieses Verfahren für alle Permutationen der Länge $k$ und alle möglichen $0 \le i \le k$ durchgeführt wird, erhält man alle Permutationen der Länge $k + 1$. Das Ziel ist es nun, zu zeigen, dass durch Einfügen von 0 in $p^*$ und Erhöhen aller anderen Elemente um 1 $q^*$ erzeugt wird, und dass nach dem Einfügen immer noch $\nu(q) + \nu(q^*) = (k + 1)! - 1$ gilt. Auch hier ist es äquivalent zu zeigen, dass $\nu(q)_j + \nu(q^*)_j = j$ gilt.
 
     Wir definieren die Permutation
     \begin{align*}
         x = p^*_0 + 1, p^*_1 + 1, \dots, p^*_{i - 1} + 1, 0, p^*_i + 1 p^*_{i + 1} + 1, \dots, p^*_{k - 1} + 1
     \end{align*}
-    Für alle $i < j \le k$ ist offensichtlich $\mu(x)_j = \mu(p^*)_{j - 1}$, da sie um eine Stelle verschoben werden. Für $0 \le j < i$ ist $\mu(x)_j = \mu(p^*)_j + 1$, da 0 neu rechts von ihnen liegt. Da $\mu(q)_i = k - i$, muss $\mu(q^*)_i = 0$ sein, denn $\mu(q)_i + \mu(q^*)_i = k - i$. $\mu(x)_i$ ist ebenfalls 0. Daher gilt für alle $0 \le j \le k$
+    Für alle $i < j \le k$ ist offensichtlich $\mu(x)_j = \mu(p^*)_{j - 1}$, da sie um eine Stelle verschoben werden und sich die Anzahl links gelegener, größerer Elemente nicht ändert. Für $0 \le j < i$ ist $\mu(x)_j = \mu(p^*)_j + 1$, da 0 neu rechts von ihnen liegt. Da $\mu(q)_i = k - i$, muss $\mu(q^*)_i = 0$ sein, denn $\mu(q)_i + \mu(q^*)_i = k - i$. $\mu(x)_i$ ist ebenfalls 0. Daher gilt für alle $0 \le j \le k$
     \begin{align*}
         \mu(q)_j + \mu(x)_j = k - j
     \end{align*}
@@ -351,7 +350,7 @@ Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau d
     
     Da $\mu(q^*)_i = 0$, muss 0 in $q^*$ bei einem Index $j \le i$ liegen. Man nehme an 0 liegt in $q^*$ bei $0 \le j < i$, sodass $\mu(q^*)_j = 0$ und damit $\mu(q)_j = k - j$. Das ist ein Widerspruch, denn rechts von $q_j$ können nicht $k - j$ kleinere Elemente liegen, da $k$ bei $i > j$ liegt. Folglich ist $q^*_i = 0$ und damit $\nu(q^*)_i = i$. 
     
-    Da $q_i = k$, ist $\nu(q)_i = 0$, sodass $\nu(q)_i + \nu(q^*)_i = i$. Für $0 \le j < i$ ist $\nu(q)_j = \nu(p)_j$ und $\nu(q^*)_j = \nu(p^*)_j$, da durch $\nu$ die größeren, links gelegenen Elemente gezählt werden, die für $0 \le j < i$ gleich denen in $p^*$ sind. Damit gilt $\nu(q)_j + \nu(q^*)_j = j$ für $0 \le j < i$ nach der Induktionsannahme. $\nu(q)_j = \nu(p)_{j - 1} + 1$ für alle $i < j \le k$, da die Elemente nach $i$ durch das Einfügen von $k$ um eine Stelle verschoben wurden und ein neues größeres Element, $k$, links von ihnen liegt. Für $i < j \le k$ ist $\nu(q^*)_j = \nu(p^*)_{j-1}$, da $q^*_i = 0$. Folglich gilt auch für $i < j \le k$
+    Nun wird durch Fallunterscheidung gezeigt, dass $\nu(q)_j + \nu(q^*)_j = j$ für $0 \le j \le k$. Für $j = i$: Da $q_i = k$, ist $\nu(q)_i = 0$, und da $x = q^*$ ist $q^*_i = 0$ und damit $\nu(q^*)_i = i$, sodass $\nu(q)_i + \nu(q^*)_i = i$. Für $0 \le j < i$ ist $\nu(q)_j = \nu(p)_j$ und $\nu(q^*)_j = \nu(p^*)_j$, da durch $\nu$ die größeren, links gelegenen Elemente gezählt werden, die für $0 \le j < i$ gleich denen in $p$ bzw. $p^*$ sind. Damit gilt $\nu(q)_j + \nu(q^*)_j = j$ für $0 \le j < i$ nach der Induktionsannahme. $\nu(q)_j = \nu(p)_{j - 1} + 1$ für alle $i < j \le k$, da die Elemente nach $i$ durch das Einfügen von $k$ um eine Stelle verschoben wurden und ein neues größeres Element, $k$, links von ihnen liegt. Für $i < j \le k$ ist $\nu(q^*)_j = \nu(p^*)_{j-1}$, da $q^*_i = 0$. Folglich gilt auch für $i < j \le k$
     \begin{align*}
         \nu(q)_j + \nu(q^*)_j = \nu(p)_{j - 1} + 1 + \nu(p^*)_{j - 1} = j - 1 + 1 = j 
     \end{align*}
@@ -415,6 +414,7 @@ $\eta(p, i, j, k)$ zählt die Anzahl an Elementen mit Indizes in $[j, k]$, die k
                                           & = k - j + 1
 \end{align*}
 Damit kann nun gezeigt werden, dass das Umkehren von Präfixen zweier symmetrisch gelegener Permutationen erneut zu zwei symmetrisch gelegene Permutationen führt. Das ist fast das gewünschte Ergebnis, es muss lediglich noch das erste Element aus beiden Permutationen entfernt werden.
+
 \begin{lemma}Seien $x$ und $y$ die Permutationen, die aus $p$ und $p^*$ durch Umkehrung des Präfixes bis einschließlich Index $i$ hervorgehen. Wenn $\mu(p) + \mu(p^*) = n! - 1$, dann gilt auch $\mu(x) + \mu(y) = n! - 1$.
 \end{lemma}
 
@@ -528,9 +528,9 @@ $\sigma_i = -1$ bedeutet, dass der $i$-te Pfannkuchen die verbrannte Seite oben 
 \subsection{Finden der kürzesten Folge an $\gamma_i$-Operationen}
 
 In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt. Zunächst wird ein Brute-Force Ansatz vorgestellt, der bereits alle vorgegebenen Beispiele gut lösen kann. Anschließend wird eine untere Schranke für die nötige Anzahl an $\gamma_i$-Operationen zum Erreichen einer identischen Permutation hergeleitet, mit der sich der Brute-Force Algorithmus auf zwei Arten verbessern lässt.
-\smallskip
+\medskip
 
-\noindent \emph{Brute-Force Lösung.} Wie der Name bereits sagt, werden alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
+\emph{Brute-Force Lösung.} Es werden alle Möglichkeiten, eine $\gamma_i$-Operation durchzuführen, ausgetestet, also $\gamma_0, \gamma_1, \dots, \gamma_{n-1}$. Wir definieren eine Warteschlange $Q$, die alle noch nicht besuchten Permutationen enthält, die von einer besuchten Permutation durch eine $\gamma_i$-Operation erreicht werden können. $Q$ zu Beginn nur $p$. Für das vordereste Element der Warteschlange $s$ werden alle $|s|$ möglichen $\gamma_i$-Operationen durchgeführt und die Permutationen $\gamma_i s$ für $0 \le i \le |s|$, die noch nicht besucht wurden, zu $Q$ hinzugefügt. Beim Erreichen einer identischen Permutation wird über eine Vorgängerliste die durchgeführte Operationenfolge rekonstruiert und zurückgegeben. Anders gesagt, es wird eine Breitensuche auf dem Pancake-Graphen von $p$ aus durchgeführt und der kürzeste Pfad zu einer identischen Permutation bestimmt. Da der Pancake-Graph ungewichtet ist, kann Breitensuche zum Finden kürzester Pfade verwendet werden.
 
 Die Vorgängerliste wird durch ein Array von Hashmaps \emph{pre} realisiert. Für jede Permutationslänge wird für eine besuchte Permutation $p$ bei $\mu(p)$ der $\mu$-Wert des Vorgängers von $p$ gespeichert. Bei Index $k - 1$ von \emph{pre} werden Knoten der Länge $k$ verwaltet. Um Speicher zu sparen, wird in der Warteschlange nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus wird mit dem Pseudocode \textsc{MinOperationsBFS} zusammengefasst.
 
@@ -587,12 +587,12 @@ Um die durchgeführten $\gamma_i$-Operationen aus \emph{pre} zu rekonstruieren, 
 
 Nun werden die Algorithmen zur Berechnung von $\mu(p)$ und \textsc{IthPermutation} skizziert. Sie werden von Bonet \cite{permutationranking} übernommen, eine formale Beschreibung ist dort zu finden. In dem Artikel wurden mehrere Verfahren zur Abbildung von Permutationen auf Zahlen und umgekehrt vorgestellt. Einige laufen in linearer Zeit, sind aber auf große, vorher erstellte Datenstrukturen angewiesen oder funktionieren nur bis zu einer bestimmten Länge. Daher werden die zwei Verfahren verwendet, die in $\Theta(n \log n)$ Zeit laufen, ohne zusätzliche Datenstrukturen auskommen, und für jede Permutationslänge verwendet werden können.
 
-Zur Berechnung von $\mu(p)$ wird wieder das fakultätsbasierte Zahlensystem zur Hilfe gezogen, indem zunächst die Ziffern von $\mu(p)$ berechnet werden. Dafür wird folgende Eigenschaft verwendet: $\mu(p)_i$ entspricht genau $p_i$ minus der Anzahl links gelegener, kleinerer Elemente in $p$ \cite{permutationranking}. Damit redziert sich das Problem darauf, die Anzahl kleinerer, links gelegener Elemente von $p_i$ zu zählen. Das kann mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element gelöst werden, sodass sich insgesamt eine Zeitkomplexität von $\Theta(n \log n)$ ergibt.
+Zur Berechnung von $\mu(p)$ wird wieder das fakultätsbasierte Zahlensystem zur Hilfe gezogen, indem zunächst die Ziffern von $\mu(p)$ berechnet werden. Dafür wird folgende Eigenschaft verwendet: $\mu(p)_i$ entspricht genau $p_i$ minus der Anzahl links gelegener, kleinerer Elemente in $p$ \cite{permutationranking}. (Man beachte, dass die Elemente von $p$ mit 0 beginnen.) Damit redziert sich das Problem darauf, die Anzahl kleinerer, links gelegener Elemente von $p_i$ zu zählen. Das kann mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element gelöst werden, sodass sich insgesamt eine Zeitkomplexität von $\Theta(n \log n)$ ergibt.
 
-Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Ziffern von $\mu(p)$ im fakultätsbasierten Zahlensystem durch wiederholtes Teilen mit Rest bestimmt. Wie bei der Berechnung der Ziffern einer Zahl im Binärsystem sind die Ziffern die Reste der Folge von Divisionen, nur dass der Divisor nicht konstant ist, sondern zuerst 1, dann 2, 3 und so weiter. Die Indizes von $p$ werden anschließend aufsteigend bearbeitet, man nehme also im Folgenden an, dass $p_i$ gerade bestimmt werden soll und $p_j$ für $j < i$ bereits bekannt ist. Mit der Tatsache, dass $\mu(p)_i$ genau $p_i$ minus der Anzahl kleinerer, links gelegener Elemente ist, reduziert sich das Problem darauf, zu bestimmen, welchen Wert $p_i$ annehmen muss, sodass es genau $\mu(p)_i$ kleinere Elemente links davon gibt. Auch das lässt sich mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element lösen. Für ihn gilt folgende Invariante: Ist ein Element $y$ noch nicht aufgetreten, steht eine 1 bei Index $y$, andernfalls eine 0. Zur Bestimmung von $p_i$ wird der Segmentbaum von oben nach unten heruntergelaufen und die Schritte so gewählt, dass die Summe links gelegener Elemente genau $\mu(p)_i$ ist. Aber dadurch landet man genau bei dem $p_i$-ten Element des Segmentbaums, denn links liegen $\mu(p)_i$ Einsen plus die Anzahl bereits aufgetretener, kleinerer Elemente, die im Segmentbaum bereits auf 0 gesetzt wurden. Nun wird auch $p_i$ im Segmentbaum auf 0 gesetzt und so die Invariante erhalten. Insgesamt erhält man auch hier eine Zeitkomplexität von $\Theta(n \log n)$.
-\bigskip
+Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Ziffern von $\mu(p)$ im fakultätsbasierten Zahlensystem durch wiederholtes Teilen mit Rest bestimmt. Wie bei der Berechnung der Ziffern einer Zahl im Binärsystem sind die Ziffern die Reste der Folge von Divisionen, nur dass der Divisor nicht konstant ist, sondern zuerst 1, dann 2, 3 und so weiter. Die Indizes von $p$ werden anschließend aufsteigend bearbeitet, man nehme also im Folgenden an, dass $p_i$ gerade bestimmt werden soll und $p_j$ für $j < i$ bereits bekannt ist. Mit der Tatsache, dass $\mu(p)_i$ genau $p_i$ minus der Anzahl kleinerer, links gelegener Elemente ist, reduziert sich das Problem darauf, zu bestimmen, welchen Wert $p_i$ annehmen muss, sodass es genau $\mu(p)_i$ kleinere Elemente links davon gibt. Auch das lässt sich mit einem Segmentbaum in $\Theta(\log n)$ Zeit pro Element lösen. Für ihn gilt folgende Invariante: Ist ein Element $y$ noch nicht aufgetreten, steht eine 1 bei Index $y$, andernfalls eine 0. Zur Bestimmung von $p_i$ wird der Segmentbaum von oben nach unten heruntergelaufen und die Schritte so gewählt, dass die Summe links gelegener Elemente genau $\mu(p)_i$ ist. Dadurch landet man genau bei dem $p_i$-ten Element des Segmentbaums, denn links liegen $\mu(p)_i$ Einsen plus die Anzahl bereits aufgetretener, kleinerer Elemente, die im Segmentbaum bereits auf 0 gesetzt wurden. Nun wird auch $p_i$ im Segmentbaum auf 0 gesetzt und so die Invariante erhalten. Insgesamt erhält man auch hier eine Zeitkomplexität von $\Theta(n \log n)$.
+\medskip
 
-\noindent \emph{Eine Unterschranke für $A(p)$.} Mit einer Unterschranke für die Anzahl an benötigten $\gamma_i$-Operationen wird es möglich sein, während der Suche manche Permutationen außer Acht zu lassen, da sie nicht zu einem besseren Ergebnis führen können. Wir betrachten die Anzahl an monoton steigenden oder fallenden Teilstrings in einer Permutation. Ein monoton steigender Teilstring $T$ von Länge $k$ einer Permutation $p$ ist eine Menge an Indizes $\{i, i + 1, \dots, i + k - 1\}$, so, dass $p_{j+1} > p_j$ für $i \le j \le i+ k - 2$ und $T$ bezüglich dieser Eigenschaft maximale Länge hat. Ein monton fallender Teilstring ist ähnlich definiert, nur gilt $p_{j + 1} < p_j$ für $i \le j \le i + k - 2$. Ein monotoner Teilstring ist ein monoton steigender oder fallender Teilstring. Nach dieser Definition ist ein Element von $p$, dessen Nachbarn beide größer oder kleiner sind, Teil von 2 monotonen Teilstrings. Die identische Permutation besteht offensichtlich nur aus einem monoton steigenden Teilstring. Mithilfe von folgendem Lemma kann eine untere Schranke für $A(p)$ bestimmt werden.
+\emph{Eine Unterschranke für $A(p)$.} Mit einer Unterschranke für die Anzahl an benötigten $\gamma_i$-Operationen wird es möglich sein, während der Suche manche Permutationen außer Acht zu lassen, da sie nicht zu einem besseren Ergebnis führen können. Wir betrachten die Anzahl an monoton steigenden oder fallenden Teilstrings in einer Permutation. Ein monoton steigender Teilstring $T$ von Länge $k$ einer Permutation $p$ ist eine Menge an Indizes $\{i, i + 1, \dots, i + k - 1\}$, so, dass $p_{j+1} > p_j$ für $i \le j \le i+ k - 2$ und $T$ bezüglich dieser Eigenschaft maximale Länge hat. Ein monton fallender Teilstring ist ähnlich definiert, nur gilt $p_{j + 1} < p_j$ für $i \le j \le i + k - 2$. Ein monotoner Teilstring ist ein monoton steigender oder fallender Teilstring. Nach dieser Definition ist ein Element von $p$, dessen Nachbarn beide größer oder kleiner sind, Teil von 2 monotonen Teilstrings. Die identische Permutation besteht offensichtlich nur aus einem monoton steigenden Teilstring. Mithilfe von folgendem Lemma kann eine untere Schranke für $A(p)$ bestimmt werden.
 
 \begin{lemma}
     Pro $\gamma_i$-Operation kann die Anzahl monotoner Teilstrings einer Permutation $p$ maximal um 3 reduziert werden.
@@ -648,7 +648,7 @@ Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Zif
     \end{align*}
 \end{proof}
 
-\noindent Die untere Schranke kann mit dem Algorithmus \textsc{LowerBound} berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit von \textsc{LowerBound} beträgt $\Theta(n)$.
+Die untere Schranke kann mit dem Algorithmus \textsc{LowerBound} berechnet werden. Für jedes Element von $p$ wird überprüft, ob bei ihm ein neuer monotoner Teilstring beginnt und der Zähler entsprechend erhöht. Die Laufzeit von \textsc{LowerBound} beträgt $\Theta(n)$.
 \bigskip
 
 \begin{algorithm}
@@ -674,14 +674,14 @@ Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Zif
     \caption{\textsc{LowerBound}(p)}
 \end{algorithm}
 
-\noindent \emph{Ein A*-basiertes Verfahren.} Mit der unteren Schranke wird das Brute-Force Verfahren nun in zwei Aspekten verbessert.
+\emph{Ein A*-basiertes Verfahren.} Mit der unteren Schranke wird das Brute-Force Verfahren nun in zwei Aspekten verbessert.
 
 \begin{enumerate}
     \item Anstatt der Warteschlange wird eine Prioritätswarteschlange verwendet, in der die Knoten aufsteigend nach unterer Schranke geordnet sind. Damit werden vielversprechende Pfade früher besucht.
     \item Die kürzeste bisher gefundene Distanz zu einer identischen Permutation wird ständig gespeichert, um das Besuchen unnötiger Knoten zu vermeiden. Ist die untere Schranke eines Knotens größer oder gleich der aktuell kürzesten Distanz, kann dieser nicht zu einem besseren Ergebnis führen.
 \end{enumerate}
 
-\noindent Aus graphentheoretischer Sicht entspricht das einer Ausführung des A*-Algorithmus auf dem Pancake-Graphen. Im Algorithmus \textsc{MinOperationsA*} ist der Pseudocode dafür dargestellt. Die Knoten werden in $Q$ als 3-Tupels mit Index, Länge und unterer Schranke gespeichert. Beim Einfügen eines neuen Knotens in $Q$ wird dessen untere Schranke auf die Anzahl bisher ausgeführter $\gamma_i$-Operationen, plus der von \textsc{LowerBound} geschätzten Zahl, plus 1 für die gerade durchgeführte Operation gesetzt. Die Variable \emph{ubound} enthält die aktuelle Oberschranke für $A(p)$. Wenn nur noch Knoten mit einer größeren unteren Schranke als \emph{ubound} in $Q$ vorhanden sind, wird abgebrochen und die beste Lösung zurückgegeben. $n'$ speichert die Länge der aktuell besten gefunden identischen Permutation.
+Aus graphentheoretischer Sicht entspricht das einer Ausführung des A*-Algorithmus auf dem Pancake-Graphen. Im Algorithmus \textsc{MinOperationsA*} ist der Pseudocode dafür dargestellt. Die Knoten werden in $Q$ als 3-Tupels mit Index, Länge und unterer Schranke gespeichert. Beim Einfügen eines neuen Knotens in $Q$ wird dessen untere Schranke auf die Anzahl bisher ausgeführter $\gamma_i$-Operationen, plus der von \textsc{LowerBound} geschätzten Zahl, plus 1 für die gerade durchgeführte Operation gesetzt. Die Variable \emph{ubound} enthält die aktuelle Oberschranke für $A(p)$. Wenn nur noch Knoten mit einer größeren unteren Schranke als \emph{ubound} in $Q$ vorhanden sind, wird abgebrochen und die beste Lösung zurückgegeben. $n'$ speichert die Länge der aktuell besten gefunden identischen Permutation.
 
 \begin{algorithm}
 
@@ -726,7 +726,7 @@ Für \textsc{IthPermutation} wird ähnlich vorgegangen. Zunächst werden die Zif
 \end{algorithm}
 \bigskip
 
-\noindent \emph{Branch and Bound.} Zum Vergleich mit dem A*-Verfahren wird noch ein Branch and Bound-Algorithmus vorgestellt. Er nutzt ebensfalls die untere Schranke für $A(p)$. Es wird keine Prioritätswarteschlange über alle Äste der Suche verwaltet, sondern lediglich über die direkten Nachfolger eines Knotens. Die Prioritätswarteschlange $Q$ enthält ein Paar für jeden Nachfolger, bestehend aus dessen unterer Schranke und dem $i$ der $\gamma_i$-Operation, die zu ihm führt. Die Nachfolger sind in $Q$ aufsteigend nach unterer Schranke geordnet und werden in Reihenfolge abgearbeitet. Während A* auf Breitensuche basiert ist, arbeitet dieses Verfahren eher wie Tiefensuche: Bevor der nächste Nachfolgerknoten abgearbeitet wird, wird der aktuelle vollständig abgeschlossen. Das heißt, es wird entweder eine identische Permutation erreicht oder festgestellt, dass keine bessere Lösung als die akutelle Oberschranke existiert. Die aktuelle Oberschranke \emph{ubound} wird rekursiven Aufrufen als Argument mitgegeben, wird dabei aber um 1 verringert, da durch die $\gamma_i$-Operation auf $p$ nun eine $\gamma_i$-Operation weniger zur Verfügung steht. Die Rückgabe besteht aus einem Paar: Ein Array von Wendeoperationen und ein Wahrheitswert, der angibt, ob eine bessere Lösung gefunden wurde. Da der Algorithmus, wie für Tiefensuche üblich, rekursiv arbeitet, wird die Datenstruktur $pre$ zum Speichern des Vorgängers nicht benötigt, das geschieht implizit durch den Stapel rekursiver Aufrufe. Um dennoch zu wissen, welche Knoten bereits besucht wurden, wird ein Array von Hashsets $vis$ angelegt, in dem für jede Permutationslänge die Indizes besuchter Permutationen enthalten sind. Das Verfahren is im Algorithmus \textsc{MinOperationsBnB} zusammengefasst.
+\emph{Branch and Bound.} Zum Vergleich mit dem A*-Verfahren wird noch ein Branch and Bound-Algorithmus vorgestellt. Er nutzt ebensfalls die untere Schranke für $A(p)$. Es wird keine Prioritätswarteschlange über alle Äste der Suche verwaltet, sondern lediglich über die direkten Nachfolger eines Knotens. Die Prioritätswarteschlange $Q$ enthält ein Paar für jeden Nachfolger, bestehend aus dessen unterer Schranke und dem $i$ der $\gamma_i$-Operation, die zu ihm führt. Die Nachfolger sind in $Q$ aufsteigend nach unterer Schranke geordnet und werden in Reihenfolge abgearbeitet. Während A* auf Breitensuche basiert ist, arbeitet dieses Verfahren eher wie Tiefensuche: Bevor der nächste Nachfolgerknoten abgearbeitet wird, wird der aktuelle vollständig abgeschlossen. Das heißt, es wird entweder eine identische Permutation erreicht oder festgestellt, dass keine bessere Lösung als die akutelle Oberschranke existiert. Die aktuelle Oberschranke \emph{ubound} wird rekursiven Aufrufen als Argument mitgegeben, wird dabei aber um 1 verringert, da durch die $\gamma_i$-Operation auf $p$ nun eine $\gamma_i$-Operation weniger zur Verfügung steht. Die Rückgabe besteht aus einem Paar: Ein Array von Wendeoperationen und ein Wahrheitswert, der angibt, ob eine bessere Lösung gefunden wurde. Da der Algorithmus, wie für Tiefensuche üblich, rekursiv arbeitet, wird die Datenstruktur $pre$ zum Speichern des Vorgängers nicht benötigt, das geschieht implizit durch den Stapel rekursiver Aufrufe. Um dennoch zu wissen, welche Knoten bereits besucht wurden, wird ein Array von Hashsets $vis$ angelegt, in dem für jede Permutationslänge die Indizes besuchter Permutationen enthalten sind. Das Verfahren is im Algorithmus \textsc{MinOperationsBnB} zusammengefasst.
 
 \begin{algorithm}
     \If{$\mu(p) = 0$}
@@ -825,8 +825,8 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
     \caption{\textsc{Pwue}$(n)$}
 \end{algorithm}
 
-\bigskip
-\noindent \emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen, sondern die Berechnung für ,,einfacher sortierbare'' Permutationen vermeiden. In der Praxis waren sie jedoch ineffizienter als der vorgestellte Algorithmus. Im Folgenden soll eines kurz erläutert werden. Es basiert darauf, dass für eine Permutation $p$ der Länge $n$, sodass $A(p) = P(n)$ jeder kürzeste Pfad zu einer identischen Permutation bei $I^{m}$ endet, wobei $m = n - P(n)$. Für jede Permutation der Länge $k$ mit $m \le k \le n$, die von einem solchen $p$ durch eine Folge von $\gamma_i$-Operationen erreicht werden kann, gilt außerdem, dass ihr kürzester Pfad zu einer identischen Permutation zu $I^m$ oder kleiner führt. Wir nennen im Folgenden die Menge an Permutationen der Länge $k$, deren kürzester Pfad zu $I^m$ oder einer kleineren identischen Permutation führt, $S_k$. Offensichtlich ist $S_n$ genau die gewünschte Menge von Permutationen mit $A(p) = P(n)$. Der Algorithmus arbeitet wie folgt: Man startet mit $S_m$, das aus allen Permutationen der Länge $m$ besteht. Nun definieren wir die Umkehrung von $\gamma_i$: Mit $q = \gamma_{i, r}^{-1} p$ wird die Permutation $q$ der Länge $|p| + 1$ bezeichnet, sodass $\gamma_i q = p$ und $q_i = r$. Der Parameter $r$ ist nötig, da die Umkehrung andernfalls nicht eindeutig wäre. Nun führt man $\gamma_{i, r}^{-1}$ für jede Permutation in $S_m$ aus und speichert für jede Permutation der Länge $m + 1$, die mindestens einmal Ergebnis einer solchen Operation war, wie oft sie Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war. Effizient lässt sich das mit einer Hashmap oder einem balancierten Binärbaum realisieren, wobei ein Zähler für jede betroffene Permutation verwaltet wird. Jede Permutation der Länge $m+ 1$, die $m + 1$ Mal Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war, muss Teil von $S_{m + 1}$ sein und wird dort eingefügt. Nun wird das Verfahren für $S_{m+ 1}$, wiederholt, dann $S_{m + 2}$ und so weiter, bis $n - 1$. Schließlich enthält $S_n$ genau die gewünschte Menge von Permutationen. Bisher wurde angenommen, dass $m = n - P(n)$ bekannt ist, was nicht stimmt, da $P(n)$ berechnet werden soll. Wenn das beschriebene Verfahren aber von einem $k < m$ gestartet wird, ist $S_n$ am Ende leer, da es keine Permutationen der Länge $n$ gibt, deren kürzeste Pfade zu einer identischen Permutation zu $I^k$ oder kleiner führen, für $k < m$. Es wird also eine Binärsuche durchgeführt, um das tatsächliche $m$ zu finden. Da nicht für jede Permutation jeder Länge Speicher benötigt wird, und $A(p)$ nur für bestimmte Permutationen berechnet wird, sollten sowohl Laufzeit als auch Speicherverbrauch gegenüber \textsc{Pwue} verbessert sein. Es ergaben sich jedoch folgende praktische Probleme, die insgeamt zu höherer Laufzeit und höherem Speicherverbrauch führen.
+\medskip
+\emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen, sondern die Berechnung für ,,einfacher sortierbare'' Permutationen vermeiden. In der Praxis waren sie jedoch ineffizienter als der vorgestellte Algorithmus. Im Folgenden soll eines kurz erläutert werden. Es basiert darauf, dass für eine Permutation $p$ der Länge $n$, sodass $A(p) = P(n)$ jeder kürzeste Pfad zu einer identischen Permutation bei $I^{m}$ endet, wobei $m = n - P(n)$. Für jede Permutation der Länge $k$ mit $m \le k \le n$, die von einem solchen $p$ durch eine Folge von $\gamma_i$-Operationen erreicht werden kann, gilt außerdem, dass ihr kürzester Pfad zu einer identischen Permutation zu $I^m$ oder kleiner führt. Wir nennen im Folgenden die Menge an Permutationen der Länge $k$, deren kürzester Pfad zu $I^m$ oder einer kleineren identischen Permutation führt, $S_k$. Offensichtlich ist $S_n$ genau die gewünschte Menge von Permutationen mit $A(p) = P(n)$. Der Algorithmus arbeitet wie folgt: Man startet mit $S_m$, das aus allen Permutationen der Länge $m$ besteht. Nun definieren wir die Umkehrung von $\gamma_i$: Mit $q = \gamma_{i, r}^{-1} p$ wird die Permutation $q$ der Länge $|p| + 1$ bezeichnet, sodass $\gamma_i q = p$ und $q_i = r$. Der Parameter $r$ ist nötig, da die Umkehrung andernfalls nicht eindeutig wäre. Nun führt man $\gamma_{i, r}^{-1}$ für jede Permutation in $S_m$ aus und speichert für jede Permutation der Länge $m + 1$, die mindestens einmal Ergebnis einer solchen Operation war, wie oft sie Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war. Effizient lässt sich das mit einer Hashmap oder einem balancierten Binärbaum realisieren, wobei ein Zähler für jede betroffene Permutation verwaltet wird. Jede Permutation der Länge $m+ 1$, die $m + 1$ Mal Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war, muss Teil von $S_{m + 1}$ sein und wird dort eingefügt. Nun wird das Verfahren für $S_{m+ 1}$, wiederholt, dann $S_{m + 2}$ und so weiter, bis $n - 1$. Schließlich enthält $S_n$ genau die gewünschte Menge von Permutationen. Bisher wurde angenommen, dass $m = n - P(n)$ bekannt ist, was nicht stimmt, da $P(n)$ berechnet werden soll. Wenn das beschriebene Verfahren aber von einem $k < m$ gestartet wird, ist $S_n$ am Ende leer, da es keine Permutationen der Länge $n$ gibt, deren kürzeste Pfade zu einer identischen Permutation zu $I^k$ oder kleiner führen, für $k < m$. Es wird also eine Binärsuche durchgeführt, um das tatsächliche $m$ zu finden. Da nicht für jede Permutation jeder Länge Speicher benötigt wird, und $A(p)$ nur für bestimmte Permutationen berechnet wird, sollten sowohl Laufzeit als auch Speicherverbrauch gegenüber \textsc{Pwue} verbessert sein. Es ergaben sich jedoch folgende praktische Probleme, die insgeamt zu höherer Laufzeit und höherem Speicherverbrauch führen.
 
 \begin{itemize}
     \item Wenn nicht jede Permutation gespeichert wird und kein Array der Länge $n!$ angelegt werden möchte, muss zu $A(p)$ auch $\mu(p)$ gespeichert werden. Während $A(p)$ problemlos in 8 Bits passt, benötigt $\mu(p)$ 64 Bits, soadss der Speicherverbrauch pro Permutation 8 Mal größer wird. Daneben wird, wie bereits erwähnt, eine komplexere Datenstruktur zum Speichern der Zähler benötigt, die einen hohen konstanten bzw. logarithmischen Faktor zur Laufzeit beiträgt.
@@ -925,14 +925,13 @@ ist. Folglich beträgt die Laufzeit von \textsc{Pwue} $\Theta(n! \cdot n^2 \log 
 \section{Implementierung}
 
 Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \emph{aufgabe3\_a.cpp} und \emph{aufgabe3\_b.cpp} steht der Quellcode speziell für die Teilaufgaben, in \emph{util.cpp} Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann \emph{make a} bzw. \emph{make b} im Ordner \emph{aufgabe3} ausgeführt werden. Mit nur \emph{make} werden beide Teilaufgaben kompiliert.
-\bigskip
 
-\noindent Grundsätzlich gilt, dass eine Permutation als C$++$ \emph{vector} von \emph{unsigned} repräsentiert wird und meist \emph{p} heißt. Wenn \emph{p} bereits vergeben ist, heißt eine Permutation auch \emph{s}. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
+Grundsätzlich gilt, dass eine Permutation als C$++$ \emph{vector} von \emph{unsigned} repräsentiert wird und meist \emph{p} heißt. Wenn \emph{p} bereits vergeben ist, heißt eine Permutation auch \emph{s}. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
 
 \subsection{Hilfsfunktionen}
 
 Hier wird der Inhalt von \emph{util.cpp} beschrieben.
-\bigskip
+\medskip
 
 \noindent \verb|size_t ind(vector<unsigned> const &p)|
 \smallskip
@@ -1195,7 +1194,7 @@ Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jewei
     \caption{Laufzeit (in s) und Anzahl besuchter Knoten der drei Algorithmen für Teilaufgabe a)}
 \end{table}
 
-\noindent Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen deutlich verringern können. Sie ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} und \emph{pancake13} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei \emph{pancake11} bei ca. 5 GB und für \emph{pancake13} bei ca. 1 GB.
+Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen deutlich verringern können. Sie ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} und \emph{pancake13} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei \emph{pancake11} bei ca. 5 GB und für \emph{pancake13} bei ca. 1 GB.
 
 \subsection{Werte von $P(n)$}
 
@@ -1219,10 +1218,10 @@ Mit dem Programm für Teilaufgabe b) konnte die PWUE-Zahl bis $n = 13$ berechnet
     \caption{PWUE-Zahlen bis $n = 14$ mit Beispielen}
 \end{table}
 
-\noindent Dass $P(14) = 8$ ist, wurde nicht wie die anderen PWUE-Zahlen berechnet, kann aber wie folgt begründet werden. Es gilt $P(n) \le P(n - 1) + 1$ für $n \ge 2$, da jede Permutation der Länge $n$ durch eine Operation in eine Permutation der Länge $n - 1$ umgewandelt werden kann. Da von dem in der Tabelle genannten Beispiel (entspricht \emph{pancake8}) aber mithilfe des Programms für a) überprüft werden kann, dass $A(p) = 8$, muss $P(14) = 8$ sein.
-\bigskip
+Dass $P(14) = 8$ ist, wurde nicht wie die anderen PWUE-Zahlen berechnet, kann aber wie folgt begründet werden. Es gilt $P(n) \le P(n - 1) + 1$ für $n \ge 2$, da jede Permutation der Länge $n$ durch eine Operation in eine Permutation der Länge $n - 1$ umgewandelt werden kann. Da von dem in der Tabelle genannten Beispiel (entspricht \emph{pancake8}) aber mithilfe des Programms für a) überprüft werden kann, dass $A(p) = 8$, muss $P(14) = 8$ sein.
+\medskip
 
-\noindent \emph{Das tatsächliche Laufzeitverhalten des Programms.} Im Verhältnis zur sehr schlechten asymptotischen Laufzeit von $\Theta(n! \cdot n^2 \log n)$ lief das Programm von Teilaufgabe b) relativ schnell. Zur Berechnung von $P(13)$ sollten nach der theoretischen Abschätzung in der Größenordnung von $13! \cdot 13^2 \cdot \log_2 13 \approx 3,89 \cdot 10^{12}$ Schritte nötig sein. Trotz dieser sehr großen Zahl konnte $P(13)$ mit 8 Threads in nur 22 min berechnet werden. Für $P(12)$ wurden 73 s benötigt, für $P(11)$ ca. 5,5 s. Auch der Speicherverbrauch war trotz des Speicherns von $A(p)$ für $12! = 479001600$ Permutationen wegen der Verwendung von 8-Bit-Zahlen niedrig, er betrug ca. 500 MB.  
+\emph{Das tatsächliche Laufzeitverhalten des Programms.} Im Verhältnis zur sehr schlechten asymptotischen Laufzeit von $\Theta(n! \cdot n^2 \log n)$ lief das Programm von Teilaufgabe b) relativ schnell. Zur Berechnung von $P(13)$ sollten nach der theoretischen Abschätzung in der Größenordnung von $13! \cdot 13^2 \cdot \log_2 13 \approx 3,89 \cdot 10^{12}$ Schritte nötig sein. Trotz dieser sehr großen Zahl konnte $P(13)$ mit 8 Threads in nur 22 min berechnet werden. Für $P(12)$ wurden 73 s benötigt, für $P(11)$ ca. 5,5 s. Auch der Speicherverbrauch war trotz des Speicherns von $A(p)$ für $12! = 479001600$ Permutationen wegen der Verwendung von 8-Bit-Zahlen niedrig, er lag bei ca. 500 MB.  
 
 \section{Quellcode}
 
