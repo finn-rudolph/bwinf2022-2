@@ -36,14 +36,21 @@ size_t edge_index(size_t n, size_t u, size_t v)
     return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) - min(u, v);
 }
 
-// Fügt für jedes Tripel (i, j, k), das mit j als Scheitelpunkt einen spitzen
-// Winkel bildet, die Gleichung x_ij + x_jk <= 2 hinzu.
-void add_angle_constraints(
-    glp_prob *ip, size_t n, complex double const *const z)
+void ban_triple(glp_prob *ip, size_t n, size_t i, size_t j, size_t k)
 {
     int ind[3];
     double val[3];
+    size_t const i0 = glp_add_rows(ip, 1);
+    glp_set_row_bnds(ip, i0, GLP_DB, 0, 1);
+    ind[1] = edge_index(n, i, j);
+    ind[2] = edge_index(n, j, k);
     val[1] = val[2] = 1;
+    glp_set_mat_row(ip, i0, 2, ind, val);
+}
+
+void add_angle_constraints(
+    glp_prob *ip, size_t n, complex double const *const z)
+{
 
     for (size_t i = 0; i < n; i++)
     {
@@ -51,13 +58,31 @@ void add_angle_constraints(
         {
             for (size_t k = j + 1; k < n; k++)
             {
-                if (is_acute(z[i], z[j], z[k]))
+                if (is_acute(z[i], z[j], z[k]) && is_acute(z[k], z[i], z[j]) &&
+                    is_acute(z[j], z[k], z[i]))
                 {
+                    // Im Dreieck ijk gibt es keinen Winkel >= pi / 2, es kann
+                    // also maximal eine Kante daraus vorkommen.
+                    int ind[4];
+                    double val[4];
                     size_t const i0 = glp_add_rows(ip, 1);
                     glp_set_row_bnds(ip, i0, GLP_DB, 0, 1);
                     ind[1] = edge_index(n, i, j);
                     ind[2] = edge_index(n, j, k);
-                    glp_set_mat_row(ip, i0, 2, ind, val);
+                    ind[3] = edge_index(n, k, i);
+                    val[1] = val[2] = val[3] = 1;
+                    glp_set_mat_row(ip, i0, 3, ind, val);
+                }
+                else
+                {
+                    // Füge die Beschränkung hinzu, dass von jedem Kantenpaar
+                    // mit Innenwinkel < pi / 2 maximal eine Kante vorkommt.
+                    if (is_acute(z[i], z[j], z[k]))
+                        ban_triple(ip, n, i, j, k);
+                    if (is_acute(z[k], z[i], z[j]))
+                        ban_triple(ip, n, k, i, j);
+                    if (is_acute(z[j], z[k], z[i]))
+                        ban_triple(ip, n, j, k, i);
                 }
             }
         }
