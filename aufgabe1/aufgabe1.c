@@ -15,9 +15,15 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
-double dot_product(complex double const x, complex double const y)
+bool is_acute(complex double a, complex double b, complex double c)
 {
-    return fma(creal(x), creal(y), cimag(x) * cimag(y));
+    return fma(creal(b), creal(c),
+               fma(creal(a), creal(b),
+                   fma(cimag(b), cimag(c), cimag(a) * cimag(b)))) -
+               fma(creal(b), creal(b),
+                   fma(creal(a), creal(c),
+                       fma(cimag(b), cimag(b), cimag(a) * cimag(c)))) <
+           0.0;
 }
 
 size_t nchoose2(size_t const n)
@@ -45,7 +51,7 @@ void add_angle_constraints(
         {
             for (size_t k = j + 1; k < n; k++)
             {
-                if (dot_product(z[j] - z[i], z[k] - z[j]) < 0)
+                if (is_acute(z[i], z[j], z[k]))
                 {
                     size_t const i0 = glp_add_rows(ip, 1);
                     glp_set_row_bnds(ip, i0, GLP_DB, 0, 1);
