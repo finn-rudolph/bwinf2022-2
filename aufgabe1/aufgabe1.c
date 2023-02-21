@@ -30,6 +30,8 @@ size_t edge_index(size_t n, size_t u, size_t v)
     return nchoose2(n) - nchoose2(n - min(u, v)) + max(u, v) - min(u, v);
 }
 
+// Fügt für jedes Tripel (i, j, k), das mit j als Scheitelpunkt einen spitzen
+// Winkel bildet, die Gleichung x_ij + x_jk <= 2 hinzu.
 void add_angle_constraints(
     glp_prob *ip, size_t n, complex double const *const z)
 {
@@ -38,8 +40,11 @@ void add_angle_constraints(
     val[1] = val[2] = 1;
 
     for (size_t i = 0; i < n; i++)
+    {
         for (size_t j = i + 1; j < n; j++)
+        {
             for (size_t k = j + 1; k < n; k++)
+            {
                 if (dot_product(z[j] - z[i], z[k] - z[j]) < 0)
                 {
                     size_t const i0 = glp_add_rows(ip, 1);
@@ -48,12 +53,15 @@ void add_angle_constraints(
                     ind[2] = edge_index(n, j, k);
                     glp_set_mat_row(ip, i0, 2, ind, val);
                 }
+            }
+        }
+    }
 }
 
 void add_degree_constraints(glp_prob *ip, size_t n)
 {
     size_t const i0 = glp_add_rows(ip, n);
-    for (size_t i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++) // Beschränke den Wert jeder Zeile auf [1, 2].
         glp_set_row_bnds(ip, i0 + i, GLP_DB, 1, 2);
 
     int *ind = malloc(n * sizeof *ind);
@@ -64,6 +72,8 @@ void add_degree_constraints(glp_prob *ip, size_t n)
 
     for (size_t i = 0; i < n; i++)
     {
+        // Schreibe den Index von x_ij für j != i in ind, sodass der Koeffizient
+        // jeder anliegenden Kante 1 ist.
         for (size_t j = 0; j < n; j++)
             if (i != j)
                 ind[j + (j < i)] = edge_index(n, i, j);
@@ -81,6 +91,7 @@ void add_connectivity_constraint(glp_prob *ip, size_t n)
     int *ind = malloc((nchoose2(n) + 1) * sizeof *ind);
     double *val = malloc((nchoose2(n) + 1) * sizeof *val);
 
+    // Summiere die Werte der Variablen aller Kanten.
     for (size_t i = 1; i < nchoose2(n) + 1; i++)
         ind[i] = i, val[i] = 1;
 
@@ -101,6 +112,8 @@ void add_subtour_elimination_constraint(
     for (size_t i = 1; i < nchoose2(m) + 1; i++)
         val[i] = 1;
 
+    // Für jedes unterschiedliche Knotenpaar in subtour, füge den Index der
+    // entsprechenden Kante zu ind hinzu.
     for (size_t i = 0; i < m; i++)
         for (size_t j = i + 1; j < m; j++)
             ind[edge_index(m, i, j)] = edge_index(n, subtour[i], subtour[j]);
@@ -110,13 +123,20 @@ void add_subtour_elimination_constraint(
     free(val);
 }
 
+// Erstellt die Adjazenzliste mit den von GLPK als Lösung vorgeschlagenen
+// Kanten.
 void build_graph(glp_prob *ip, size_t n, size_t *const *const graph)
 {
+    // Da der Grad jedes Knoten nur 1 oder 2 sein kann, werden die Längen der
+    // Adjazenzlisten nicht explizit gespeichert, sondern durch SIZE_MAX das
+    // Nichtvorhandensein eines zweiten benachbarten Knoten signalisiert.
     for (size_t i = 0; i < n; i++)
         graph[i][0] = graph[i][1] = SIZE_MAX;
 
     for (size_t i = 0; i < n; i++)
+    {
         for (size_t j = i + 1; j < n; j++)
+        {
             if (glp_mip_col_val(ip, edge_index(n, i, j)) > 0.1)
             {
                 graph[i][1] = graph[i][0];
@@ -124,20 +144,24 @@ void build_graph(glp_prob *ip, size_t n, size_t *const *const graph)
                 graph[j][1] = graph[j][0];
                 graph[j][0] = i;
             }
+        }
+    }
 }
 
+// Gibt die Länge des Zyklus, der u enthält zurück, oder 0, wenn u nicht Teil
+// eines Zyklus ist. Die Knoten des Zyklus werden in subtour geschrieben.
 size_t find_cycle_len(
     size_t *const *const graph, size_t *const subtour, bool *const visited,
     size_t u)
 {
-    size_t cycle_len = 0, v = u, w = u;
+    size_t cycle_len = 0, v = u, last = u;
 
     do
     {
         subtour[cycle_len++] = v;
         visited[v] = 1;
-        size_t const next = graph[v][0] == w ? graph[v][1] : graph[v][0];
-        w = v;
+        size_t const next = graph[v][0] == last ? graph[v][1] : graph[v][0];
+        last = v;
         v = next;
     } while (v != SIZE_MAX && v != u);
 
@@ -164,9 +188,11 @@ int main()
     add_degree_constraints(ip, n);
     add_connectivity_constraint(ip, n);
 
+    // Setze alle Variablen binär.
     for (size_t i = 1; i < nchoose2(n) + 1; i++)
         glp_set_col_kind(ip, i, GLP_BV);
 
+    // Die Länge jeder verwendeten Kante wird zur Kostenfunktion addiert.
     for (size_t i = 0; i < n; i++)
         for (size_t j = i + 1; j < n; j++)
             glp_set_obj_coef(ip, edge_index(n, i, j), cabs(z[i] - z[j]));
@@ -192,19 +218,22 @@ int main()
         solution_found = 1;
 
         for (size_t i = 0; i < n; i++)
+        {
             if (!visited[i])
             {
+                // Besuche jeden Knoten des Graphen und eliminiere ggf. Zyklen.
                 size_t const m = find_cycle_len(graph, subtour, visited, i);
                 solution_found = solution_found && !m;
                 if (m)
                     add_subtour_elimination_constraint(ip, n, m, subtour);
             }
+        }
 
     } while (!solution_found && glp_mip_status(ip) != GLP_NOFEAS);
 
     if (glp_mip_status(ip) == GLP_NOFEAS)
     {
-        printf("Keine Tour mit Abbiegewinkeln kleiner gleich 90 Grad möglich.\n");
+        printf("Keine Tour mit Abbiegewinkeln von höchstens 90 Grad möglich.\n");
         return 0;
     }
 
@@ -214,7 +243,6 @@ int main()
     for (size_t i = 0; i < n; i++)
         if (graph[i][1] == SIZE_MAX)
             u = i;
-
     memset(visited, 0, n * sizeof *visited);
     while (u != SIZE_MAX)
     {
