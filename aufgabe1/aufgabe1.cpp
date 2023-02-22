@@ -207,18 +207,20 @@ pair<vector<complex<double>>, double> get_optimal_tour(
 
     Highs highs;
     HighsStatus status;
+    HighsModelStatus model_status = HighsModelStatus::kNotset;
     status = highs.passModel(model);
     assert(status == HighsStatus::kOk);
     bool has_subtours = 1;
 
-    while (has_subtours && highs.getModelStatus() != HighsModelStatus::kInfeasible)
+    while (has_subtours && model_status != HighsModelStatus::kInfeasible)
     {
         status = highs.run();
         assert(status == HighsStatus::kOk);
+        model_status = highs.getModelStatus();
         has_subtours = check_for_subtours(highs, n);
     }
 
-    if (highs.getModelStatus() == HighsModelStatus::kInfeasible)
+    if (model_status == HighsModelStatus::kInfeasible)
         return make_pair(vector<complex<double>>(), 0.0);
 
     vector<vector<size_t>> graph = build_graph(highs, n);
