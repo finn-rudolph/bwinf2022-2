@@ -229,7 +229,7 @@ int main()
 
     if (tour.empty())
     {
-        cout << "Keine Tour mit Abbiegewinkeln von höchstens 90 Grad möglich.\n";
+        cout << "Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.\n";
     }
     else
     {
