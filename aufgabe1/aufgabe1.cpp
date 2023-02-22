@@ -40,6 +40,7 @@ void ban_triple(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
     model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
+// Fügt Bedingungen für verwendete Kanten für jedes Tripel (i, j, k) hinzu.
 void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
 {
     for (size_t i = 0; i < z.size(); i++)
@@ -51,10 +52,14 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
                 if (is_acute(z[i], z[j], z[k]) && is_acute(z[k], z[i], z[j]) &&
                     is_acute(z[j], z[k], z[i]))
                 {
+                    // Das Dreieck ijk ist spitzwinklig, es darf maximal eine
+                    // Kante verwendet werden.
                     ban_triangle(model, z.size(), i, j, k);
                 }
                 else
                 {
+                    // Das Dreieck ijk ist stumpfwinklig, die Kantenpaare mit
+                    // Innenwinkel < pi / 2 werden ausgeschlossen.
                     if (is_acute(z[i], z[j], z[k]))
                         ban_triple(model, z.size(), i, j, k);
                     if (is_acute(z[k], z[i], z[j]))
@@ -67,6 +72,8 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
     }
 }
 
+// Schränkt den Grad jedes Knoten auf 1 oder 2 ein, und die Anzhal verwendeter
+// Kanten auf genau n - 1.
 void add_degree_constraints(HighsModel &model, size_t n)
 {
     for (size_t i = 0; i < n; i++)
@@ -94,6 +101,9 @@ void add_degree_constraints(HighsModel &model, size_t n)
     model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
+// Fügt die Bedingung hinzu, dass die Anzhal an Kanten zwischen Knoten in tour
+// mindestens um 1 kleiner als die Anzahl an Knoten in tour sein muss. Dadurch
+// wird ein Zyklus, der genau die Knoten von tour enthält, ausgeschlossen.
 void add_subtour_elimination_constraint(
     Highs &highs, size_t n, vector<size_t> const &tour)
 {
@@ -116,6 +126,7 @@ void add_subtour_elimination_constraint(
     free(val);
 }
 
+// Gibt den als Lösung gefundenen Graphen in Form einer Adjazenzliste zurück.
 vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
 {
     HighsSolution const &solution = highs.getSolution();
@@ -129,6 +140,7 @@ vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
     return graph;
 }
 
+// Gibt zurürck, ob in der Lösung Subtouren existieren und eliminiert diese ggf.
 bool check_for_subtours(Highs &highs, size_t n)
 {
     vector<vector<size_t>> graph = build_graph(highs, n);
@@ -165,6 +177,8 @@ bool check_for_subtours(Highs &highs, size_t n)
     return has_subtours;
 }
 
+// Gibt den kürzestmöglichen Hamiltonpfad zurück, sodass der Innenwinkel zweier
+// benachbarter Kanten >= pi / 2 ist. Daneben wird dessen Länge zurückgegeben.
 pair<vector<complex<double>>, double> get_optimal_tour(
     vector<complex<double>> const &z)
 {
