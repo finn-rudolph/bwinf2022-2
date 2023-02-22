@@ -18,31 +18,30 @@ bool is_acute(complex<double> a, complex<double> b, complex<double> c)
 
 void ban_triangle(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
 {
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-    model.lp_.row_lower_.push_back(0);
-    model.lp_.row_upper_.push_back(1);
     model.lp_.a_matrix_.index_.push_back(edge_index(n, i, j));
     model.lp_.a_matrix_.index_.push_back(edge_index(n, j, k));
     model.lp_.a_matrix_.index_.push_back(edge_index(n, k, i));
     model.lp_.a_matrix_.value_.push_back(1);
     model.lp_.a_matrix_.value_.push_back(1);
     model.lp_.a_matrix_.value_.push_back(1);
+    model.lp_.row_lower_.push_back(0);
+    model.lp_.row_upper_.push_back(1);
+    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
 void ban_triple(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
 {
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-    model.lp_.row_lower_.push_back(0);
-    model.lp_.row_upper_.push_back(1);
     model.lp_.a_matrix_.index_.push_back(edge_index(n, i, j));
     model.lp_.a_matrix_.index_.push_back(edge_index(n, j, k));
     model.lp_.a_matrix_.value_.push_back(1);
     model.lp_.a_matrix_.value_.push_back(1);
+    model.lp_.row_lower_.push_back(0);
+    model.lp_.row_upper_.push_back(1);
+    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
 void add_angle_constraints(HighsModel &model, vector<complex<double>> &z)
 {
-    size_t x = model.lp_.row_lower_.size();
     for (size_t i = 0; i < z.size(); i++)
     {
         for (size_t j = i + 1; j < z.size(); j++)
@@ -72,9 +71,6 @@ void add_degree_constraints(HighsModel &model, size_t n)
 {
     for (size_t i = 0; i < n; i++)
     {
-        model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-        model.lp_.row_lower_.push_back(1);
-        model.lp_.row_upper_.push_back(2);
         for (size_t j = 0; j < n; j++)
         {
             if (i != j)
@@ -83,16 +79,19 @@ void add_degree_constraints(HighsModel &model, size_t n)
                 model.lp_.a_matrix_.value_.push_back(1);
             }
         }
+        model.lp_.row_lower_.push_back(1);
+        model.lp_.row_upper_.push_back(2);
+        model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
     }
 
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-    model.lp_.row_lower_.push_back(n - 1);
-    model.lp_.row_upper_.push_back(n - 1);
     for (size_t i = 0; i < nchoose2(n); i++)
     {
         model.lp_.a_matrix_.index_.push_back(i);
         model.lp_.a_matrix_.value_.push_back(1);
     }
+    model.lp_.row_lower_.push_back(n - 1);
+    model.lp_.row_upper_.push_back(n - 1);
+    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
 void add_subtour_elimination_constraint(
@@ -135,21 +134,21 @@ bool check_for_subtours(Highs &highs, size_t n)
         if (!visited[i])
         {
             vector<size_t> subtour;
-            size_t u = i, last = SIZE_MAX;
+            size_t j = i, last = SIZE_MAX;
 
             do
             {
-                visited[u] = 1;
-                subtour.push_back(u);
+                visited[j] = 1;
+                subtour.push_back(j);
                 size_t next = SIZE_MAX;
-                for (size_t v : graph[u])
+                for (size_t v : graph[j])
                     if (v != last)
                         next = v;
-                last = u;
-                u = next;
-            } while (u != i && u != SIZE_MAX);
+                last = j;
+                j = next;
+            } while (j != i && j != SIZE_MAX);
 
-            if (u == i)
+            if (j == i)
             {
                 has_subtours = 1;
                 add_subtour_elimination_constraint(highs, n, subtour);
@@ -171,6 +170,7 @@ int main()
     HighsModel model;
     model.lp_.sense_ = ObjSense::kMinimize;
     model.lp_.a_matrix_.format_ = MatrixFormat::kRowwise;
+    model.lp_.a_matrix_.start_ = {0};
     model.lp_.num_col_ = nchoose2(n);
 
     for (size_t i = 0; i < n; i++)
@@ -186,7 +186,6 @@ int main()
 
     add_angle_constraints(model, z);
     add_degree_constraints(model, n);
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
     model.lp_.num_row_ = model.lp_.row_lower_.size();
 
     Highs highs;
