@@ -40,7 +40,7 @@ void ban_triple(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
     model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
-void add_angle_constraints(HighsModel &model, vector<complex<double>> &z)
+void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
 {
     for (size_t i = 0; i < z.size(); i++)
     {
@@ -116,16 +116,22 @@ void add_subtour_elimination_constraint(
     free(val);
 }
 
-bool check_for_subtours(Highs &highs, size_t n)
+vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
 {
-    vector<vector<unsigned>> graph(n);
     HighsSolution const &solution = highs.getSolution();
+    vector<vector<size_t>> graph(n);
 
     for (size_t i = 0; i < n; i++)
         for (size_t j = i + 1; j < n; j++)
             if (solution.col_value[edge_index(n, i, j)] > 0.5)
                 graph[i].push_back(j), graph[j].push_back(i);
 
+    return graph;
+}
+
+bool check_for_subtours(Highs &highs, size_t n)
+{
+    vector<vector<size_t>> graph = build_graph(highs, n);
     vector<bool> visited(n, 0);
     bool has_subtours = 0;
 
@@ -159,12 +165,9 @@ bool check_for_subtours(Highs &highs, size_t n)
     return has_subtours;
 }
 
-int main()
+pair<vector<complex<double>>, double> get_optimal_tour(
+    vector<complex<double>> const &z)
 {
-    vector<complex<double>> z;
-    double x, y;
-    while (scanf("%lf %lf", &x, &y) == 2)
-        z.emplace_back(x, y);
     size_t const n = z.size();
 
     HighsModel model;
@@ -202,35 +205,47 @@ int main()
     }
 
     if (highs.getModelStatus() == HighsModelStatus::kInfeasible)
+        return make_pair(vector<complex<double>>(), 0.0);
+
+    vector<vector<size_t>> graph = build_graph(highs, n);
+    vector<complex<double>> tour;
+
+    size_t j, last = SIZE_MAX;
+    for (size_t i = 0; i < n; i++)
+        if (graph[i].size() == 1)
+            j = i;
+
+    while (j != SIZE_MAX)
+    {
+        tour.push_back(z[j]);
+        size_t next = SIZE_MAX;
+        for (size_t v : graph[j])
+            if (v != last)
+                next = v;
+        last = j;
+        j = next;
+    }
+
+    return make_pair(tour, highs.getObjectiveValue());
+}
+
+int main()
+{
+    vector<complex<double>> z;
+    double x, y;
+    while (scanf("%lf %lf", &x, &y) == 2)
+        z.emplace_back(x, y);
+
+    auto const [tour, length] = get_optimal_tour(z);
+
+    if (tour.empty())
     {
         cout << "Keine Tour mit Abbiegewinkeln von höchstens 90 Grad möglich.\n";
     }
     else
     {
-        cout << "Tourlänge: " << highs.getObjectiveValue() << '\n';
-
-        HighsSolution const &solution = highs.getSolution();
-        vector<vector<size_t>> graph(n);
-
-        for (size_t i = 0; i < n; i++)
-            for (size_t j = i + 1; j < n; j++)
-                if (solution.col_value[edge_index(n, i, j)] > 0.5)
-                    graph[i].push_back(j), graph[j].push_back(i);
-
-        size_t u, last = SIZE_MAX;
-        for (size_t i = 0; i < n; i++)
-            if (graph[i].size() == 1)
-                u = i;
-
-        do
-        {
-            cout << z[u].real() << ' ' << z[u].imag() << '\n';
-            size_t next = SIZE_MAX;
-            for (size_t v : graph[u])
-                if (v != last)
-                    next = v;
-            last = u;
-            u = next;
-        } while (u != SIZE_MAX);
+        cout << setprecision(6) << fixed << "Tourlänge: " << length << '\n';
+        for (complex<double> const &u : tour)
+            cout << u.real() << ' ' << u.imag() << '\n';
     }
 }
