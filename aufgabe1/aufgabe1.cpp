@@ -29,7 +29,7 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
                 continue;
             for (size_t k = i + 1; k < z.size(); k++)
             {
-                if (is_acute(z[i], z[j], z[k]))
+                if (k != j && is_acute(z[i], z[j], z[k]))
                 {
                     HighsLp &lp = model.lp_;
                     lp.a_matrix_.index_.push_back(edge_index(z.size(), i, j));
