@@ -16,56 +16,29 @@ bool is_acute(complex<double> a, complex<double> b, complex<double> c)
            0.0;
 }
 
-void ban_triangle(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
-{
-    model.lp_.a_matrix_.index_.push_back(edge_index(n, i, j));
-    model.lp_.a_matrix_.index_.push_back(edge_index(n, j, k));
-    model.lp_.a_matrix_.index_.push_back(edge_index(n, k, i));
-    model.lp_.a_matrix_.value_.push_back(1);
-    model.lp_.a_matrix_.value_.push_back(1);
-    model.lp_.a_matrix_.value_.push_back(1);
-    model.lp_.row_lower_.push_back(0);
-    model.lp_.row_upper_.push_back(1);
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-}
-
-void ban_triple(HighsModel &model, size_t n, size_t i, size_t j, size_t k)
-{
-    model.lp_.a_matrix_.index_.push_back(edge_index(n, i, j));
-    model.lp_.a_matrix_.index_.push_back(edge_index(n, j, k));
-    model.lp_.a_matrix_.value_.push_back(1);
-    model.lp_.a_matrix_.value_.push_back(1);
-    model.lp_.row_lower_.push_back(0);
-    model.lp_.row_upper_.push_back(1);
-    model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
-}
-
-// Fügt Bedingungen für verwendete Kanten für jedes Tripel (i, j, k) hinzu.
+// Fügt für jedes Tripel i, j, k (i != j, i < k) die Bedingung hinzu, dass die
+// Kanten ij und jk nicht gleichzeitig verwendet werden dürfen, wenn ihr
+// Innenwinkel < pi / 2 ist.
 void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
 {
-    for (size_t i = 0; i < z.size(); i++)
+    for (size_t j = 0; j < z.size(); j++)
     {
-        for (size_t j = i + 1; j < z.size(); j++)
+        for (size_t i = 0; i < z.size(); i++)
         {
-            for (size_t k = j + 1; k < z.size(); k++)
+            if (i == j)
+                continue;
+            for (size_t k = i + 1; k < z.size(); k++)
             {
-                if (is_acute(z[i], z[j], z[k]) && is_acute(z[k], z[i], z[j]) &&
-                    is_acute(z[j], z[k], z[i]))
+                if (is_acute(z[i], z[j], z[k]))
                 {
-                    // Das Dreieck ijk ist spitzwinklig, es darf maximal eine
-                    // Kante verwendet werden.
-                    ban_triangle(model, z.size(), i, j, k);
-                }
-                else
-                {
-                    // Das Dreieck ijk ist stumpfwinklig, die Kantenpaare mit
-                    // Innenwinkel < pi / 2 werden ausgeschlossen.
-                    if (is_acute(z[i], z[j], z[k]))
-                        ban_triple(model, z.size(), i, j, k);
-                    if (is_acute(z[k], z[i], z[j]))
-                        ban_triple(model, z.size(), k, i, j);
-                    if (is_acute(z[j], z[k], z[i]))
-                        ban_triple(model, z.size(), j, k, i);
+                    HighsLp &lp = model.lp_;
+                    lp.a_matrix_.index_.push_back(edge_index(z.size(), i, j));
+                    lp.a_matrix_.index_.push_back(edge_index(z.size(), j, k));
+                    lp.a_matrix_.value_.push_back(1);
+                    lp.a_matrix_.value_.push_back(1);
+                    lp.row_lower_.push_back(0);
+                    lp.row_upper_.push_back(1);
+                    lp.a_matrix_.start_.push_back(lp.a_matrix_.index_.size());
                 }
             }
         }
@@ -226,7 +199,7 @@ pair<vector<complex<double>>, double> get_optimal_tour(
     vector<vector<size_t>> graph = build_graph(highs, n);
     vector<complex<double>> tour;
 
-    size_t j, last = SIZE_MAX;
+    size_t j = SIZE_MAX, last = SIZE_MAX;
     for (size_t i = 0; i < n; i++)
         if (graph[i].size() == 1)
             j = i;
