@@ -1,11 +1,11 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -g -fsanitize=address,undefined -D_GLIBCXX_DEBUG
+CC = g++
+CFLAGS = -Wall -g
 obj = aufgabe1.o
 
 all: $(obj)
-	$(CC) $(CFLAGS) $(obj) -lglpk -lgmp -lm -o aufgabe1
+	$(CC) $(CFLAGS) $(obj) -lhighs -lz -o aufgabe1
 
-%.o: %.c %.h
+%.o: %.cpp %.hpp
 	$(CC) $(CFLAGS) -c $^
 
 clean:
