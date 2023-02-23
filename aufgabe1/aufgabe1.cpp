@@ -16,7 +16,7 @@ double dot_product(complex<double> const &a, complex<double> const &b)
 
 // Fügt für jedes Tripel i, j, k (i != j != k, i < k) die Bedingung hinzu,
 // dass die Kanten ij und jk nicht gleichzeitig verwendet werden dürfen, wenn
-// ihr Innenwinkel < pi / 2 ist.
+// der Betrag ihres Außenwinkels > pi / 2 ist.
 void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
 {
     for (size_t j = 0; j < z.size(); j++)
@@ -75,15 +75,13 @@ void add_num_edges_constraint(HighsModel &model, size_t n)
     model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
-// Fügt die Bedingung hinzu, dass die Anzhal an Kanten zwischen Knoten in tour
-// mindestens um 1 kleiner als die Anzahl an Knoten in tour sein muss. Dadurch
-// wird ein Zyklus, der genau die Knoten von tour enthält, ausgeschlossen.
+// Fügt einen SEC für die Knoten in tour ein.
 void add_subtour_elimination_constraint(
     Highs &highs, size_t n, vector<size_t> const &tour)
 {
     HighsInt *ind = (HighsInt *)malloc(nchoose2(tour.size()) * sizeof *ind);
     double *val = (double *)malloc(nchoose2(tour.size()) * sizeof *val);
-    size_t k = 0;
+    size_t k = 0; // Anzahl bereits in ind bzw. val eingefügter Elemente
 
     for (size_t i = 0; i < tour.size(); i++)
     {
@@ -95,6 +93,8 @@ void add_subtour_elimination_constraint(
         }
     }
 
+    // Verwende Highs::addRow(double lower, double upper, HighsInt num_new_nz,
+    //                        const HighsInt *indices, const double *values)
     HighsStatus status;
     status = highs.addRow(0, tour.size() - 1, nchoose2(tour.size()), ind, val);
     assert(status == HighsStatus::kOk);
@@ -153,8 +153,9 @@ bool check_for_subtours(Highs &highs, size_t n)
     return has_subtours;
 }
 
-// Gibt den kürzestmöglichen Hamiltonpfad zurück, sodass der Innenwinkel zweier
-// benachbarter Kanten >= pi / 2 ist. Daneben wird dessen Länge zurückgegeben.
+// Gibt den kürzesten Hamiltonpfad zurück, auf dem der Abbiegewinkel jedes
+// benachbarten Kantenpaares <= pi / 2 ist, und dessen Länge. Existiert kein
+// solcher Pfad, ist der Vektor in der Rückgabe leer.
 pair<vector<complex<double>>, double> get_optimal_tour(
     vector<complex<double>> const &z)
 {
@@ -163,7 +164,7 @@ pair<vector<complex<double>>, double> get_optimal_tour(
     HighsModel model;
     model.lp_.sense_ = ObjSense::kMinimize;
     model.lp_.a_matrix_.format_ = MatrixFormat::kRowwise;
-    model.lp_.a_matrix_.start_ = {0}; // Die erste Zeile beginnt bei 0.
+    model.lp_.a_matrix_.start_ = {0}; // Die erste Zeile beginnt bei Index 0.
     model.lp_.num_col_ = nchoose2(n);
 
     for (size_t i = 0; i < n; i++)
