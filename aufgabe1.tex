@@ -68,18 +68,20 @@ Das Problem wird durch einen Graphen modelliert. Jeder Punkt wird einem Knoten z
 Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, für $0 \le i, j \le n - 1$ bezeichnet, wobei $n$ die Anzahl an Punkten ist. Daneben bezeichnet $\vec{z_i}$ den zweidimensionalen Ortsvektor zu Punkt $i$. $\vec{z_{ij}}$ bezeichnet den Vektor $\vec{z_j} - \vec{z_i}$. Zuletzt ist $G$ der beschriebene Graph mit Knotenmenge $V$ und Kantenmenge $E$, sowie. Für die IP-Formulierung definieren wir die binären Variablen $x_{ij}$ für $0 \le i, j \le n - 1, i < j$, sodass $x_{ij} = 1$, wenn die Kante zwischen Punkt $i$ und Punkt $j$ in der optimalen Lösung verwendet wird, andernfalls $x_{ij} = 0$. Im Folgenden wird der Einfachheit halber manchmal $x_{ij}$ auch für $i > j$ geschrieben, gemeint ist immer $x_{ji}$. Das ganzzahlige lineare Programm sieht dann wie folgt aus.
 
 \begin{align*}
-    \text{minimiere} \quad & \sum_{i = 0}^{n - 1} \sum_{j = i + 1}^{n - 1} x_{ij} d_{ij} \\
+    \text{minimiere} \quad & \sum_{i = 0}^{n - 1} \sum_{j = i + 1}^{n - 1} x_{ij} d_{ij} & & \quad (1) \\
     \text{sodass} \quad 
-    & \sum_{j = 0, j \ne i}^{n - 1} x_{ij} \ge 1 & 0 \le i \le n - 1 & \quad (1) \\
-    & \sum_{j = 0, j \ne i}^{n - 1} x_{ij} \le 2 & 0 \le i \le n - 1 & \quad (2) \\
-    & \sum_{i = 0}^{n - 1} \sum_{j = i + 1}^{n - 1} x_{ij} = n - 1 & & \quad (3) \\
-    & \sum_{i \in S} \sum_{j \in S, i < j} x_{ij} \le |S| - 1 & S \subseteq V, S \ne \emptyset & \quad (4) \\
-    & x_{ij} + x_{jk} \le 1 & 0 \le i, j, k \le n - 1, i \ne j \ne k, i < k, \vec{z_{ij}} \cdot \vec{z_{jk}} < 0 & \quad (5) \\
-    & x_{ij} \in \{0, 1\} & 0 \le i, j \le n - 1, i < j & \quad (6)
+    & \sum_{j = 0, j \ne i}^{n - 1} x_{ij} \ge 1 & 0 \le i \le n - 1 & \quad (2) \\
+    & \sum_{j = 0, j \ne i}^{n - 1} x_{ij} \le 2 & 0 \le i \le n - 1 & \quad (3) \\
+    & \sum_{i = 0}^{n - 1} \sum_{j = i + 1}^{n - 1} x_{ij} = n - 1 & & \quad (4) \\
+    & \sum_{i \in S} \sum_{j \in S, i < j} x_{ij} \le |S| - 1 & S \subseteq V, S \ne \emptyset & \quad (5) \\
+    & x_{ij} + x_{jk} \le 1 & 0 \le i, j, k \le n - 1, i \ne j \ne k, i < k, \vec{z_{ij}} \cdot \vec{z_{jk}} < 0 & \quad (6) \\
+    & x_{ij} \in \{0, 1\} & 0 \le i, j \le n - 1, i < j & \quad (7)
 \end{align*}
 \smallskip
 
-Gleichungen (1) und (2) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (3) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Gleichung (4) ist der \emph{Subtour Elimination Constraint} in der Formulierung von Dantzig, Fulkerson und Johnson \cite{tsp-formulations}. Gleichung (5) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. Dafür sei $X = \{\{i, j\} : x_{ij} = 1\}$ die Menge an Kanten in der Lösung des ganzzahligen linearen Programms.
+Gleichungen (2) und (3) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (4) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Gleichung (5) ist der \emph{Subtour Elimination Constraint} in der Formulierung von Dantzig, Fulkerson und Johnson \cite{tsp-formulations}. Gleichung (6) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. 
+
+Wir nennen einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $\pi / 2$ auch einen \emph{zulässigen Pfad}. Damit von dem linearen Programm der kürzeste zulässige Pfad gefunden wird, muss die Menge zulässiger Pfade genau mit der Menge an Pfaden, die durch Gleichungen (2) - (7) erlaubt sind, übereinstimmen. Denn dann wird durch die Zielfunktion (1) der kürzeste von ihnen gewählt. Zunächst wird gezeigt, dass jeder Pfad, der die Gleichungen (2) - (7) erfüllt, zulässig ist. Dafür sei $X = \{\{i, j\} : x_{ij} = 1\}$ die Menge an Kanten in der Lösung des ganzzahligen linearen Programms.
 
 \begin{lemma}
     Der Graph $G' = (V, X)$ enthält keine Zyklen.
@@ -90,7 +92,7 @@ Gleichungen (1) und (2) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichun
     \begin{align*}
         \sum_{i \in T} \sum_{j \in T, i < j} x_{ij} \ge |T|
     \end{align*}
-    da ein Zyklus aus $|T|$ Knoten genau $|T|$ Kanten enthält. Das ist ein Widerspruch zu (4) mit $S = T$, folglich war die Annahme, dass $G'$ einen Zyklus enthält, falsch.
+    da ein Zyklus aus $|T|$ Knoten genau $|T|$ Kanten enthält. Das ist ein Widerspruch zu (5) mit $S = T$, folglich war die Annahme, dass $G'$ einen Zyklus enthält, falsch.
 \end{proof}
 
 \begin{lemma}
@@ -98,10 +100,10 @@ Gleichungen (1) und (2) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichun
 \end{lemma}
 
 \begin{proof}
-    Wegen (3) enthält $G' = (V, X)$ genau $n - 1$ Kanten und wegen Lemma 1 ist $G'$ azyklisch. Ein azyklischer Graph mit $n - 1$ Kanten ist bekanntermaßen ein Baum mit $n$ Knoten, und damit ist $G'$ ein Spannbaum von $G$. Da der Grad jedes Knoten von (2) auf maximal 2 begrenzt wird, hat $G'$ genau zwei Blätter. Wählt man diese beiden Blätter als Endpunkte eines Pfads in $G$, erhält man einen Hamiltonpfad.
+    Wegen (3) enthält $G' = (V, X)$ genau $n - 1$ Kanten und wegen Lemma 1 ist $G'$ azyklisch. Ein azyklischer Graph mit $n - 1$ Kanten ist bekanntermaßen ein Baum mit $n$ Knoten, und damit ist $G'$ ein Spannbaum von $G$. Da der Grad jedes Knoten von (3) auf maximal 2 begrenzt wird, hat $G'$ genau zwei Blätter. Wählt man diese beiden Blätter als Endpunkte eines Pfads in $G$, erhält man einen Hamiltonpfad.
 \end{proof}
  
-Gleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ nicht nötig, verkürzte jedoch praktisch die Laufzeit, weshalb sie mit aufgeführt ist.
+Ungleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ nicht nötig, verkürzte jedoch praktisch die Laufzeit, weshalb sie mit aufgeführt ist.
 
 \begin{lemma}
     Jeder Abbiegewinkel zwischen zwei aneinanderliegenden Kanten in $X$ ist kleiner oder gleich $\pi / 2$.
@@ -112,7 +114,41 @@ Gleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ nich
     \begin{align*}
         \cos(\alpha) = \frac {\vec{u} \cdot \vec{v}} {|\vec{u}||\vec{v}|}
     \end{align*}
-    Da $|\alpha| \le \pi / 2 \Longleftrightarrow \cos(\alpha) \ge 0$ und $|\vec{u}| |\vec{v}| \ge 0$, ist $|\alpha| \le \pi / 2$ äquivalent zu $\vec{u} \cdot \vec{v} \ge 0$. Für einen Widerspruch nehme man an, dass der Betrag des Außenwinkels zwischen zwei unterschiedlichen Kanten $\{i, j\} \in X$ und $\{j, k\} \in X$ größer als $\pi / 2$ ist. Es wird außerdem angenommen, das $i < k$, was durch Tauschen von $i$ und $k$ immer erreicht werden kann. Dann gilt $x_{ij} + x_{jk} = 2$ und $\vec{z_{ij}} \cdot \vec{z_{jk}} < 0$, ein Widerspruch zu (5). 
+    Da $|\alpha| \le \pi / 2 \Longleftrightarrow \cos(\alpha) \ge 0$ und $|\vec{u}| |\vec{v}| \ge 0$, ist $|\alpha| \le \pi / 2$ äquivalent zu $\vec{u} \cdot \vec{v} \ge 0$. Für einen Widerspruch nehme man an, dass der Betrag des Außenwinkels zwischen zwei unterschiedlichen Kanten $\{i, j\} \in X$ und $\{j, k\} \in X$ größer als $\pi / 2$ ist. Da die Kanten unterschiedlich sind, gilt $i \ne j \ne k$. Es wird außerdem angenommen, dass $i < k$, was durch Tauschen von $i$ und $k$ immer erreicht werden kann. Dann gilt $x_{ij} + x_{jk} = 2$ und $\vec{z_{ij}} \cdot \vec{z_{jk}} < 0$, ein Widerspruch zu (6). 
+\end{proof}
+
+Die Einschränkung $i < k$ in Ungleichung (6) ist nicht notwendig, sie könnte auch durch $i \ne k$ ersetzt werden, wodurch jedoch Dopplungen entstehen würden. Nun gilt es noch, zu zeigen, dass jeder zulässige Pfad (2) - (7) erfüllt. (7) muss gelten, da eine Kante entweder im Pfad enthalten oder nicht enthalten ist.
+
+\begin{lemma}
+    Jeder zulässige Pfad erfüllt die Gleichungen bzw. Ungleichungen (2) - (4).
+\end{lemma}
+
+\begin{proof}
+    In einem Hamiltonpfad muss jeder Knoten mindestens eine angrenzende Kante haben, da der Pfad sonst nicht jeden Knoten besuchen würde. Außerdem kann kein Knoten mehr als zwei angrenzende Kanten haben, da in einem Hamiltonpfad kein Knoten zweimal besucht wird. Gleichung (4) ist erfüllt, da ein Hamiltonpfad aus $n$ Knoten besteht, und ein einfacher Pfad mit $n$ Knoten $n - 1$ Kanten besitzt.
+\end{proof}
+
+\begin{lemma}
+    Jeder zulässige Pfad erfüllt Ungleichung (5).
+\end{lemma}
+
+\begin{proof}
+    Wäre Ungleichung (5) nicht erfüllt, könnte man eine Menge an Knoten $T$ wählen, zwischen denen mindestens $|T|$ Kanten des Pfades verlaufen. Dadurch wird zwingend ein Zyklus in $T$ geschaffen, ein Widerspruch dazu, dass die betrachteten Kanten Teil eines Pfades sind.
+\end{proof}
+
+\begin{lemma}
+    Jeder zulässige Pfad erfüllt Ungleichung (6).
+\end{lemma}
+
+\begin{proof}
+    Wenn Ungleichung (6) nicht erfüllt ist, gibt es drei Knoten $i, j, k$, sodass $i \ne j \ne k$, $i < k$, $\vec{z_{ij}} \cdot \vec{z_{jk}} < 0$ und sowohl $x_{ij} = 1$ als auch $x_{jk} = 1$. Das heißt, sowohl die Kante $\{i, j\}$ als auch die Kante $\{j, k\}$ liegt auf dem Pfad (und $\{i, j\} \ne \{j, k\}$) und das Skalarprodukt ihrer zugehörigen Vektoren ist negativ. Wie in Lemma 3 aber bereits gezeigt wurde, ist ein negatives Skalarprodukt gleichwertig zu einem Abbiegewinkel größer $\pi / 2$, was der Annahme widerspricht, dass der betrachtete Pfad zulässig ist.
+\end{proof}
+
+\begin{theorem}
+    Die Lösung des ganzzahligen linearen Programms in (1) - (7) ist der kürzeste zulässige Pfad. 
+\end{theorem}
+
+\begin{proof}
+    Folgt direkt aus Lemma 1 - 6 und der Minimierung der Gesamtlänge durch (1).
 \end{proof}
 
 \section{Laufzeitanalyse}
@@ -127,7 +163,13 @@ Gleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ nich
     \bibitem{tsp-formulations}
     Öncan, T., Altinel, I. K., Laporte, G. (2009).
     A comparative analysis of several asymmetric traveling salesman problem formulations. \\
-    https://mate.unipv.it/~gualandi/famo2conti/papers/tsp\_formulations.pdf
+    https://mate.unipv.it/\textasciitilde{}gualandi/famo2conti/papers/tsp\_formulations.pdf
+    
+    \bibitem{highs}
+    Huangfu, Q., Hall, J. A. J. (2018)
+    Parallelizing the dual revised simplex method. \\
+    https://www.maths.ed.ac.uk/hall/HuHa13/ \\
+    https://github.com/ERGO-Code/HiGHS
 \end{thebibliography}
 
 \end{document}
