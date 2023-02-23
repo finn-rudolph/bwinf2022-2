@@ -65,7 +65,7 @@
 
 Das Problem wird durch einen Graphen modelliert. Jeder Punkt wird einem Knoten zugeordnet und zwischen jedem Knotenpaar existiert eine ungerichtete Kante, deren Gewicht die euklidsche Distanz zwischen den zugehörigen Punkten ist. Das Ziel ist es, einen möglichst kurzen Hamiltonpfad durch diesen Graphen zu finden. Die Bedingung, dass kein Abbiegewinkel von mehr als 90° vorkommen darf, bedeutet, dass bestimmte Tripel an Knoten nicht direkt aufeinander folgen dürfen. Das Problem soll nun als ganzzahliges lineares Programm formuliert werden und mithilfe eines IP-Solvers gelöst werden.
 
-Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, für $0 \le i, j \le n - 1$ bezeichnet, wobei $n$ die Anzahl an Punkten ist. Daneben bezeichnet $\vec{z_i}$ den zweidimensionalen Ortsvektor zu Punkt $i$. $\vec{z_{ij}}$ bezeichnet den Vektor $\vec{z_j} - \vec{z_i}$. Zuletzt ist $G$ der beschriebene Graph mit Knotenmenge $V$ und Kantenmenge $E$, sowie. Für die IP-Formulierung definieren wir die binären Variablen $x_{ij}$ für $0 \le i, j \le n - 1, i < j$, sodass $x_{ij} = 1$, wenn die Kante zwischen Punkt $i$ und Punkt $j$ in der optimalen Lösung verwendet wird, andernfalls $x_{ij} = 0$. Im Folgenden wird der Einfachheit halber manchmal $x_{ij}$ auch für $i > j$ geschrieben, gemeint ist immer $x_{ji}$. Das ganzzahlige lineare Programm sieht dann wie folgt aus.
+Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, für $0 \le i, j \le n - 1$ bezeichnet, wobei $n$ die Anzahl an Punkten ist. Daneben bezeichnet $\vec{z_i}$ den zweidimensionalen Ortsvektor zu Punkt $i$. $\vec{z_{ij}}$ bezeichnet den Vektor $\vec{z_j} - \vec{z_i}$. Der beschriebene Graph heißt $G = (V, E)$, mit Knotenmenge $V$ und Kantenmenge $E$. Für die IP-Formulierung definieren wir die binären Variablen $x_{ij}$ für $0 \le i, j \le n - 1, i < j$, sodass $x_{ij} = 1$, wenn die Kante zwischen Punkt $i$ und Punkt $j$ in der optimalen Lösung verwendet wird, andernfalls $x_{ij} = 0$. Die Einschränkung $i < j$ ist sinnvoll, um die Anzahl nötiger Variablen zu halbieren. Im Folgenden wird der Einfachheit halber manchmal $x_{ij}$ auch für $i > j$ geschrieben, gemeint ist dann immer $x_{ji}$. Das ganzzahlige lineare Programm sieht wie folgt aus.
 
 \begin{align*}
     \text{minimiere} \quad & \sum_{i = 0}^{n - 1} \sum_{j = i + 1}^{n - 1} x_{ij} d_{ij} & & \quad (1) \\
@@ -79,9 +79,9 @@ Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, fü
 \end{align*}
 \smallskip
 
-Gleichungen (2) und (3) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (4) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Gleichung (5) ist der \emph{Subtour Elimination Constraint} in der Formulierung von Dantzig, Fulkerson und Johnson \cite{tsp-formulations}. Gleichung (6) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. 
+Ungleichungen (2) und (3) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (4) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Ungleichung (5) ist der \emph{Subtour Elimination Constraint} in der Formulierung von Dantzig, Fulkerson und Johnson \cite{tsp-formulations}, durch den die Konnektivität des Pfads sichergestellt wird. Ungleichung (6) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. 
 
-Wir nennen einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $\pi / 2$ auch einen \emph{zulässigen Pfad}. Damit von dem linearen Programm der kürzeste zulässige Pfad gefunden wird, muss die Menge zulässiger Pfade genau mit der Menge an Pfaden, die durch Gleichungen (2) - (7) erlaubt sind, übereinstimmen. Denn dann wird durch die Zielfunktion (1) der kürzeste von ihnen gewählt. Zunächst wird gezeigt, dass jeder Pfad, der die Gleichungen (2) - (7) erfüllt, zulässig ist. Dafür sei $X = \{\{i, j\} : x_{ij} = 1\}$ die Menge an Kanten in der Lösung des ganzzahligen linearen Programms.
+Wir nennen einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $\pi / 2$ auch einen \emph{zulässigen Pfad}. Damit von dem linearen Programm der kürzeste zulässige Pfad gefunden wird, muss die Menge zulässiger Pfade genau mit der Menge an Pfaden, die durch Gleichungen (2) - (7) erlaubt sind, übereinstimmen. Denn dann wird durch die Zielfunktion in (1) der kürzeste von ihnen gewählt. Zunächst wird gezeigt, dass jeder Pfad, der die Gleichungen (2) - (7) erfüllt, zulässig ist. Dafür sei $X = \{\{i, j\} : x_{ij} = 1\}$ die Menge an Kanten in der Lösung des ganzzahligen linearen Programms.
 
 \begin{lemma}
     Der Graph $G' = (V, X)$ enthält keine Zyklen.
@@ -100,7 +100,7 @@ Wir nennen einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $\pi / 2$ auch e
 \end{lemma}
 
 \begin{proof}
-    Wegen (3) enthält $G' = (V, X)$ genau $n - 1$ Kanten und wegen Lemma 1 ist $G'$ azyklisch. Ein azyklischer Graph mit $n - 1$ Kanten ist bekanntermaßen ein Baum mit $n$ Knoten, und damit ist $G'$ ein Spannbaum von $G$. Da der Grad jedes Knoten von (3) auf maximal 2 begrenzt wird, hat $G'$ genau zwei Blätter. Wählt man diese beiden Blätter als Endpunkte eines Pfads in $G$, erhält man einen Hamiltonpfad.
+    Wegen (4) enthält $G' = (V, X)$ genau $n - 1$ Kanten und wegen Lemma 1 ist $G'$ azyklisch. Ein azyklischer Graph mit $n - 1$ Kanten ist ein Baum mit $n$ Knoten, und damit ist $G'$ ein Spannbaum von $G$. Da der Grad jedes Knoten von (3) auf maximal 2 begrenzt wird, hat $G'$ genau zwei Blätter. Wählt man diese beiden Blätter als Endpunkte eines Pfads in $G$, erhält man einen Hamiltonpfad.
 \end{proof}
  
 Ungleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ nicht nötig, verkürzte jedoch praktisch die Laufzeit, weshalb sie mit aufgeführt ist.
@@ -110,11 +110,11 @@ Ungleichung (1) ist zur Sicherstellung der gewünschten Eigenschaften von $X$ ni
 \end{lemma}
 
 \begin{proof}
-    Der Abbiegewinkel $\alpha$ zweier Vektoren $\vec{u}$ und $\vec{v}$ ist der Betrag des Außenwinkels zwischen ihnen. Dieser ist mit dem Skalarprodukt durch folgende Identität verknüpft.
+    Der Abbiegewinkel $\alpha$ zweier Vektoren $\vec{u}$ und $\vec{v}$ ist der Betrag des Außenwinkels $\gamma$ zwischen ihnen. Der Außenwinkel ist mit dem Skalarprodukt durch folgende Identität verknüpft.
     \begin{align*}
-        \cos(\alpha) = \frac {\vec{u} \cdot \vec{v}} {|\vec{u}||\vec{v}|}
+        \cos(\gamma) = \frac {\vec{u} \cdot \vec{v}} {|\vec{u}||\vec{v}|}
     \end{align*}
-    Da $|\alpha| \le \pi / 2 \Longleftrightarrow \cos(\alpha) \ge 0$ und $|\vec{u}| |\vec{v}| \ge 0$, ist $|\alpha| \le \pi / 2$ äquivalent zu $\vec{u} \cdot \vec{v} \ge 0$. Für einen Widerspruch nehme man an, dass der Betrag des Außenwinkels zwischen zwei unterschiedlichen Kanten $\{i, j\} \in X$ und $\{j, k\} \in X$ größer als $\pi / 2$ ist. Da die Kanten unterschiedlich sind, gilt $i \ne j \ne k$. Es wird außerdem angenommen, dass $i < k$, was durch Tauschen von $i$ und $k$ immer erreicht werden kann. Dann gilt $x_{ij} + x_{jk} = 2$ und $\vec{z_{ij}} \cdot \vec{z_{jk}} < 0$, ein Widerspruch zu (6). 
+    Da $|\gamma| \le \pi / 2 \Longleftrightarrow \cos(\gamma) \ge 0$ und $|\vec{u}| |\vec{v}| \ge 0$, ist $|\gamma| \le \pi / 2$ äquivalent zu $\vec{u} \cdot \vec{v} \ge 0$. Für einen Widerspruch nehme man an, dass der Betrag des Außenwinkels zwischen zwei unterschiedlichen Kanten $\{i, j\} \in X$ und $\{j, k\} \in X$ größer als $\pi / 2$ ist. Da die Kanten unterschiedlich sind, gilt $i \ne j \ne k$. Es wird außerdem angenommen, dass $i < k$, was durch Tauschen von $i$ und $k$ immer erreicht werden kann. Dann gilt $x_{ij} + x_{jk} = 2$ und $\vec{z_{ij}} \cdot \vec{z_{jk}} < 0$, ein Widerspruch zu (6). 
 \end{proof}
 
 Die Einschränkung $i < k$ in Ungleichung (6) ist nicht notwendig, sie könnte auch durch $i \ne k$ ersetzt werden, wodurch jedoch Dopplungen entstehen würden. Nun gilt es noch, zu zeigen, dass jeder zulässige Pfad (2) - (7) erfüllt. (7) muss gelten, da eine Kante entweder im Pfad enthalten oder nicht enthalten ist.
@@ -132,7 +132,7 @@ Die Einschränkung $i < k$ in Ungleichung (6) ist nicht notwendig, sie könnte a
 \end{lemma}
 
 \begin{proof}
-    Wäre Ungleichung (5) nicht erfüllt, könnte man eine Menge an Knoten $T$ wählen, zwischen denen mindestens $|T|$ Kanten des Pfades verlaufen. Dadurch wird zwingend ein Zyklus in $T$ geschaffen, ein Widerspruch dazu, dass die betrachteten Kanten Teil eines Pfades sind.
+    Wäre Ungleichung (5) nicht erfüllt, könnte man eine Menge an Knoten $T$ wählen, zwischen denen mindestens $|T|$ Kanten des Pfades verlaufen. Dadurch wird zwingend ein Zyklus in $T$ geschaffen, ein Widerspruch dazu, dass die betrachteten Kanten Teil eines Hamiltonpfades sind.
 \end{proof}
 
 \begin{lemma}
@@ -151,7 +151,20 @@ Die Einschränkung $i < k$ in Ungleichung (6) ist nicht notwendig, sie könnte a
     Folgt direkt aus Lemma 1 - 6 und der Minimierung der Gesamtlänge durch (1).
 \end{proof}
 
+\emph{Anmerkungen.} 
+\begin{itemize}
+    \item Im Allgemeinen muss das IP in (1) - (7) aber keine Lösung besitzen. Ein Gegenbeispiel ist jedes Dreieck, dass keinen Winkel größer oder gleich $\pi / 2$ besitzt.
+    \item Die von (5) gestellten Bedingungen sind meist nicht alle nötig und werden zu Beginn weggelassen. Nach einer optimalen Lösung des IP werden die nötigen Bedingungen zur Eliminierung der Zyklen in der Lösung hinzugefügt. Das wird solange wiederholt, bis in der Lösung keine Zyklen mehr vorhanden sind.
+    \item Für jedes ungeordnete Tripel $\{i, j, k\}$ werden von (6) drei Bedingungen hinzugefügt, wenn das Dreieck $ijk$ spitzwinklig ist, andernfalls zwei Bedingungen. Im Fall eines spitzwinkligen Dreiecks könnte man die drei Bedingungen auch durch eine ersetzen, nämlich $x_{ij} + x_{jk} + x_{ki} \le 1$. Obwohl diese Bedingung stärker als die drei einzelnen ist, verschlechterte die Fallunterscheidung die Laufzeit deutlich.
+\end{itemize} 
+
 \section{Laufzeitanalyse}
+
+Um die Laufzeit des Ansatzes zu charakterisieren, soll die Größe des IP in Abhängigkeit von $n$, der Anzahl an Knoten analysiert werden.
+
+Für jedes unterschiedliche Paar an Knoten gibt es eine Variable $x_{ij}$, sodass die Anzahl an Variablen $\binom n 2 = n(n - 1) / 2 = \Theta(n^2)$ ist. Von (2) und (3) werden jeweils $n$ Bedingungen in das IP eingefügt. Gleichung (4) trägt eine Bedingung bei. Im schlechtesten Fall wird von Gleichung (5) eine Bedingung für jede nichtleere Teilmenge von $V$ eingefügt, insgesamt also $O(2^n)$. Die genaue Anzahl an Bedingungen von (6) hängt von der gegebenen Instanz ab, ist im schlechtesten Fall aber $O(n^3)$. Insgesamt hat das ganzzahlige lineare Programm in (1) - (7) also $O(2^n)$ Bedingungen.
+
+Da die Lösung eines ganzzahligen linearen Programms NP-schwer ist, ist die Laufzeit im schlechtesten Fall exponentiell in der Anzahl an Variablen $n(n-1)/2$. Die Basis hängt von der Implementierung des IP-Solvers ab.
 
 \section{Implementierung}
 
