@@ -9,16 +9,14 @@ size_t edge_index(size_t n, size_t i, size_t j)
     return nchoose2(n) - nchoose2(n - min(i, j)) + max(i, j) - min(i, j) - 1;
 }
 
-bool is_acute(complex<double> a, complex<double> b, complex<double> c)
+double dot_product(complex<double> const &a, complex<double> const &b)
 {
-    return (b.real() - a.real()) * (c.real() - b.real()) +
-               (b.imag() - a.imag()) * (c.imag() - b.imag()) <
-           0.0;
+    return (a * conj(b)).real();
 }
 
-// Fügt für jedes Tripel i, j, k (i != j, i < k) die Bedingung hinzu, dass die
-// Kanten ij und jk nicht gleichzeitig verwendet werden dürfen, wenn ihr
-// Innenwinkel < pi / 2 ist.
+// Fügt für jedes Tripel i, j, k (i != j != k, i < k) die Bedingung hinzu,
+// dass die Kanten ij und jk nicht gleichzeitig verwendet werden dürfen, wenn
+// ihr Innenwinkel < pi / 2 ist.
 void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
 {
     for (size_t j = 0; j < z.size(); j++)
@@ -29,7 +27,7 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
                 continue;
             for (size_t k = i + 1; k < z.size(); k++)
             {
-                if (k != j && is_acute(z[i], z[j], z[k]))
+                if (k != j && dot_product(z[j] - z[i], z[k] - z[j]) < 0.0)
                 {
                     HighsLp &lp = model.lp_;
                     lp.a_matrix_.index_.push_back(edge_index(z.size(), i, j));
@@ -45,8 +43,7 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
     }
 }
 
-// Schränkt den Grad jedes Knoten auf 1 oder 2 ein, und die Anzhal verwendeter
-// Kanten auf genau n - 1.
+// Schränkt den Grad jedes Knoten auf 1 oder 2 ein.
 void add_degree_constraints(HighsModel &model, size_t n)
 {
     for (size_t i = 0; i < n; i++)
@@ -63,7 +60,11 @@ void add_degree_constraints(HighsModel &model, size_t n)
         model.lp_.row_upper_.push_back(2);
         model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
     }
+}
 
+// Schränkt die Anzahl verwendeter Kanten auf genau n - 1 ein.
+void add_num_edges_constraint(HighsModel &model, size_t n)
+{
     for (size_t i = 0; i < nchoose2(n); i++)
     {
         model.lp_.a_matrix_.index_.push_back(i);
@@ -94,7 +95,9 @@ void add_subtour_elimination_constraint(
         }
     }
 
-    highs.addRow(0, tour.size() - 1, nchoose2(tour.size()), ind, val);
+    HighsStatus status;
+    status = highs.addRow(0, tour.size() - 1, nchoose2(tour.size()), ind, val);
+    assert(status == HighsStatus::kOk);
     free(ind);
     free(val);
 }
@@ -113,7 +116,7 @@ vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
     return graph;
 }
 
-// Gibt zurürck, ob in der Lösung Subtouren existieren und eliminiert diese ggf.
+// Gibt zurück, ob in der Lösung Subtouren existieren.
 bool check_for_subtours(Highs &highs, size_t n)
 {
     vector<vector<size_t>> graph = build_graph(highs, n);
@@ -125,16 +128,16 @@ bool check_for_subtours(Highs &highs, size_t n)
         if (!visited[i])
         {
             vector<size_t> subtour;
-            size_t j = i, last = SIZE_MAX;
+            size_t j = i, last = SIZE_MAX; // aktueller und vorheriger Knoten
 
             do
             {
                 visited[j] = 1;
                 subtour.push_back(j);
                 size_t next = SIZE_MAX;
-                for (size_t v : graph[j])
-                    if (v != last)
-                        next = v;
+                for (size_t k : graph[j])
+                    if (k != last)
+                        next = k;
                 last = j;
                 j = next;
             } while (j != i && j != SIZE_MAX);
@@ -160,7 +163,7 @@ pair<vector<complex<double>>, double> get_optimal_tour(
     HighsModel model;
     model.lp_.sense_ = ObjSense::kMinimize;
     model.lp_.a_matrix_.format_ = MatrixFormat::kRowwise;
-    model.lp_.a_matrix_.start_ = {0};
+    model.lp_.a_matrix_.start_ = {0}; // Die erste Zeile beginnt bei 0.
     model.lp_.num_col_ = nchoose2(n);
 
     for (size_t i = 0; i < n; i++)
@@ -176,6 +179,7 @@ pair<vector<complex<double>>, double> get_optimal_tour(
 
     add_angle_constraints(model, z);
     add_degree_constraints(model, n);
+    add_num_edges_constraint(model, n);
     model.lp_.num_row_ = model.lp_.row_lower_.size();
 
     Highs highs;
@@ -199,18 +203,18 @@ pair<vector<complex<double>>, double> get_optimal_tour(
     vector<vector<size_t>> graph = build_graph(highs, n);
     vector<complex<double>> tour;
 
-    size_t j = SIZE_MAX, last = SIZE_MAX;
+    size_t j = SIZE_MAX, last = SIZE_MAX; // aktueller und vorheriger Knoten
     for (size_t i = 0; i < n; i++)
-        if (graph[i].size() == 1)
-            j = i;
+        if (graph[i].size() == 1) // Ein Knoten mit Grad 1 muss Anfang des Pfads
+            j = i;                // sein.
 
     while (j != SIZE_MAX)
     {
         tour.push_back(z[j]);
         size_t next = SIZE_MAX;
-        for (size_t v : graph[j])
-            if (v != last)
-                next = v;
+        for (size_t k : graph[j])
+            if (k != last)
+                next = k;
         last = j;
         j = next;
     }
