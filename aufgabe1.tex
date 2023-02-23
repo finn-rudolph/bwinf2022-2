@@ -178,11 +178,23 @@ Da die Lösung eines ganzzahligen linearen Programms NP-schwer ist, ist die Lauf
 
 \section{Implementierung}
 
-Das Programm wird in C++ geschrieben und wurde auf Linux-Systemen getestet. Als IP-Solver wird der Open-Source Solver HiGHS verwendet \cite{highs}. Zum Ausführen des Programms muss dieser installiert werden, eine Anleitung dazu findet sich in der \href{https://ergo-code.github.io/HiGHS/cpp/get-started.html}{Dokumentation von HiGHS}. Zum Kompilieren kann im Order \emph{aufgabe1} einfach \emph{make} im Terminal ausgeführt werden.
+Das Programm wird in C++ geschrieben und wurde auf Linux-Systemen getestet. Als IP-Solver wird der Open-Source Solver HiGHS verwendet \cite{highs}. Zum Ausführen des Programms muss dieser installiert werden, eine Anleitung dazu findet sich in der \href{https://ergo-code.github.io/HiGHS/cpp/get-started.html}{Dokumentation von HiGHS}. Zum Kompilieren kann im Order \verb|aufgabe1| einfach \verb|make| im Terminal ausgeführt werden. Um das Programm z. b. auf \verb|wenigerkrumm1| auszuführen kann im Ordner \verb|aufgabe1|
 
-Es erweist sich als praktisch, Punkte im zweidimensionalen Raum als komplexe Zahlen \verb|complex<double>| zu repräsentieren, d. h. die $x$-Koordinate entspricht dem Realteil und $y$-Koordinate dem Imaginärteil.
+\medskip
+\verb|./aufgabe1 < beispiele/wenigerkrumm1.txt|
+\medskip
 
-Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher wird das Wichtigste hier kurz erklärt. Das ganzzahlige lineare Programm wird in ein \verb|HighsModel| geschrieben, das dann an ein Objekt der Klasse \verb|Highs| gegeben wird. \verb|HighsModel| besitzt das Attribut \verb|lp_|, in dem sich alle relevanten Datenstrukturen zur Spezifizierung des IP befinden. Die folgende Beschreibung bezieht sich auf die Attribute von \verb|lp_|. Die Bedingungsmatrix \verb|a_matrix_| ist eine dünnbesetzte Matrix, in der alle Einträge, die nicht 0 sind, in einem einzigen Vektor \verb|a_matrix_.value_| nach Zeile geordnet gespeichert werden. Die Indizes der Einträge stehen in \verb|a_matrix_.index_|. Für jede Zeile steht der Index ihres ersten Eintrags in \verb|a_matrix.value_| in \verb|a_matrix_.start_|. Eine Zeile nimmt immer einen kontinuierlichen Bereich in \verb|a_matrix_.value_| bzw. \verb|a_matrix_.index_| ein. Das heißt, eine neue Zeile wird hinzugefügt, indem ihre Indizes und Koeffizienten an \verb|a_matrix_.index_| und \verb|a_matrix.value_| angefügt werden und anschließend die neue Länge dieser Vektoren an \verb|a_matrix_.start_| angefügt wird. Daneben wird einmal zu Beginn \verb|a_matrix_.start_| auf \verb|{0}| gesetzt. \verb|row_lower_| und \verb|row_upper_| speichern die Unter- und Oberschranke für den Wert jeder Zeile, \verb|col_lower_| und \verb|col_upper_| für jede Spalte. \verb|col_cost_| speichert die Koeffizienten der Kostenfunktion. Der Vektor \verb|integrality_| enthält den Typ jeder Variablen, in diesem IP sind alle Variablen ganzzahlig.
+\noindent ausgeführt werden.
+
+Einen Überblick über HiGHS verschafft \href{https://ergo-code.github.io/HiGHS/cpp/library.html}{dieses Beispiel}. Da aber noch keine ausführliche Dokumentation verfügbar ist, wird das Wichtigste hier kurz erklärt. Das ganzzahlige lineare Programm wird in ein \verb|HighsModel| geschrieben, das dann an ein Objekt der Klasse \verb|Highs| gegeben wird. \verb|HighsModel| besitzt das Attribut \verb|lp_|, in dem sich alle relevanten Datenstrukturen zur Spezifizierung des IP befinden. Die folgende Beschreibung bezieht sich auf die Attribute von \verb|lp_|. Die Bedingungsmatrix \verb|a_matrix_| ist eine dünnbesetzte Matrix, in der alle Einträge, die nicht 0 sind, in einem einzigen Vektor \verb|a_matrix_.value_| nach Zeile geordnet gespeichert werden. Die Spaltenindizes der Einträge stehen in \verb|a_matrix_.index_|. Eine Zeile nimmt immer einen kontinuierlichen Bereich in \verb|a_matrix_.value_| bzw. \verb|a_matrix_.index_| ein. Der Index des ersten Eintrags jeder Zeile steht in \verb|a_matrix_.start_|. Das bedeutet, \verb|a_matrix_.start_| kann zu Beginn auf \verb|{0}| gesetzt werden. Dann wird eine neue Zeile hinzugefügt, indem ihre Indizes und Koeffizienten an \verb|a_matrix_.index_| und \verb|a_matrix.value_| angefügt werden. Die neue Länge von \verb|a_matrix_.index_| bzw. \verb|a_matrix_.value_| wird der Index des ersten Elements der nächsten hinzugefügten Zeile sein, daher wird sie an \verb|a_matrix_.start_| angefügt. \verb|row_lower_| und \verb|row_upper_| speichern die Unter- und Oberschranke für den Wert jeder Zeile, \verb|col_lower_| und \verb|col_upper_| für jede Spalte. \verb|col_cost_| speichert die Koeffizienten der Kostenfunktion. Der Vektor \verb|integrality_| enthält den Typ jeder Variablen, in diesem IP sind alle Variablen ganzzahlig.
+
+Es erweist sich als praktisch, Punkte im zweidimensionalen Raum als komplexe Zahlen \verb|complex<double>| zu repräsentieren, d. h. die $x$-Koordinate entspricht dem Realteil und $y$-Koordinate dem Imaginärteil. 
+
+\subsection{nchoose2}
+\verb|size_t nchoose2(size_t n)|
+\medskip
+
+\noindent Gibt $\binom n 2$ zurück.
 
 \subsection{edge\_index}
 
@@ -202,13 +214,13 @@ Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher w
 \verb|    HighsModel &model, vector<complex<double>> const &z)|
 \medskip
 
-\noindent Fügt die in Gleichung (6) bestimmten Bedingungen zu \verb|model| hinzu. Dazu wird über jeden möglichen Scheitelpunkt ($j$) und alle unterschiedlichen Knotenpaare $i, k$ mit $i \ne j \ne k$ und $i < k$ iteriert. Wenn der Winkel $ijk$ spitz ist, werden die Variablen von $\{i, j\}$ und $\{j, k\}$ zu einer neuen Zeile hinzugefügt und ihre Koeffizienten auf 1 gesetzt. Die Unterschranke für die neue Zeile der Matrix ist 0, die Oberschranke 1.
+\noindent Fügt die in Ungleichung (6) bestimmten Bedingungen zu \verb|model| hinzu. Dazu wird über jeden möglichen Scheitelpunkt ($j$) und alle unterschiedlichen Knotenpaare $i, k$ mit $i \ne j \ne k$ und $i < k$ iteriert. Wenn der Winkel $ijk$ spitz ist, werden die Variablen von $\{i, j\}$ und $\{j, k\}$ zu einer neuen Zeile hinzugefügt und ihre Koeffizienten auf 1 gesetzt. Die Unterschranke für die neue Zeile der Matrix ist 0, die Oberschranke 1.
 
 \subsection{add\_degree\_constraints}
 \verb|void add_degree_constraints(HighsModel &model, size_t n)|
 \medskip
 
-\noindent Fügt für jeden Knoten $i$ eine Zeile in die Bedingungsmatrix ein, in der die Variablen aller Kanten aufsummiert werden, von denen $i$ ein Endpunkt ist. Der Wert der Zeile wird auf $[1, 2]$ beschränkt, sodass Ungleichungen (2) und (3) umgesetzt werden.
+\noindent Fügt für jeden Knoten $i$ eine Zeile in die Bedingungsmatrix ein, in der die Variablen aller Kanten aufsummiert werden, von denen $i$ ein Endpunkt ist. Der Wert der Zeile wird auf $[1, 2]$ beschränkt, womit Ungleichungen (2) und (3) umgesetzt werden.
 
 \subsection{add\_num\_edges\_constraint}
 \verb|void add_num_edges_constraint(HighsModel &model, size_t n)|
@@ -221,7 +233,7 @@ Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher w
 \verb|    Highs &highs, size_t n, vector<size_t> const &tour)|
 \medskip
 
-\noindent Fügt für die Knoten in \verb|subtour| einen Subtour Elimination Constraint ein, wie in Ungleichung (5) beschrieben. Da das nach Übergabe des \verb|HighsModel| an das \verb|Highs|-Objekt geschieht, wird die Funktion \verb|Highs::addRow| verwendet. Ihre Parameter sind die Unterschranke und Oberschranke der neuen Zeile, die Anzahl an Einträgen, die nicht 0 sind, und Zeiger zu den Indizes und Werten. Zuerst werden zwei Arrays \verb|ind| und \verb|val| angelegt. Da in der neuen Zeile die Variablen für jede Kante zwischen zwei Knoten in \verb|tour| aufsummiert werden sollen, wird über jedes Paar an Knoten in \verb|tour| iteriert. Der Index der Kante zwischen dem Paar wird in \verb|ind| eingefügt und der Koeffizient in \verb|val| auf 1 gesetzt. Schließlich wird \verb|Highs::addRow| aufgerufen und die Oberschranke der neuen Zeile auf \verb|tour.size() - 1| gesetzt.
+\noindent Fügt für die Knoten in \verb|tour| einen Subtour Elimination Constraint ein, wie in Ungleichung (5) beschrieben. Da diese Funktion nach nach Übergabe des \verb|HighsModel| an das \verb|Highs|-Objekt verwendet wird, wird die Funktion \verb|Highs::addRow| verwendet. Ihre Parameter sind die Unterschranke und Oberschranke der neuen Zeile, die Anzahl an Einträgen, die nicht 0 sind, und Zeiger zu den Indizes und Werten. Zuerst werden zwei Arrays \verb|ind| und \verb|val| angelegt. Da in der neuen Zeile die Variablen für jede Kante zwischen zwei Knoten in \verb|tour| aufsummiert werden sollen, wird über jedes Paar an Knoten in \verb|tour| iteriert. Der Index der Kante zwischen dem Paar wird in \verb|ind| eingefügt und der Koeffizient in \verb|val| auf 1 gesetzt. Schließlich wird \verb|Highs::addRow| aufgerufen und die Oberschranke der neuen Zeile auf \verb|tour.size() - 1| gesetzt.
 
 \subsection{build\_graph}
 \verb|vector<vector<size_t>> build_graph(Highs const &highs, size_t n)|
@@ -233,7 +245,7 @@ Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher w
 \verb|bool check_for_subtours(Highs &highs, size_t n)|
 \medskip
 
-\noindent Gibt zurück, ob in der in \verb|highs| enthaltenen Lösung Subtouren existieren und eliminiert dies gegebenenfalls. Es werden alle Zyklen in dem Graphen \verb|graph|, der ausschließlich die Kanten aus der Lösung enthält, gefunden. Von jedem noch nicht besuchten Knoten aus wird eine Suche (ähnlich zur Tiefensuche) durchgeführt und festgestellt, ob der ursprüngliche Knoten \verb|i| wieder erreicht wird. \verb|j| ist der aktuelle Knoten in der Suche, \verb|last| der vorherige. Jeder besuchte Knoten wird als besucht markiert und zu \verb|subtour| hinzugefügt. Der Unterschied zur Tiefensuche ist, dass immer nur ein Nachbar betrachtet wird, was ausreicht, da jeder Knoten maximal Grad 2 hat. Wird \verb|i| wieder erreicht, enthält \verb|subtour| den gesamten Zyklus, von dem \verb|i| Teil ist, und es wird ein Subtour Elimination Constraint für ihn hinzugefügt.
+\noindent Gibt zurück, ob in der in \verb|highs| enthaltenen Lösung Subtouren existieren und eliminiert dies gegebenenfalls. Dafür werden alle Zyklen in dem von \verb|build_graph| erstellten Graphen gefunden. Von jedem noch nicht besuchten Knoten aus wird eine Suche (ähnlich zur Tiefensuche) durchgeführt und festgestellt, ob der Ausgangsknoten \verb|i| wieder erreicht wird. Jeder besuchte Knoten wird als besucht markiert und zu \verb|subtour| hinzugefügt. Der Unterschied zur Tiefensuche ist, dass immer nur ein Nachbar betrachtet wird, was ausreicht, da jeder Knoten maximal Grad 2 hat. Wird \verb|i| wieder erreicht, enthält \verb|subtour| den gesamten Zyklus, von dem \verb|i| Teil ist, und es wird ein Subtour Elimination Constraint für ihn hinzugefügt.
 
 \subsection{get\_optimal\_tour}
 
@@ -245,9 +257,9 @@ Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher w
 
 Zunächst werden grundsätzliche Eigenschaften des \verb|model| festgelegt, z. B. dass die Zielfunktion minimiert werden soll und die Anzahl an Spalten oder Variablen $\binom n 2$ ist. Darauf wird über jedes Knotenpaar $i, j$ mit $i < j$ iteriert und der Koeffizient der Variable $x_{ij}$ auf $d_{ij}$ gesetzt. Daneben wird festgelegt, dass $x_{ij} \in \{0, 1\}$ sein muss. Anschließend werden die verschiedenen Bedingungen zu \verb|model| hinzugefügt und dessen Anzahl an Zeilen aktualisiert.
 
-Danach wird das Objekt \verb|highs| angelegt und ihm \verb|model| übergeben. Solange Subtouren existieren und nicht festgestellt wurde, dass es keine Lösung gibt (signalisiert durch \verb|HighsModelStatus::kInfeasible|), wird das IP mit \verb|Highs::run()| gelöst und entsprechende SECs eingefügt.
+Danach wird das Objekt \verb|highs| angelegt und ihm \verb|model| übergeben. Solange Subtouren existieren und nicht festgestellt wurde, dass es keine Lösung gibt (signalisiert durch \verb|HighsModelStatus::kInfeasible|), wird das IP mit \verb|Highs::run| gelöst und entsprechende SECs eingefügt.
 
-Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe von \verb|build_graph()| erstellt. Anschließend wird ein Knoten mit Grad 1 als Startpunkt für eine Suche durch den Graphen ausgewählt. Die Suche zum Finden des Hamiltonpfads funktioniert wie in \verb|check_for_subtours|, es wird immer ein aktueller Knoten \verb|j| und dessen Vorgänger \verb|last| verwaltet. Jeder besuchte Knoten wird zum Vektor \verb|tour| hinzugefügt, der am Ende zurückgegeben wird.
+Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe von \verb|build_graph| erstellt. Anschließend wird ein Knoten mit Grad 1 als Startpunkt für eine Suche durch den Graphen ausgewählt. Die Suche zum Finden des Hamiltonpfads funktioniert wie in \verb|check_for_subtours|, es wird immer ein aktueller Knoten \verb|j| und dessen Vorgänger \verb|last| verwaltet. Jeder besuchte Knoten wird zum Vektor \verb|tour| hinzugefügt, der am Ende zurückgegeben wird.
 
 \section{Beispiele}
 
