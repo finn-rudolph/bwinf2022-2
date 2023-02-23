@@ -14,6 +14,7 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage{booktabs}
+\usepackage{hyperref}
 
 \newcommand{\Aufgabe}{Aufgabe 1: Weniger krumme Touren}
 \newcommand{\TeilnahmeId}{67571}
@@ -46,6 +47,15 @@
     numbers=left,
     showspaces=false,
     showstringspaces=false
+}
+
+\hypersetup
+{
+    colorlinks=true, 
+    urlcolor=blue, 
+    linkcolor=black, 
+    citecolor=black, 
+    pdftitle={Aufgabe 1: Weniger krumme Touren}
 }
 
 \begin{document}
@@ -167,6 +177,56 @@ Für jedes unterschiedliche Paar an Knoten gibt es eine Variable $x_{ij}$, sodas
 Da die Lösung eines ganzzahligen linearen Programms NP-schwer ist, ist die Laufzeit im schlechtesten Fall exponentiell in der Anzahl an Variablen $n(n-1)/2$. Die Basis hängt von der Implementierung des IP-Solvers ab.
 
 \section{Implementierung}
+
+Das Programm wird in C++ geschrieben und wurde auf Linux-Systemen getestet. Als IP-Solver wird der Open-Source Solver HiGHS verwendet \cite{highs}. Zum Ausführen des Programms muss dieser installiert werden, eine Anleitung dazu findet sich in der \href{https://ergo-code.github.io/HiGHS/cpp/get-started.html}{Dokumentation von HiGHS}. Zum Kompilieren kann im Order \emph{aufgabe1} einfach \emph{make} im Terminal ausgeführt werden.
+
+Es erweist sich als praktisch, Punkte im zweidimensionalen Raum als komplexe Zahlen \verb|complex<double>| zu repräsentieren, d. h. die $x$-Koordinate entspricht dem Realteil und $y$-Koordinate dem Imaginärteil.
+
+Für HiGHS ist leider noch keine ausführliche Dokumentation verfügbar, daher wird das Wichtigste hier kurz erklärt. Das ganzzahlige lineare Programm wird in ein \verb|HighsModel| geschrieben, das dann an ein Objekt der Klasse \verb|Highs| gegeben wird. \verb|HighsModel| besitzt das Attribut \verb|lp_|, in dem sich alle relevanten Datenstrukturen zur Spezifizierung des IP befinden. Die folgende Beschreibung bezieht sich auf die Attribute von \verb|lp_|. Die Bedingungsmatrix \verb|a_matrix_| ist eine dünnbesetzte Matrix, in der alle Einträge, die nicht 0 sind, in einem einzigen Vektor \verb|a_matrix_.value_| nach Zeile geordnet gespeichert werden. Die Indizes der Einträge stehen in \verb|a_matrix_.index_|. Für jede Zeile steht der Index ihres ersten Eintrags in \verb|a_matrix.value_| in \verb|a_matrix_.start_|. Eine Zeile nimmt immer einen kontinuierlichen Bereich in \verb|a_matrix_.value_| bzw. \verb|a_matrix_.index_| ein. \verb|row_lower_| und \verb|row_upper_| speichern die Unter- und Oberschranke für den Wert jeder Zeile, \verb|col_lower_| und \verb|col_upper_| für jede Spalte. \verb|col_cost_| speichert die Koeffizienten der Kostenfunktion. Der Vektor \verb|integrality_| enthält den Typ jeder Variablen, in diesem IP sind alle Variablen ganzzahlig.
+
+\subsection{edge\_index}
+
+\verb|size_t edge_index(size_t n, size_t i, size_t j)|
+\medskip
+
+\noindent Gibt den Index der zur Kante $\{i, j\}$ zugehörigen Variable $x_{ij}$ zurück. Die Variablen $x_{ij}$ für $i < j$ werden lexikographisch nummeriert, das heißt $x_{01}$ hat Index 0, $x_{02}$ Index 1, \dots, $x_{12}$ Index $n - 1$, $x_{23}$ Index $n - 1 + n - 2$ und so weiter. Der Term $\binom n 2 - \binom {n - \min(i, j)} 2$ gibt den Anfang des ,,Blocks'' von $\min(i, j)$ an, und $\max(i, j) - \min(i, j) - 1$ den Index innerhalb des Blocks.
+
+\subsection{dot\_product}
+\verb|double dot_product(complex<double> const &a, complex<double> const &b)|
+\medskip
+
+\noindent Gibt das Skalarprodukt von $a$ und $b$, als Vektoren interpretiert, zurück. Es entspricht dem Realteil von $a \bar b$, da $a \bar b = a_1 b_1 + a_2 b_2 - a_1 b_2 i + a_2 b_1 i$, wenn $a = a_1 + a_2 i, b = b_1 + b_2 i$.
+
+\subsection{add\_angle\_constraints}
+\verb|void add_angle_constraints(| \\
+\verb|    HighsModel &model, vector<complex<double>> const &z)|
+\medskip
+
+\noindent Fügt die in Gleichung (6) bestimmten Bedingungen zu \verb|model| hinzu. Dazu wird über jeden möglichen Scheitelpunkt ($j$) und alle unterschiedlichen Knotenpaare $i, k$ mit $i \ne j \ne k$ und $i < k$ iteriert. Wenn der Winkel $ijk$ spitz ist, werden die Variablen von $\{i, j\}$ und $\{j, k\}$ zu einer neuen Zeile hinzugefügt und ihre Koeffizienten auf 1 gesetzt. Die Unterschranke für die neue Zeile der Matrix ist 0, die Oberschranke 1.
+
+\subsection{add\_degree\_constraints}
+\verb|void add_degree_constraints(HighsModel &model, size_t n)|
+\medskip
+
+\noindent Fügt für jeden Knoten $i$ eine Zeile in die Bedingungsmatrix ein, in der die Variablen aller Kanten aufsummiert werden, von denen $i$ ein Endpunkt ist. Der Wert der Zeile wird auf $[1, 2]$ beschränkt, sodass Ungleichungen (2) und (3) umgesetzt werden.
+
+\subsection{add\_num\_edges\_constraint}
+\verb|void add_num_edges_constraint(HighsModel &model, size_t n)|
+\medskip
+
+\noindent Beschränkt die Anzahl verwendeter Kanten auf genau $n - 1$, indem alle $\binom n 2$ Variablen in einer neuen Zeile aufsummiert werden, und der Wert der Zeile auf $n - 1$ fixiert wird.
+
+\subsection{add\_subtour\_elimination\_constraint}
+\verb|void add_subtour_elimination_constraint(| \\
+\verb|    Highs &highs, size_t n, vector<size_t> const &tour)|
+\medskip
+
+\noindent Fügt für die in \verb|subtour| einen Subtour Elimination Constraint wie in Ungleichung (5) beschrieben ein.
+
+\subsection{get\_optimal\_tour}
+
+\verb|pair<vector<complex<double>>, double> get_optimal_tour(| \\
+\verb|    vector<complex<double>> const &z)|
 
 \section{Beispiele}
 
