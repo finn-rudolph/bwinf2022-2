@@ -271,37 +271,37 @@ Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe
 
 \section{Beispiele}
 
-Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \verb|wenigerkrumm3| mit 120 Punkten, wurden 3 min 48 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 3700 U (Mobile) durchgeführt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert.
+Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \emph{wenigerkrumm3} mit 120 Punkten, wurde 64,14 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 3700 U (Mobile) durchgeführt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Alle Beispiele nach \emph{wenigerkrumm8} stammen von TSPLIB \cite{tsplib}, allerdings wurden die Eingabedateien vom TSPLIB-Format in das Format der anderen Eingaben umgewandelt. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert. Die Ausgaben für alle Beispiele finden sich außerdem im Ordner \verb|ausgaben|.
 
 \subsection{wenigerkrumm1}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm1}
 
-\noindent Tourlänge: 847.434165 $\quad$ Laufzeit: 1,315 s $\quad$ \#SECs: 0
+\noindent Tourlänge: 847.434165 $\quad$ Laufzeit: 0,607 s $\quad$ \#SECs: 0
 
 \subsection{wenigerkrumm2}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm2}
 
-\noindent Tourlänge: 2183.662266 $\quad$ Laufzeit: 6,577 s $\quad$ \#SECs: 2
+\noindent Tourlänge: 2183.662266 $\quad$ Laufzeit: 2,935 s $\quad$ \#SECs: 2
 
 \subsection{wenigerkrumm3}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm3}
 
-\noindent Tourlänge: 1848.046986 $\quad$ Laufzeit: 3 min 48,2 s $\quad$ \#SECs: 6
+\noindent Tourlänge: 1848.046986 $\quad$ Laufzeit: 64,14 s $\quad$ \#SECs: 6
 
 \subsection{wenigerkrumm4}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm4}
 
-\noindent Tourlänge: 1205.068555 $\quad$ Laufzeit: 0,040 s $\quad$ \#SECs: 0
+\noindent Tourlänge: 1205.068555 $\quad$ Laufzeit: 0,024 s $\quad$ \#SECs: 0
 
 \subsection{wenigerkrumm5}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm5}
 
-\noindent Tourlänge: 3257.920434 $\quad$ Laufzeit: 0,860 s $\quad$ \#SECs: 0
+\noindent Tourlänge: 3257.920434 $\quad$ Laufzeit: 0,375 s $\quad$ \#SECs: 0
 \medskip
 
 \noindent Eine bemerkenswerte Eigenschaft der optimalen Lösungen ist, dass sie sich selbst schneiden können. Bei optimalen Lösungen des TSP auf euklidschen Graphen ist das nicht möglich. 
@@ -310,13 +310,30 @@ Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte v
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm6}
 
-\noindent Tourlänge: 3457.994092 $\quad$ Laufzeit: 57,17 s $\quad$ \#SECs: 2
+\noindent Tourlänge: 3457.994092 $\quad$ Laufzeit: 22,35 s $\quad$ \#SECs: 2
 
 \subsection{wenigerkrumm7}
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm7}
 
-\noindent Tourlänge: 4150.643872 $\quad$ Laufzeit: 54,26 s $\quad$ \#SECs: 3
+\noindent Tourlänge: 4150.643872 $\quad$ Laufzeit: 17,83 s $\quad$ \#SECs: 3
+
+\subsection{wenigerkrumm8}
+
+Dieses Beispiel (ein Dreieck mit keinem Winkel größer gleich $\pi / 2$) zeigt, dass das Programm erkennt, wenn keine Tour möglich ist.
+\medskip
+
+\noindent Eingabe:
+\begin{verbatim}
+0.0 0.0
+6.0 0.0
+3.0 5.0
+\end{verbatim}
+
+\noindent Ausgabe:
+\begin{verbatim}
+Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
+\end{verbatim}
 
 \section{Quellcode}
 
@@ -331,6 +348,10 @@ Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte v
     Parallelizing the dual revised simplex method. \\
     https://www.maths.ed.ac.uk/hall/HuHa13/ \\
     https://github.com/ERGO-Code/HiGHS
+
+    \bibitem{tsplib}
+    Ruprecht-Karls Universität Heidelberg. TSPLIB \\
+    http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/ 
 \end{thebibliography}
 
 \section*{Anhang}
