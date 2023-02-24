@@ -76,6 +76,8 @@
 
 Das Problem wird durch einen Graphen modelliert. Jeder Punkt wird einem Knoten zugeordnet und zwischen jedem Knotenpaar existiert eine ungerichtete Kante, deren Gewicht die euklidsche Distanz zwischen den zugehörigen Punkten ist. Das Ziel ist es, einen möglichst kurzen Hamiltonpfad durch diesen Graphen zu finden. Die Bedingung, dass kein Abbiegewinkel von mehr als 90° vorkommen darf, bedeutet, dass bestimmte Tripel an Knoten nicht direkt aufeinander folgen dürfen. Das Problem soll nun als ganzzahliges lineares Programm formuliert werden und mithilfe eines IP-Solvers gelöst werden.
 
+\subsection{Formulierung als ganzzahliges lineares Programm}
+
 Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, für $0 \le i, j \le n - 1$ bezeichnet, wobei $n$ die Anzahl an Punkten ist. Daneben bezeichnet $\vec{z_i}$ den zweidimensionalen Ortsvektor zu Punkt $i$. $\vec{z_{ij}}$ bezeichnet den Vektor $\vec{z_j} - \vec{z_i}$. Der beschriebene Graph heißt $G = (V, E)$, mit Knotenmenge $V$ und Kantenmenge $E$. Für die IP-Formulierung definieren wir die binären Variablen $x_{ij}$ für $0 \le i, j \le n - 1, i < j$, sodass $x_{ij} = 1$, wenn die Kante zwischen Punkt $i$ und Punkt $j$ in der optimalen Lösung verwendet wird, andernfalls $x_{ij} = 0$. Die Einschränkung $i < j$ ist sinnvoll, um die Anzahl nötiger Variablen zu halbieren. Im Folgenden wird der Einfachheit halber manchmal $x_{ij}$ auch für $i > j$ geschrieben, gemeint ist dann immer $x_{ji}$. Das ganzzahlige lineare Programm sieht wie folgt aus.
 
 \begin{align*}
@@ -90,7 +92,7 @@ Im Folgenden wird mit $d_{ij}$ die Distanz zwischen Punkt $i$ und Punkt $j$, fü
 \end{align*}
 \smallskip
 
-Ungleichungen (2) und (3) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (4) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Ungleichung (5) ist der \emph{Subtour Elimination Constraint (SEC)} in der Formulierung von Dantzig, Fulkerson und Johnson \cite{tsp-formulations}, durch den die Konnektivität des Pfads sichergestellt wird. Ungleichung (6) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. 
+Ungleichungen (2) und (3) beschränkt den Grad jedes Knoten auf 1 oder 2. Gleichung (4) sorgt dafür, dass insgesamt $n - 1$ Kanten verwendet werden. Ungleichung (5) ist der \emph{Subtour Elimination Constraint (SEC)} in der Formulierung von Dantzig, Fulkerson und Johnson (DFJ-Formulierung) \cite{tsp-formulations}, durch den die Konnektivität des Pfads sichergestellt wird. Ungleichung (6) setzt die Einschränkung des Abbiegewinkels um, wobei $\cdot$ das Skalarprodukt bezeichnet. Es wird nun gezeigt, wie die einzelnen Teile ihr Aufgabe jeweils erfüllen. 
 
 Wir nennen einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $\pi / 2$ auch einen \emph{zulässigen Pfad}. Damit von dem linearen Programm der kürzeste zulässige Pfad gefunden wird, muss die Menge zulässiger Pfade genau mit der Menge an Pfaden, die durch Gleichungen (2) - (7) erlaubt sind, übereinstimmen. Denn dann wird durch die Zielfunktion in (1) der kürzeste von ihnen gewählt. Zunächst wird gezeigt, dass jeder Pfad, der die Gleichungen (2) - (7) erfüllt, zulässig ist. Dafür sei $X = \{\{i, j\} : x_{ij} = 1\}$ die Menge an Kanten, die in der Lösung des ganzzahligen linearen Programms verwendet werden.
 
@@ -159,23 +161,28 @@ Die Einschränkung $i < k$ in Ungleichung (6) ist nicht notwendig, sie könnte a
 \end{theorem}
 
 \begin{proof}
-    Folgt direkt aus Lemma 1 - 6 und der Minimierung der Gesamtlänge durch (1).
+    Folgt direkt aus den Lemmata 1 - 6 und der Minimierung der Gesamtlänge des Pfads durch (1).
 \end{proof}
 
 \emph{Anmerkungen.} 
 \begin{itemize}
     \item Im Allgemeinen muss das IP in (1) - (7) aber keine Lösung besitzen. Ein Gegenbeispiel ist jedes Dreieck, dass keinen Winkel größer oder gleich $\pi / 2$ besitzt.
-    \item Die von (5) gestellten Bedingungen sind meist nicht alle nötig und werden zu Beginn weggelassen. Nach einer optimalen Lösung des IP werden die nötigen Bedingungen zur Eliminierung der Zyklen in der Lösung hinzugefügt. Das wird solange wiederholt, bis in der Lösung keine Zyklen mehr vorhanden sind.
-    \item Für jedes ungeordnete Tripel $\{i, j, k\}$ werden von (6) drei Bedingungen hinzugefügt, wenn das Dreieck $ijk$ spitzwinklig ist, andernfalls zwei Bedingungen. Im Fall eines spitzwinkligen Dreiecks könnte man die drei Bedingungen auch durch eine ersetzen, nämlich $x_{ij} + x_{jk} + x_{ki} \le 1$. Obwohl diese Bedingung stärker als die drei einzelnen ist, verschlechterte die Fallunterscheidung die Laufzeit deutlich.
+    \item Für jedes ungeordnete Tripel $\{i, j, k\}$ werden von (6) drei Bedingungen hinzugefügt, wenn das Dreieck $ijk$ spitzwinklig ist, andernfalls zwei Bedingungen. Im Fall eines spitzwinkligen Dreiecks könnte man die drei Bedingungen auch durch eine ersetzen, nämlich $x_{ij} + x_{jk} + x_{ki} \le 1$. Obwohl diese Bedingung stärker als die drei einzelnen ist, verschlechterte die Fallunterscheidung die Laufzeit.
 \end{itemize} 
+
+\subsection{Allmähliches Hinzufügen von Subtour Elimination Constraints}
+
+Die Anzahl an Bedingungen aus (5) beträgt $2^n - 1$, da für jede nichtleere Teilmenge von $V$ ein SEC hinzugefügt wird. Das ist bereits für moderate Eingabegrößen nicht mehr praktikabel, weshalb folgendes Verfahren verwendet wird. Zu Beginn werden die SECs weggelassen und das IP optimal gelöst. Befinden sich in der Lösung Subtouren, werden nur für diese entsprechende SECs hinzugefügt und das Verfahren wiederholt, bis die Lösung keine Zyklen mehr enthält. Das ist der übliche Weg, wie die DFJ-Formulierung von Subtour Elimination Constraints verwendet wird \cite{tsp-formulations}. Ursprünglich wurde sie für das Problem des Handlungsreisenden (TSP) entwickelt.
+
+In \cite{tsp-formulations} finden sich noch viele andere Möglichkeiten zur Formulierung von Subtour Elimination Constraints für das TSP, von denen die meisten auch auf dieses Problem übertragbar sind. Da viele von diesen für das TSP sowohl theoretisch als auch praktisch effizienter als die DFJ-Formulierung sind, soll begründet werden, warum sie dennoch gewählt wurde. Durch die Einschränkung des Abbiegewinkels werden bereits einige Subtouren eliminiert, z. B. alle mit 2 oder 3 Knoten, alle mit 4 Knoten, die kein Rechteck bilden, und allgemein alle, die mindestens einen Abbiegewinkel größer $\pi / 2$ haben. Für all diese Subtouren sind SECs redundant und fügen nur zusätzliche Komplexität zum IP hinzu, da für jede andere Formulierung mindestens $O(n^2)$ zusätzliche Variablen nötig sind. Daher sollten nach wenigen Iterationen des beschriebenen Verfahrens genügend SECs vorhanden sein, und damit insgesamt die Laufzeit reduziert werden, da in jeder Iteration ein deutlich kleineres IP gelöst werden muss. Diese Begründung konnte experimentell unterstützt werden, siehe Abschnitt 4 (Beispiele).
 
 \section{Laufzeitanalyse}
 
-Um die Laufzeit des Ansatzes zu charakterisieren, soll die Größe des IP in Abhängigkeit von $n$, der Anzahl an Knoten analysiert werden.
+Um die Laufzeit des Ansatzes zu charakterisieren, soll die Größe des IP in Abhängigkeit von $n$, der Anzahl an Knoten analysiert werden. Da es für jedes unterschiedliche Paar an Knoten eine Variable $x_{ij}$ gibt, ist die Anzahl an Variablen $\binom n 2 = n(n - 1) / 2 = \Theta(n^2)$. Im Folgenden wird die Anzahl an Bedingungen in den Gleichungen (2) - (6) analysiert.
 
-Für jedes unterschiedliche Paar an Knoten gibt es eine Variable $x_{ij}$, sodass die Anzahl an Variablen $\binom n 2 = n(n - 1) / 2 = \Theta(n^2)$ ist. Von (2) und (3) werden jeweils $n$ Bedingungen in das IP eingefügt. Gleichung (4) trägt eine Bedingung bei. Im schlechtesten Fall wird von Gleichung (5) eine Bedingung für jede nichtleere Teilmenge von $V$ eingefügt, insgesamt also $O(2^n)$. Die genaue Anzahl an Bedingungen von (6) hängt von der gegebenen Instanz ab, ist im schlechtesten Fall aber $O(n^3)$. Insgesamt hat das ganzzahlige lineare Programm in (1) - (7) also $O(2^n)$ Bedingungen.
+Von (2) und (3) werden jeweils $n$ Bedingungen in das IP eingefügt. Gleichung (4) trägt eine Bedingung bei, sodass Gleichungen (2) - (4) insgesamt $\Theta(n)$ Bedingungen beitragen. Von Ungleichung (5) wird im schlechtesten Fall eine Bedingung für jede nichtleere Teilmenge von $V$ eingefügt, was zu $O(2^n)$ Bedingungen führt. Die genaue Anzahl an Bedingungen von (6) hängt von der gegebenen Instanz ab. Wie bereits angemerkt wurde, werden für jedes ungeordnete Tripel an Punkten, von denen es $\Theta(n^3)$ gibt, 2 oder 3 Bedingungen eingefügt, insgesamt also $\Theta(n^3)$ Bedingungen. Das ganzzahlige lineare Programm in (1) - (7) hat also $\Omega(n^3)$ und $O(2^n)$ Bedingungen.
 
-Da die Lösung eines ganzzahligen linearen Programms NP-schwer ist, ist die Laufzeit im schlechtesten Fall exponentiell in der Anzahl an Variablen $n(n-1)/2$. Die Basis hängt von der Implementierung des IP-Solvers ab.
+Die Lösung eines ganzzahligen linearen Programms ist selbst NP-schwer und benötigt im schlechtesten Fall exponentielle Zeit in de Anzahl an Variablen. Die Laufzeit einer einzigen Lösung ist also exponentiell in $n(n-1)/2$. Durch das allmähliche Hinzufügen von SECs wird das IP mehrmals gelöst, im schlechtesten Fall $O(2^n)$ mal, die Laufzeit bleibt dadurch immer noch exponentiell. Eine genauere Charakterisierung als ,,exponentiell'' ist nicht wirklich sinnvoll, da dafür die Details des IP-Solvers einbezogen werden müssten.
 
 \section{Implementierung}
 
@@ -264,7 +271,7 @@ Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe
 
 \section{Beispiele}
 
-Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \verb|wenigerkrumm3| mit 120 Punkten, wurden ca. 2 min benötigt. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier dagegen graphisch präsentiert.
+Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \verb|wenigerkrumm3| mit 120 Punkten, wurden ca. 2 min benötigt. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert.
 
 \subsection{wenigerkrumm1}
 
