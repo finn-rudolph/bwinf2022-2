@@ -271,7 +271,7 @@ Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe
 
 \section{Beispiele}
 
-Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \emph{wenigerkrumm3} mit 120 Punkten, wurde 64,14 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 3700 U (Mobile) durchgeführt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Alle Beispiele nach \emph{wenigerkrumm8} stammen von TSPLIB \cite{tsplib}, allerdings wurden die Eingabedateien vom TSPLIB-Format in das Format der anderen Eingaben umgewandelt. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert. Die Ausgaben für alle Beispiele finden sich außerdem im Ordner \verb|ausgaben|.
+Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \emph{wenigerkrumm3} mit 120 Punkten, wurde 1 min 4,14 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 3700 U (Mobile) durchgeführt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Alle Beispiele nach \emph{wenigerkrumm8} stammen von TSPLIB \cite{tsplib}, allerdings wurden die Eingabedateien vom TSPLIB-Format in das Format der anderen Eingaben umgewandelt. Die größte gelöste Instanz von TSPLIB bestand aus 318 Punkten und benötigte ca. 30 min. Da die Programmausgaben viel Platz benötigen, sind sie im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert. Die Ausgaben für alle Beispiele finden sich außerdem im Ordner \verb|ausgaben|.
 
 \subsection{wenigerkrumm1}
 
@@ -289,7 +289,7 @@ Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte v
 
 \includesvg[width=398pt]{grafiken/wenigerkrumm3}
 
-\noindent Tourlänge: 1848.046986 $\quad$ Laufzeit: 64,14 s $\quad$ \#SECs: 6
+\noindent Tourlänge: 1848.046986 $\quad$ Laufzeit: 1 min 4,14 s $\quad$ \#SECs: 6
 
 \subsection{wenigerkrumm4}
 
@@ -334,6 +334,45 @@ Dieses Beispiel (ein Dreieck mit keinem Winkel größer gleich $\pi / 2$) zeigt,
 \begin{verbatim}
 Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
 \end{verbatim}
+
+\subsection{berlin52}
+
+\includesvg[width=398pt]{grafiken/berlin52}
+
+\noindent Tourlänge: 9311.526799 $\quad$ Laufzeit: 3,908 s $\quad$ \#SECs: 0
+
+\subsection{kroA100}
+
+\includesvg[width=398pt]{grafiken/kroA100}
+
+\noindent Tourlänge: 28421.204198 $\quad$ Laufzeit: 25,35 s $\quad$ \#SECs: 2 
+
+\subsection{kroA200}
+
+\includesvg[width=398pt]{grafiken/kroA200}
+
+\noindent Tourlänge: 37365.104952 $\quad$ Laufzeit: 17 m 4 s $\quad$ \#SECs: 5 
+
+\subsection{ch130}
+
+\includesvg[width=398pt]{grafiken/ch130}
+
+\noindent Tourlänge: 7365.270508 $\quad$ Laufzeit: 1 min 51 s $\quad$ \#SECs: 5
+
+\subsection{tsp225}
+
+\includesvg[width=398pt]{grafiken/tsp225}
+
+\noindent Tourlänge: 3805.926070 $\quad$ Laufzeit: 54,18 s $\quad$ \#SECs: 1
+\medskip
+
+\noindent Die Form der Tour lässt vermuten, dass die Lösung nahezu mit der optimalen Lösung für das TSP übereinstimmt.
+
+\subsection{lin318}
+
+\includesvg[width=398pt]{grafiken/lin318}
+
+\noindent Tourlänge: 51648.008358 $\quad$ Laufzeit: 30 min 29 s $\quad$ \#SECs: 4
 
 \section{Quellcode}
 
