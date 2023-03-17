@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include "aufgabe3_a.hpp"
 #include "util.hpp"
 using namespace std;
 
@@ -257,7 +258,7 @@ void print_operations(vector<unsigned> p, vector<unsigned> const &op)
             cout << left << setw(6) << *it << "|  ";
             for (unsigned const &x : p)
                 cout << left << setw(4) << x + 1;
-            p = rev_and_eat(p, *it);
+            p = reverse_and_eat(p, *it);
             cout << '\n';
         }
 

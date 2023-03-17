@@ -2,6 +2,8 @@
 #include "util.hpp"
 using namespace std;
 
+size_t factorial(size_t n) { return !n ? 1 : n * factorial(n - 1); }
+
 // Berechnet den Index von p in einer lexikographisch sortierten Liste aller
 // |p|! Permutationen der Laenge |p|.
 size_t ind(vector<unsigned> const &p)
@@ -130,7 +132,7 @@ vector<unsigned> ith_permutation(size_t n, size_t i)
 }
 
 // Die eigentliche Wende-und-Ess-Operation.
-vector<unsigned> rev_and_eat(vector<unsigned> const &p, size_t i)
+vector<unsigned> reverse_and_eat(vector<unsigned> const &p, size_t i)
 {
     vector<unsigned> s(p.size() - 1);
 

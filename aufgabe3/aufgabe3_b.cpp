@@ -6,10 +6,10 @@ using namespace std;
 // [i1, i2) in z. In y muss A(q) für jede Permutation q der Laenge k - 1 stehen.
 // Des Weiteren gilt u = k! und v = (k - 1)!.
 void update_z(
-    size_t k, size_t u, size_t v, uint8_t const *const y, uint8_t *const z,
-    size_t i1, size_t i2)
+    size_t k, uint8_t const *const y, uint8_t *const z, size_t i1, size_t i2)
 {
     vector<unsigned> p = ith_permutation(k, i1);
+    size_t const u = factorial(k), v = factorial(k - 1);
 
     for (size_t i = i1; i < i2; i++)
     {
@@ -30,10 +30,11 @@ void update_z(
 // Findet ein maximales A(p) unter den Permutationen der Länge n mit Index
 // zwischen i1 und i2. Zurückgegeben wird A(p) und der Index von p.
 pair<unsigned, size_t> get_max_a(
-    size_t n, size_t u, size_t v, uint8_t const *const y, size_t i1, size_t i2)
+    size_t n, uint8_t const *const y, size_t i1, size_t i2)
 {
     pair<unsigned, size_t> res = {0, -1};
     vector<unsigned> p = ith_permutation(n, i1);
+    size_t const u = factorial(n), v = factorial(n - 1);
 
     for (size_t i = i1; i < i2; i++)
     {
@@ -62,40 +63,38 @@ pair<unsigned, size_t> pwue(size_t n)
     uint8_t *y = (uint8_t *)malloc(sizeof *y),
             *z = (uint8_t *)malloc(sizeof *z);
     y[0] = 0;
-    size_t u = 1, v = 1; // In der for-Schleife gilt u = k!, v = (k - 1)!
     unsigned const n_threads = thread::hardware_concurrency();
 
     for (size_t k = 2; k < n; k++)
     {
-        u *= k;
-        z = (uint8_t *)realloc(z, u * sizeof *z);
+        size_t const k_factorial = factorial(k);
+        z = (uint8_t *)realloc(z, k_factorial * sizeof *z);
         vector<thread> threads;
 
         // Die k! Permutationen werden ausgeglichen unter den n_threads Threads
         // aufgeteilt.
         for (unsigned i = 0; i < n_threads; i++)
-            threads.emplace_back(update_z, k, u, v, y, z,
-                                 (u / 2) * i / n_threads,
-                                 (u / 2) * (i + 1) / n_threads);
+            threads.emplace_back(update_z, k, y, z,
+                                 (k_factorial / 2) * i / n_threads,
+                                 (k_factorial / 2) * (i + 1) / n_threads);
 
         for (thread &t : threads)
             t.join();
 
         z[0] = 0;
         swap(y, z);
-        v *= k;
     }
 
     free(z);
-    u *= n;
     pair<unsigned, size_t> res = {0, -1};
     vector<future<pair<unsigned, size_t>>> fut;
 
     // Für Länge n ist es nicht mehr nötig, A(p) zu speichern, daher wird
     // get_max_a verwendet.
+    size_t const n_factorial = factorial(n);
     for (unsigned i = 0; i < n_threads; i++)
-        fut.emplace_back(async(get_max_a, n, u, v, y, (u / 2) * i / n_threads,
-                               (u / 2) * (i + 1) / n_threads));
+        fut.emplace_back(async(get_max_a, n, y, (n_factorial / 2) * i / n_threads,
+                               (n_factorial / 2) * (i + 1) / n_threads));
 
     for (auto &f : fut)
         res = max(res, f.get());
