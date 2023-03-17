@@ -1013,7 +1013,7 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 \verb|    unsigned ubound = UINT_MAX)|
 \medskip
 
-\noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt. Für die Prioritätswarteschlange muss der Vergleichsoperator \emph{greater} angegeben werden, da sie ansonsten absteigend anstatt aufsteigend nach unterer Schranke sortieren würde.
+\noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt.
 
 \subsubsection{reconstruct\_operations}
 \verb|vector<unsigned> reconstruct_operations(| \\
@@ -1038,9 +1038,9 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 \verb|bool is_increasing(bool incr, unsigned a, unsigned b, unsigned &x)|
 \medskip
 
-\noindent Gibt zurück, ob $a < b$ und erhöht $x$ um 1, falls sich das Steigungsverhalten gegenüber vorher verändert hat.
+\noindent Gibt zurück, ob $a < b$ und erhöht $x$ um 1, falls sich das Steigungsverhalten gegenüber vorher (gegeben durch \verb|incr|) verändert hat.
 
-\subsection{Teilaufgabe b)}
+\subsection{aufgabe3\_b.cpp}
 
 \subsubsection{pwue}
 \verb|pair<unsigned, size_t> pwue(size_t n)|

@@ -23,11 +23,10 @@ size_t ind(vector<unsigned> const &p)
         // durchlaufen.
         for (size_t l = 0; l < lgn; l++)
         {
-            // Die Anzahl links gelegener, kleinerer Elemente wird abgezogen.
-            if (z & 1)
-                k -= tree[z - 1];
+            if (z & 1)            // Wenn bei einem rechten Nachfolger, ziehe die
+                k -= tree[z - 1]; // Zahl links gelegener, kleinerer Elemente ab.
             tree[z]++;
-            z >>= 1;
+            z >>= 1; // Gehe zum Elternknoten.
         }
         tree[z]++;
     }
@@ -39,7 +38,7 @@ vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
 {
     vector<unsigned> s(p.size() - 1);
 
-    for (size_t j = 0; j < i; j++)
+    for (size_t j = 0; j < i; j++) // Verringere Elemente > p[i] um 1.
         s[j] = p[i - j - 1] - (p[i - j - 1] > p[i]);
     for (size_t j = i; j < p.size() - 1; j++)
         s[j] = p[j + 1] - (p[j + 1] > p[i]);
@@ -57,7 +56,8 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     memset(tree, 0, sizeof tree);
 
     // Die Elemente vor i werden in umgekehrter Reihenfolge bearbeitet. Das j-te
-    // Element gamma_i p ist das (i - j - 1)-te Element von p, fuer j < i.
+    // Element gamma_i p ist das (i - j - 1)-te Element von p, für j < i.
+    // Daneben wird jedes Element > p[i] von gamma_i um 1 verringert.
     for (size_t j = 0; j < i; j++)
     {
         unsigned const x = p[i - j - 1] - (p[i - j - 1] > p[i]);
@@ -74,7 +74,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
         tree[z]++;
     }
 
-    for (size_t j = i; j < p.size() - 1; j++)
+    for (size_t j = i; j < p.size() - 1; j++) // Elemente nach i.
     {
         unsigned const x = p[j + 1] - (p[j + 1] > p[i]);
         size_t z = m + x;
@@ -93,20 +93,20 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
     return k;
 }
 
-// Schreibt die Ziffern von i im fakultaetsbasierten Zahlensystem in s.
-void calc_factorial_digits(size_t i, vector<unsigned> &s)
+// Schreibt die Ziffern von i im fakultätsbasierten Zahlensystem in digits.
+void calc_factorial_digits(size_t i, vector<unsigned> &digits)
 {
-    for (size_t j = 1; j <= s.size(); j++)
+    for (size_t j = 1; j <= digits.size(); j++)
     {
-        s[s.size() - j] = i % j;
+        digits[digits.size() - j] = i % j;
         i /= j;
     }
 }
 
 vector<unsigned> ith_permutation(size_t n, size_t i)
 {
-    vector<unsigned> p(n);
-    calc_factorial_digits(i, p);
+    vector<unsigned> p(n);       // Verwende p zunächst als Speicher für die
+    calc_factorial_digits(i, p); // Ziffern im fankultätsbasierten Zahlensystem.
 
     size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size()),
                  m = 1 << lgn;
@@ -122,8 +122,9 @@ vector<unsigned> ith_permutation(size_t n, size_t i)
         {
             tree[z]--;
             z <<= 1;
-            // Wenn nach rechts gegangen wird, muss die Anahl benoetigter,
-            // kleinerer Elemente entsprechend verringert werden.
+            // Wenn nach rechts gegangen wird, muss die Anahl benötigter,
+            // kleinerer Elemente um die Zahl kleinerer Elemente im linken
+            // Teilbaum verringert werden.
             if (p[j] >= tree[z])
                 p[j] -= tree[z++];
         }

@@ -3,6 +3,23 @@
 #include "util.hpp"
 using namespace std;
 
+struct Node // Ein Knoten im Suchbaum. Enthält Index, Länge und untere Schranke.
+{           // Bei Vergleich werden untere Schranke und Länge verglichen.
+    size_t index;
+    unsigned length, lbound;
+
+    Node(size_t index_, unsigned length_, unsigned lbound_)
+    {
+        index = index_, length = length_, lbound = lbound_;
+    }
+
+    // Umgekehrter Vergleich wegen absteigender Sortierung in der priority_queue
+    bool operator<(Node const &x) const
+    {
+        return lbound == x.lbound ? length > x.length : lbound > x.lbound;
+    }
+};
+
 // Findet die kürzeste Folge an gamma-Operationen, um p in eine identische
 // Permutation umzuformen durch Austesten aller möglichen Operationen.
 vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
@@ -10,26 +27,25 @@ vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
     vector<unordered_map<size_t, size_t>> pre(p.size());
     pre[p.size() - 1][ind(p)] = SIZE_MAX;
 
-    // Speichert Länge und Index jedes zu besuchenden Knotens.
-    queue<pair<size_t, size_t>> q;
-    q.push({p.size(), ind(p)});
+    queue<Node> q;
+    q.emplace(ind(p), p.size(), 0); // Untere Schranke wird nicht verwendet.
 
     while (!q.empty())
     {
-        auto const [m, i] = q.front();
+        auto const [index, length, _] = q.front();
         q.pop();
 
-        if (!i)
-            return reconstruct_operations(pre, m, i);
+        if (!index) // Identische Permutation gefunden
+            return reconstruct_operations(pre, length, index);
 
-        vector<unsigned> const s = ith_permutation(m, i);
+        vector<unsigned> const s = ith_permutation(length, index);
 
-        for (size_t j = 0; j < m; j++)
-        {
-            pair<size_t, size_t> const y = {m - 1, ind_gamma(s, j)};
-            if (pre[y.first - 1].find(y.second) == pre[y.first - 1].end())
+        for (size_t j = 0; j < length; j++) // Wende alle möglichen gamma_i-
+        {                                   // Operationen (0 <= i < length) an.
+            Node const y(ind_gamma(s, j), length - 1, 0);
+            if (pre[y.length - 1].find(y.index) == pre[y.length - 1].end())
             {
-                pre[y.first - 1][y.second] = i;
+                pre[y.length - 1][y.index] = index; // Vorgänger im Suchbaum.
                 q.push(y);
             }
         }
@@ -89,22 +105,6 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
 
     return (x + 1) / 3;
 }
-
-struct Node
-{
-    size_t index;
-    unsigned length, lbound;
-
-    Node(size_t index_, unsigned length_, unsigned lbound_)
-    {
-        index = index_, length = length_, lbound = lbound_;
-    }
-
-    bool operator<(Node const &x) const
-    {
-        return lbound == x.lbound ? length > x.length : lbound > x.lbound;
-    }
-};
 
 // Gibt die kürzestmögliche Folge an gamma-Operationen zurück. Wie im A*-
 // Algorithmus werden die Blätter der Suche in einer Prioritätswarteschlange
@@ -186,7 +186,7 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
         auto const [index, lbound, length] = q.top();
         q.pop();
 
-        auto const [op, found] =
+        auto const [op, found] = // Rekursionsschritt
             min_operations_bnb_r(gamma(p, index), vis, ubound - 1);
 
         if (found && op.size() + 1 < ubound)
