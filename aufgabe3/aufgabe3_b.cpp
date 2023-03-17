@@ -2,9 +2,9 @@
 #include "util.hpp"
 using namespace std;
 
-// Schreibt A(p) fuer jede Permutation der Laenge k mit Index zwischen i1 und i2
-// in z. In y muss A(q) fuer jede Permutation q der Laenge k - 1 stehen.
-// u = k!, v = (k - 1)!
+// Schreibt A(p) für jede Permutation der Länge k mit Index im Intervall
+// [i1, i2) in z. In y muss A(q) für jede Permutation q der Laenge k - 1 stehen.
+// Des Weiteren gilt u = k! und v = (k - 1)!.
 void update_z(
     size_t k, size_t u, size_t v, uint8_t const *const y, uint8_t *const z,
     size_t i1, size_t i2)
@@ -13,14 +13,13 @@ void update_z(
 
     for (size_t i = i1; i < i2; i++)
     {
-        z[i] = k;
-        z[u - i - 1] = k;
+        z[i] = k;         // Durch die Symmetrie des Pancake-Graphen kann ein
+        z[u - i - 1] = k; // symmetrisches Paar gleichzeitig behandelt werden.
 
         for (size_t j = 0; j < k; j++)
         {
             size_t const l = ind_gamma(p, j);
             z[i] = min<uint8_t>(z[i], y[l] + 1);
-            // Hier wird die Symmetrie des Pancake-Graphen ausgenutzt.
             z[u - i - 1] = min<uint8_t>(z[u - i - 1], y[v - l - 1] + 1);
         }
 
@@ -28,8 +27,8 @@ void update_z(
     }
 }
 
-// Findet ein maximales A(p) unter den Permutationen der Laenge n mit Index
-// zwischen i1 und i2. Zurueckgegeben wird A(p) und der Index von p.
+// Findet ein maximales A(p) unter den Permutationen der Länge n mit Index
+// zwischen i1 und i2. Zurückgegeben wird A(p) und der Index von p.
 pair<unsigned, size_t> get_max_a(
     size_t n, size_t u, size_t v, uint8_t const *const y, size_t i1, size_t i2)
 {
@@ -56,9 +55,10 @@ pair<unsigned, size_t> get_max_a(
 
 pair<unsigned, size_t> pwue(size_t n)
 {
-    // Arrays zum Speichern von A(p) aller Permutationen einer bestimmten
-    // Laenge. y[i] = A(p), wenn ind(p) = i. In z werden dann die A(p) der
-    // naechst laengeren Permutationen hineingeschrieben.
+    // Arrays zum Speichern von A(p) aller Permutationen einer bestimmten Länge.
+    // In der folgenden for-Schleife gilt y[i] = A(p), wenn ind(p) = i, für jede
+    // Permutation p der Länge k - 1. In z wird dann A(p) für alle Permutationen
+    // von Länge k geschrieben.
     uint8_t *y = (uint8_t *)malloc(sizeof *y),
             *z = (uint8_t *)malloc(sizeof *z);
     y[0] = 0;
@@ -91,8 +91,8 @@ pair<unsigned, size_t> pwue(size_t n)
     pair<unsigned, size_t> res = {0, -1};
     vector<future<pair<unsigned, size_t>>> fut;
 
-    // Fuer n ist es nicht mehr noetig, A(p) zu speichern, daher wird get_max_a
-    // verwendet.
+    // Für Länge n ist es nicht mehr nötig, A(p) zu speichern, daher wird
+    // get_max_a verwendet.
     for (unsigned i = 0; i < n_threads; i++)
         fut.emplace_back(async(get_max_a, n, u, v, y, (u / 2) * i / n_threads,
                                (u / 2) * (i + 1) / n_threads));
