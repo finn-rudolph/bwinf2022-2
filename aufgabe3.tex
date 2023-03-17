@@ -935,146 +935,155 @@ ist. Folglich beträgt die Laufzeit von \textsc{Pwue} $\Theta(n! \cdot n^2 \log 
 
 \section{Implementierung}
 
-Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \emph{aufgabe3\_a.cpp} und \emph{aufgabe3\_b.cpp} steht der Quellcode speziell für die Teilaufgaben, in \emph{util.cpp} Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann \emph{make a} bzw. \emph{make b} im Ordner \emph{aufgabe3} ausgeführt werden. Mit nur \emph{make} werden beide Teilaufgaben kompiliert.
+Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \verb|aufgabe3_a.cpp| und \verb|aufgabe3_b.cpp| steht der Quellcode speziell für die Teilaufgaben, in \verb|util.cpp| Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann \verb|make a| bzw. \verb|make b| im Ordner \verb|aufgabe3| ausgeführt werden. Mit nur \verb|make| werden beide Teilaufgaben kompiliert.
 
-Grundsätzlich gilt, dass eine Permutation als C$++$ \emph{vector} von \emph{unsigned} repräsentiert wird und meist \emph{p} heißt. Wenn \emph{p} bereits vergeben ist, heißt eine Permutation auch \emph{s}. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
+Dem Programm \verb|aufgabe3_a| kann in der Kommandozeile als Argument \verb|--bfs| oder \verb|--bnb| mitgegeben werden, um \textsc{MinOperationsBFS} bzw. \textsc{MinOperationsBnB} als Algorithmus zu verwenden. Standardmäßig wird \textsc{MinOperationsA*} verwendet. Wenn z. B. \textsc{MinOperationsBnB} verwendet werden soll und \verb|pancake0.txt| die Eingabe ist, sieht der Befehl (im Ordner \verb|aufgabe3|) wie folgt aus:
 
-\subsection{Hilfsfunktionen}
-
-Hier wird der Inhalt von \emph{util.cpp} beschrieben.
+\medskip
+\verb|./aufgabe3_a --bnb < beispiele/pancake0.txt|
 \medskip
 
-\noindent \verb|size_t ind(vector<unsigned> const &p)|
-\smallskip
+Ausgegeben wird eine Folge an Indizes, nach denen gewendet werden kann, um auf kürzestmöglichem Weg zu einem sortierten Stapel zu gelangen. Zusätzlich werden alle Stapel, die als Zwischenschritte im Sortierprozess entstehen, ausgegeben.
 
-\noindent Die Funktion \verb|ind| gibt $\mu(p)$ zurück. Wie bereits beschrieben, ist das mit einem Segmentbaum in $\Theta(n \log n)$ Zeit möglich. Für die Variablen \emph{lgn} und \emph{m} gilt $lgn = \lceil \log_2 n \rceil$ und $m = 2^{\lceil \log_2 n \rceil}$. Der Segmentbaum wird in dem Array \emph{tree} in Heap-Anordnung gespeichert, d. h. die Wurzel liegt bei Index 1, der linke Nachfolger von $i$ bei $2 \cdot i$ und der rechte Nachfolger von $i$ bei $2 \cdot i + 1$. Da der Segmentbaum eine 1 bei Index $i$ stehen hat, wenn Element $i$ bereits auftrat, wird er zu Beginn mit 0 an allen Knoten initialisiert. In der for-Schleife steht \verb|z| für den aktuellen Knoten im Segmentbaum, der zu Beginn das Blatt zugehörig zu $p_j$ ist. Für $k$, die Rückgabe von \verb|ind|, gilt bezüglich der äußeren for-Schleife folgende Invariante: Wenn $j = j'$, gilt nach am Ende der Iteration
+Das Programm für Teilaufgabe b) hat nur $n$ als Eingabe. Ausgegeben wird $P(n)$ und eine Beispielpermutation $p$ mit $A(p) = P(n)$. Um $P(10)$ zu berechnen, lautet der Befehl (im Ordner \verb|aufgabe3|) also wie folgt:
+
+\medskip
+\verb|./aufgabe3_b|
+\medskip
+
+Anschließend muss 10 und Enter eingegeben werden.
+
+Im Folgenden gilt, dass eine Permutation als \verb|vector<unsigned>| repräsentiert wird. Die Namensgebung ist eng an die Namensgebung im Pseudocode geknüpft.
+
+\subsection{util.cpp}
+
+\subsubsection{ind}
+\verb|size_t ind(vector<unsigned> const &p)|
+\medskip
+
+\noindent Gibt $\mu(p)$ zurück. Wie bereits beschrieben, ist das mit einem Segmentbaum in $\Theta(n \log n)$ Zeit möglich. Für die Variablen \emph{lgn} und \emph{m} gilt $lgn = \lceil \log_2 n \rceil$ und $m = 2^{\lceil \log_2 n \rceil}$. Der Segmentbaum wird in dem Array \emph{tree} in Heap-Anordnung gespeichert, d. h. die Wurzel liegt bei Index 1, der linke Nachfolger von $i$ bei $2 \cdot i$ und der rechte Nachfolger von $i$ bei $2 \cdot i + 1$. Da der Segmentbaum eine 1 bei Index $i$ stehen hat, wenn Element $i$ bereits auftrat, wird er zu Beginn mit 0 an allen Knoten initialisiert. In der for-Schleife steht \verb|z| für den aktuellen Knoten im Segmentbaum, der zu Beginn das Blatt zugehörig zu $p_j$ ist. Für $k$, die Rückgabe von \verb|ind|, gilt bezüglich der äußeren for-Schleife folgende Invariante: Wenn $j = j'$, gilt nach am Ende der Iteration
 \begin{align*}
     k = \mu(p)_0 \frac {(n - 1)!} {(n - 1 - j')!} + \mu(p)_1 \frac {(n - 2)!} {(n - 1 - j')!} + \dots + \mu(p)_{j'}
 \end{align*}
 Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffizienten jedes $\mu(p)_i$ wird durch Multiplikation mit \verb|p.size() - j| erhalten. Da $\mu(p)_j$ gleich $p_j$ minus der Anzahl links gelegener, kleinerer Elemente ist, muss nach der Addition von $p_j$ nur noch diese Zahl mithilfe des Segmentbaums abgezogen werden. Dazu wird dieser vom Blatt von $p_j$ beginnend nach oben gelaufen und die Summe des linken Geschwisterknoten, falls man aktuell bei einem rechten Nachfolger steht, abgezogen. Der Wert jedes Knotens auf dem Weg wird um 1 erhöht, da $p_j$ nun selbst vorgekommen ist. Nachdem das für alle $0 \le j \le n - 1$ geschehen ist, wird $k$ zurückgegeben.
-\bigskip
 
-\noindent \verb|vector<unsigned> gamma(vector<unsigned> const &p, size_t i)|
-\smallskip
+\subsubsection{gamma}
+\verb|vector<unsigned> gamma(vector<unsigned> const &p, size_t i)|
+\medskip
 
-\noindent Es wird $\gamma_i p$ berechnet. $(\gamma_i p)_j$ für $j < i$ ist $p_{i - j - 1}$ und für $j > i$ $p_{j + 1}$. Bei Elementen größer als $p_i$ wird 1 abgezogen.
-\bigskip
+\noindent Berechnet $\gamma_i p$. $(\gamma_i p)_j$ für $j < i$ ist $p_{i - j - 1}$ und für $j > i$ $p_{j + 1}$. Bei Elementen größer als $p_i$ wird 1 abgezogen.
 
-\noindent \verb|size_t ind_gamma(vector<unsigned> const &p, size_t i)|
-\smallskip
+\subsubsection{ind\_gamma}
+\verb|size_t ind_gamma(vector<unsigned> const &p, size_t i)|
+\medskip
 
-\noindent Diese Funktion berechnet $\mu(\gamma_i p)$. Da diese Komposition vor allem in Teilaufgabe a) häufig verwendet wird, wurde eine separate Funktion geschrieben, die das Erstellen eines neuen Vektors für $\gamma_i p$ vermeidet. Die Funktionsweise ist identisch zu der von \verb|ind|, nur werden Elemente vor $i$ in entsprechend umgekehrter Reihenfolge bearbeitet und gegebenenfalls 1 von ihrem Wert abgezogen. $x$ bezeichnet in beiden for-Schleifen den Wert von $(\gamma_i p)_j$, ansonsten ist die Namensgebung gleich.
-\bigskip
+\noindent Berechnet $\mu(\gamma_i p)$. Da diese Komposition häufig verwendet wird, wurde eine separate Funktion geschrieben, die das Erstellen eines neuen Vektors für $\gamma_i p$ vermeidet. Die Funktionsweise ist identisch zu der von \verb|ind|, nur werden Elemente vor $i$ in entsprechend umgekehrter Reihenfolge bearbeitet und gegebenenfalls 1 von ihrem Wert abgezogen. $x$ bezeichnet in beiden for-Schleifen den Wert von $(\gamma_i p)_j$, ansonsten ist die Namensgebung gleich.
 
-\noindent \verb|void calc_factorial_digits(size_t i, vector<unsigned> &s)|
-\smallskip
+\subsubsection{calc\_factorial\_digits}
+\verb|void calc_factorial_digits(size_t i, vector<unsigned> &s)|
+\medskip
 
 \noindent Berechnet die Ziffern von $i$ im fakultätsbasierten Zahlensystem und speichert sie in $s$, wobei die $0!$-Ziffer in an letzer Stelle von $s$ steht. Die Berechnung geschieht analog zur Berechnung der Ziffern einer Zahl im Binärsystem: Zuerst wird durch 1 geteilt, dann durch 2, 3, usw. wobei die jeweiligen Reste den Ziffern von rechts nach links gelesen entsprechen.
-\bigskip
 
-\noindent \verb|vector<unsigned> ith_permutation(size_t n, size_t i)|
-\smallskip
+\subsubsection{ith\_permutation}
+\verb|vector<unsigned> ith_permutation(size_t n, size_t i)|
+\medskip
 
 \noindent Gibt eine Permutation $p$ der Länge $n$ zurück, sodass $\mu(p) = i$. Zunächst wird $p$ als Vektor angelegt und darin die Ziffern von $i$ im fakultätsbasierten Zahlensystem gespeichert. Wie in der Lösungsidee beschrieben enthält der Segmentbaum \emph{tree} hier eine 1 bei Index $j$, wenn der Wert $j$ noch nicht aufgetreten ist, weshalb der Baum mit Einsen initialisiert wird. Bei Bearbeitung $j$-ten Elements wird von der Wurzel ($z = 1$) gestartet, und $p_j$ enthält immer die nötigen links gelegenen Einsen. Im Segmentbaum wird nach rechts gegangen, wenn im linken Nachfolger weniger Einsen als nötig vorhanden sind, oder genauso viele, andernfalls nach links. Der Wert des $j$-ten Elements der Permutation entspricht dann $z - m$, also dem Index des Blatts, bei dem man gelandet ist. Hier werden auf dem Weg nach unten die Werte aller Knoten um 1 reduziert, da $p_j$ danach vorhanden ist.
-\bigskip
 
-\noindent \verb|vector<unsigned> rev_and_eat(vector<unsigned> const &p, size_t i)|
-\smallskip
+\subsubsection{reverse\_and\_eat}
+\verb|vector<unsigned> reverse_and_eat(vector<unsigned> const &p, size_t i)|
+\medskip
 
 \noindent Gibt die Permutation zurück, wenn eine Wende-und-Ess-Operation bei Index $i$ auf $p$ angewandt wird, wie sie im Aufgabenblatt beschrieben ist. Die Funktion wird nur in Teilaufgabe a) zur Ausgabe der entstehenden Stapel während des Sortierens benötigt.
 
-\subsection{Teilaufgabe a)}
+\subsection{aufgabe3\_a.cpp}
 
-Dem Programm \emph{aufgabe3\_a} kann in der Kommandozeile als Argument \verb|--bfs| oder \verb|--bnb| mitgegeben werden, um \textsc{MinOperationsBFS} bzw. \textsc{MinOperationsBnB} als Algorithms zu verwenden. Standardmäßig wird \textsc{MinOperationsA*} verwendet. Ausgegeben wird eine Folge an Indizes, nach denen gewendet werden kann, um auf kürzestmöglichem Weg zu einem sortierten Stapel zu gelangen. Zusätzlich werden alle Stapel, die als Zwischenschritte im Sortierprozess entstehen, ausgegeben.
-\bigskip
+\subsubsection{min\_operations\_bfs}
+\verb|vector<unsigned> min_operations_bfs(vector<unsigned> const &p)|
+\medskip
 
-\noindent \verb|vector<unsigned> min_operations_bfs(vector<unsigned> const &p)|
-\smallskip
+\noindent Die Funktion implementiert das in der Lösungsidee beschriebene Brute-Force Verfahren. Zum Abspeichern des Vorgängers jeder besuchten Permutation wird in einem \verb|vector| für jede Permutationslänge eine \verb|unordered_map| angelegt. Damit kann gleichzeitig überprüft werden, ob ein Knoten schon besucht wurde.
 
-\noindent Die Funktion implementiert das in der Lösungsidee beschriebene Brute-Force Verfahren. Zum Abspeichern des Vorgängers jeder besuchten Permutation wird ein Vektor von \emph{unordered\_map} verwendet, womit gleichzeitig überprüft werden kann, ob ein Knoten schon besucht wurde. Ansonsten entspricht die Implementierung nahezu exakt dem Pseudocode, weshalb sie nicht weiter erläutert wird.
-\bigskip
+\subsubsection{min\_operations\_astar}
+\verb|vector<unsigned> min_operations_astar(vector<unsigned> const &p)|
+\medskip
 
-\noindent \verb|vector<unsigned> min_operations_astar(vector<unsigned> const &p)|
-\smallskip
+\noindent Mit dieser Funktion wird der Algorithmus \textsc{MinOperationsA*} implementiert. Für die Prioritätswarteschlange wird eine \verb|priority\_queue| aus der C$++$ Standardbibliothek verwendet, die wie im Pseudocode 3-Tupels von Index Länge und unterer Schranke enthält. Für eine Tupel wird die \emph{tuple} aus der C$++$ Standardbibliothek verwendet, mit einem \emph{size\_t} und zwei \emph{unsigned}. Da der Name dieses Datentyps sehr lang ist, wird eine Kurzform \emph{node} für ihn definiert. Für \emph{node} gibt es auch eine Vergleichsfunktion \emph{node\_compare}, da die Prioritätswarteschlange die Tupels absteigend nach Index, Länge und unterer Schranke sortieren würde, sie aber aufsteigend nach unterer Schranke und Länge sortiert werden sollen. Bei gleicher unterer Schranke eine kürzere Permutation zu bevorzugen ist sinnvoll, da man so tendenziell schneller die Suchtiefe vergrößert und durch das Finden einer identischen Permutation eine obere Schranke festlegen kann. \emph{n\_res} entspricht $n'$ aus dem Pseudocode und speichert die Länge der längsten erreichbaren identischen Permutation.
 
-\noindent Mit dieser Funktion wird der Algorithmus \textsc{MinOperationsA*} implementiert. Für die Prioritätswarteschlange wird eine \emph{priority\_queue} aus der C$++$ Standardbibliothek verwendet, die wie im Pseudocode 3-Tupels von Index Länge und unterer Schranke enthält. Für eine Tupel wird die \emph{tuple} aus der C$++$ Standardbibliothek verwendet, mit einem \emph{size\_t} und zwei \emph{unsigned}. Da der Name dieses Datentyps sehr lang ist, wird eine Kurzform \emph{node} für ihn definiert. Für \emph{node} gibt es auch eine Vergleichsfunktion \emph{node\_compare}, da die Prioritätswarteschlange die Tupels absteigend nach Index, Länge und unterer Schranke sortieren würde, sie aber aufsteigend nach unterer Schranke und Länge sortiert werden sollen. Bei gleicher unterer Schranke eine kürzere Permutation zu bevorzugen ist sinnvoll, da man so tendenziell schneller die Suchtiefe vergrößert und durch das Finden einer identischen Permutation eine obere Schranke festlegen kann. \emph{n\_res} entspricht $n'$ aus dem Pseudocode und speichert die Länge der längsten erreichbaren identischen Permutation.
-\bigskip
-
-\noindent \verb|vector<unsigned> min_operations_bnb(vector<unsigned> const &p)|
-\smallskip
+\subsubsection{min\_operations\_bnb}
+\verb|vector<unsigned> min_operations_bnb(vector<unsigned> const &p)|
+\medskip
 
 \noindent Das Branch and Bound-Verfahren benötigt in der Implementierung zwei Funktionen. In dieser Funktion wird das Array \emph{vis} von \emph{unordered\_set}, das \verb|min_operations_bnb_r| als Parameter mitgegeben wird, angelegt. Des Weiteren wird der erhaltene Vektor an $\gamma_i$-Operationen vor der Rückgabe umgekehrt, da die Operationen in der Implementierung im Gegensatz zum Pseudocode hinten an \emph{op} angefügt werden. In Vektoren Elemente vorne anzufügen benötigt $\Theta(n)$ Zeit, während es hinten in amortisiert konstanter Zeit möglich ist.
-\bigskip
 
-\noindent \verb|pair<vector<unsigned>, bool> min_operations_bnb_r(| \\
+\subsubsection{min\_operations\_bnb\_r}
+\verb|pair<vector<unsigned>, bool> min_operations_bnb_r(| \\
 \verb|    vector<unsigned> const &p, vector<unordered_set<size_t>> &vis,)| \\
 \verb|    unsigned ubound = UINT_MAX)|
-\smallskip
+\medskip
 
 \noindent Diese Funktion ist das rekursive Gegenstück für das Branch and Bound-Verfahren. Die obere Schranke \emph{ubound} muss beim ersten Aufruf nicht als Parameter mitgegeben werden, sondern wird standardmäßig auf einen großen Wert gesetzt. Für die Prioritätswarteschlange muss der Vergleichsoperator \emph{greater} angegeben werden, da sie ansonsten absteigend anstatt aufsteigend nach unterer Schranke sortieren würde.
-\bigskip
 
-\noindent \verb|vector<unsigned> reconstruct_operations(| \\
+\subsubsection{reconstruct\_operations}
+\verb|vector<unsigned> reconstruct_operations(| \\
 \verb|    vector<unordered_map<size_t, size_t>> const &pre, size_t m, size_t i)|
-\smallskip
+\medskip
 
 \noindent Gibt die Folge an $\gamma_i$-Operationen zurück, mit denen man zur Permutation $p$ der Länge $m$ mit $\mu(p) = i$ gelangt. $t$ wird vor Rückgabe umgekehrt, da die Operationen in umgekehrter Reihenfolge hinten angefügt wurden.
-\bigskip
 
-\noindent \verb|unsigned get_lbound(vector<unsigned> const &p)|
-\smallskip
+\subsubsection{get\_lbound}
+\verb|unsigned get_lbound(vector<unsigned> const &p)|
+\medskip
 
 \noindent Gibt die untere Schranke von $\lfloor (x + 1)/ 3 \rfloor$ für die Anzahl benötigter $\gamma_i$-Operationen für $p$, zurück, wobei $x$ die Anzahl monotoner Teilstrings ist. Die Überprüfung, ob bei Index $i$ ein neuer monotoner Teilstring beginnt, wurde in die Funktion \verb|is_increasing| ausgelagert.
-\bigskip
 
-\noindent \verb|unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)|
-\smallskip
+\subsubsection{get\_lbound\_gamma}
+\verb|unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)|
+\medskip
 
 \noindent Berechnet \textsc{LowerBound}$(\gamma_i p)$. Eine separate Funktion dafür vermeidet das Anlegen eines Vektors für $\gamma_i p$.
-\bigskip
 
-\noindent \verb|bool is_increasing(bool incr, unsigned a, unsigned b, unsigned &x)|
-\smallskip
+\subsubsection{is\_increasing}
+\verb|bool is_increasing(bool incr, unsigned a, unsigned b, unsigned &x)|
+\medskip
 
-\noindent Gibt zurück, ob $a, b$ steigt und erhöht $x$ um 1, falls sich das Steigungsverhalten gegenüber vorher verändert hat.
+\noindent Gibt zurück, ob $a < b$ und erhöht $x$ um 1, falls sich das Steigungsverhalten gegenüber vorher verändert hat.
 
 \subsection{Teilaufgabe b)}
 
-Nach Ausführung des Programms \emph{aufgabe3\_b} muss $n$ als Eingabe gegeben werden.
-\bigskip
-
-\noindent \verb|pair<unsigned, size_t> pwue(size_t n)|
-\smallskip
+\subsubsection{pwue}
+\verb|pair<unsigned, size_t> pwue(size_t n)|
+\medskip
 
 \noindent Gibt $P(n)$ sowie den Index einer Permutation der Länge $n$ mit $A(p) = P(n)$ zurück. Die Berechnung wird parallelisiert: Wenn gerade $A(p)$ für alle Permutationen der Länge $k$ bestimmt werden soll, wird das Intervall $[0, k!/2 - 1]$ in \emph{n\_threads} gleich große Teile geteilt und jedem Thread der Index seiner ersten und letzten Permutation mitgegeben. \emph{n\_threads} bezeichnet eine geeignete Anzahl an Threads für den Computer, auf dem das Programm ausgeführt wird. Sie kann mithilfe von \verb|thread::hardware_concurrency()| aus der C$++$ Standardbibliothek festgelegt werden. Die Funktion \verb|pwue| übernimmt in der Implementierung nur das Zuteilen der Threads und Sammeln der Ergebnisse, die eigentlichen Berechnungen finden in den zwei Threadfunktionen statt. Wie im Pseudocode ist die Berechnung in zwei Teile gegliedert: Für $k$ von 2 bis $n - 1$ wird $A(p)$ für jede Permutation in $z$ geschrieben, daher wird in diesem Teil \verb|update_z| als Threadfunktion verwendet. Im zweiten Teil hat jeder Thread eine Rückgabe, das maximale von ihm gefundene $A(p)$ und ein Beispiel dazu. Daher werden die Threads hier mit \verb|async| gestartet, ihre Rückgabe kann dann über die zurückgegebenen \verb|future|-Objekte erhalten werden.
-\bigskip
 
-\noindent \verb|void update_z(| \\
-\verb|    size_t k, size_t u, size_t v, uint8_t const *const y, uint8_t *const z,| \\
-\verb|    size_t i1, size_t i2)|
-\smallskip
+\subsubsection{update\_z}
+\verb|void update_z(| \\
+\verb|    size_t k, uint8_t const *const y, uint8_t *const z, size_t i1,| \\
+\verb|    size_t i2)| \\
+\medskip
 
-\noindent Berechnet $A(p)$ für alle Permutationen der Länge $k$ mit $i_1 \le \mu(p) \le i_2 - 1$ und schreibt das Ergebnis in $z$ an Index $\mu(p)$. Da jeder Thread nur auf einen für ihn vorgegebenen Bereich von $z$ zugreift, muss keine Synchronisation stattfinden, was die Parallelisierung sehr effizient macht. Anstatt wie im Pseudocode in jeder Iteration der äußeren for-Schleife \verb|ith_permutation| aufzurufen, wird \verb|next_permutation| aus der C$++$ Standardbibliothek verwendet, das die lexikographisch nächste Permutation erzeugt. Die Laufzeit von \verb|next_permutation| beträgt nämlich nur $O(n)$. Asymptotisch ändert das aber nichts.
-\bigskip
+\noindent Berechnet $A(p)$ für alle Permutationen der Länge $k$ mit $i_1 \le \mu(p) \le i_2 - 1$ und schreibt das Ergebnis in \verb|z| an Index $\mu(p)$. In \verb|y| muss $A(p)$ für jede Permutation der Länge $k-1$ stehen, und es muss $u = k!$ und $v = (k - 1)!$ gelten. Da jeder Thread nur auf einen für ihn vorgegebenen Bereich von $z$ zugreift, muss keine Synchronisation stattfinden, was die Parallelisierung sehr effizient macht. Anstatt wie im Pseudocode in jeder Iteration der äußeren for-Schleife \verb|ith_permutation| aufzurufen, wird \verb|next_permutation| aus der C$++$ Standardbibliothek verwendet, das die lexikographisch nächste Permutation erzeugt. Dessen Laufzeit beträgt nur $O(n)$, allerdings ändert das nichts am asymptotischen Laufzeitverhalten.
 
-\noindent \verb|pair<unsigned, size_t> get_max_a(| \\
-\verb|    size_t n, size_t u, size_t v, uint8_t const *const y, size_t i1,| \\
-\verb|    size_t i2)|
-\smallskip
+\subsubsection{get\_max\_a}
+\verb|pair<unsigned, size_t> get_max_a(| \\
+\verb|    size_t n, uint8_t const *const y, size_t i1, size_t i2)| \\
+\medskip
 
 \noindent Gibt das maximale $A(p)$ für Permutationen der Länge $n$ mit $i_1 \le \mu(p) \le i_2 - 1$ zurück, sowie ein Beispiel mit maximalem $A(p)$.
 
 \section{Beispiele}
 
-\subsection{Programmausgaben}
+\subsection{Ausgaben}
 
-Das Programm für a) gibt neben den Indizes der nötigen $\gamma_i$-Operationen (0-indexiert) auch den aktuellen Stapel nach jedem Sortierschritt aus. Damit kann man nachvollziehen, dass tatsächlich gültige Wendeoperationen ausgeführt wurden. Aus Platzgründen wird das in der Dokumentation nur für \emph{pancake0} abgedruckt. Die Ausgaben stammen von \verb|min_operations_astar|, die anderen zwei Algorithmen geben im Allgemeinen andere, kürzeste Folgen aus. Die Beispiele \emph{pancake8} bis \emph{pancake11} wurden selbst hinzugefügt, wobei versucht wurde, möglichst schwierige Beispiele zu erstellen. ,,Schwierig'' bedeutet nicht unbedingt ein großes $n$, sondern eine hohe Anzahl nötiger Operationen, weil so die Suchtiefe groß wird. Die Beispiele \emph{pancake10} und \emph{pancake11} haben die Form
+Das Programm für a) gibt neben den Indizes der nötigen $\gamma_i$-Operationen (0-indexiert) auch den aktuellen Stapel nach jedem Sortierschritt aus. Damit kann man nachvollziehen, dass tatsächlich gültige Wendeoperationen ausgeführt wurden. Aus Platzgründen wird das in der Dokumentation nur für \emph{pancake0} abgedruckt. Die Ausgaben stammen von \textsc{MinOperationsA*}, die anderen zwei Algorithmen geben im Allgemeinen andere, kürzeste Folgen aus. Die Beispiele \emph{pancake8} bis \emph{pancake11} wurden selbst hinzugefügt, wobei versucht wurde, möglichst schwierige Beispiele zu erstellen. ,,Schwierig'' bedeutet nicht unbedingt ein großes $n$, sondern eine hohe Anzahl nötiger Operationen, weil so die Suchtiefe groß wird. Die Beispiele \emph{pancake10} und \emph{pancake11} haben die Form
 \begin{align*}
     1, n, 2, n - 1, 3, n - 2, 4, n - 3, \dots, \lfloor n/2 \rfloor + 1
 \end{align*}
-die meistens eine hohe Zahl an Operationen benötigt (nicht immer, $n = 14$ ist ein Gegenbeispiel).
+die meistens eine hohe Zahl an Operationen benötigt (nicht immer, $n = 14$ ist ein Gegenbeispiel). (Mit einer ,,hohen Zahl'' ist gemeint, dass durch einfaches Ausprobieren einiger Permutationen keine mit höherem $A(p)$ gefunden werden konnte.)
 
-\subsubsection*{pancake0}
+\subsubsection{pancake0}
 \begin{lstlisting}[numbers=none]
 2 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 4, 3
@@ -1085,49 +1094,49 @@ Index |  p
       |  2   4   5   
 \end{lstlisting}
 
-\subsubsection*{pancake1}
+\subsubsection{pancake1}
 \begin{lstlisting}[numbers=none]
 3 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 2, 3, 4
 \end{lstlisting}
 
-\subsubsection*{pancake2}
+\subsubsection{pancake2}
 \begin{lstlisting}[numbers=none]
 4 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 1, 3, 3, 4  
 \end{lstlisting}
 
-\subsubsection*{pancake3}
+\subsubsection{pancake3}
 \begin{lstlisting}[numbers=none]
 6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 10, 4, 5, 2, 2, 4 
 \end{lstlisting}
 
-\subsubsection*{pancake4}
+\subsubsection{pancake4}
 \begin{lstlisting}[numbers=none]
 7 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 3, 10, 9, 7, 3, 0, 6 
 \end{lstlisting}
 
-\subsubsection*{pancake5}
+\subsubsection{pancake5}
 \begin{lstlisting}[numbers=none]
 6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 0, 12, 6, 8, 4, 5  
 \end{lstlisting}
 
-\subsubsection*{pancake6}
+\subsubsection{pancake6}
 \begin{lstlisting}[numbers=none]
 8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 6, 9, 8, 3, 0, 4, 8, 0
 \end{lstlisting}
 
-\subsubsection*{pancake7}
+\subsubsection{pancake7}
 \begin{lstlisting}[numbers=none]
 8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
 2, 2, 5, 9, 3, 10, 9, 5
 \end{lstlisting}
 
-\subsection*{pancake8}
+\subsubsection{pancake8}
 \scriptsize \emph{Eingabe:} \verb|14 9 2 12 4 11 5 14 6 3 13 8 10 7 1|
 \normalsize
 \begin{lstlisting}
@@ -1135,7 +1144,7 @@ Index |  p
 12, 4, 8, 6, 4, 7, 6, 6
 \end{lstlisting}
 
-\subsection*{pancake9}
+\subsubsection{pancake9}
 \scriptsize \emph{Eingabe:} \verb|16 15 2 6 10 4 8 12 1 13 16 9 14 7 5 11 3|
 \normalsize
 \begin{lstlisting}[numbers=none]
@@ -1143,7 +1152,7 @@ Index |  p
 2, 10, 9, 5, 6, 4, 8, 6, 7
 \end{lstlisting}
 
-\subsection*{pancake10}
+\subsubsection{pancake10}
 \scriptsize \emph{Eingabe: }\verb|18 1 18 2 17 3 16 4 15 5 14 6 13 7 12 8 11 9 10|
 \normalsize
 \begin{lstlisting}[numbers=none]
@@ -1151,7 +1160,7 @@ Index |  p
 3, 10, 9, 5, 1, 5, 9, 8, 6, 5
 \end{lstlisting}
 
-\subsection*{pancake11}
+\subsubsection{pancake11}
 \scriptsize \emph{Eingabe: }\verb|20 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11|
 \normalsize
 \begin{lstlisting}[numbers=none]
@@ -1159,7 +1168,7 @@ Index |  p
 1, 8, 11, 9, 1, 7, 13, 3, 7, 6, 8
 \end{lstlisting}
 
-\subsection*{pancake12}
+\subsubsection{pancake12}
 \scriptsize \emph{Eingabe: }\verb|19 9 14 1 17 7 15 2 5 16 10 4 3 12 6 19 8 11 18 13|
 \normalsize
 \begin{lstlisting}[numbers=none]
@@ -1167,7 +1176,7 @@ Index |  p
 14, 8, 16, 5, 11, 2, 11, 4, 5, 9
 \end{lstlisting}
 
-\subsection*{pancake13}
+\subsubsection{pancake13}
 \scriptsize \emph{Eingabe: }\verb|20 5 11 12 16 15 17 18 2 7 10 4 8 20 3 1 13 6 19 14 9|
 \normalsize
 \begin{lstlisting}[numbers=none]
