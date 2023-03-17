@@ -309,13 +309,13 @@ wobei das tiefgestellte ,,!'' auf das fakultätsbasierte Zahlensystem hinweist. 
 Da sich mit einer fakultätsbasierten Zahl mit $n$ Ziffern genau $n!$ Zahlen darstellen lassen, können diese Zahlen zum Nummerieren von Permutationen der Länge $n$ verwendet werden. Folgende zwei Arten der Nummerierung sind entscheidend den Beweis der Symmetrie des Pancake-Graphen. Beide bilden eine Bijektion zwischen Permutationen der Länge $n$ und ganzen Zahlen von 0 bis $n! - 1$.
 
 \begin{definition}
-    Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
+    Mit $\mu(p)$ wird der Index der Permutation $p$ in einer \emph{lexikographisch aufsteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\mu(p)_i$ wird die $i$-te Ziffer (beginnend von links) von $\mu(p)$ bezeichnet, wenn $\mu(p)$ im fakultätsbasierten Zahlensystem geschrieben wird.
 \end{definition}
 
 $\mu(p)$ ist auch als Lehmer-Code von $p$ bekannt \cite{factorial}.
 
 \begin{definition}
-    Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von rechts) von $\nu(p)$, geschrieben im fakultätsbasierten Zahlensystem, bezeichnet.
+    Mit $\nu(p)$ wird der Index der Permutation $p$ in einer \emph{kolexikographisch absteigend} sortierten Folge aller Permutationen der Länge $|p|$ bezeichnet. Mit $\nu(p)_i$ wird die $i$-te Ziffer (beginnend von rechts) von $\nu(p)$ bezeichnet, wenn $\nu(p)$ im fakultätsbasierten Zahlensystem geschrieben wird.
 \end{definition}
 
 Bei Sortierung nach kolexikographischer Ordung werden die Permutationen von rechts anstatt von links beginnend verglichen \cite{lexicographic}. Man beachte, dass die Ziffern von $\mu(p)$ von links indexiert werden, wohingegen die Ziffern von $\nu(p)$ von rechts indexiert werden.
@@ -326,7 +326,7 @@ Für $\mu(p)$ und $\nu(p)$ gelten folgende Eigenschaften: $\mu(p)_i$ ist genau d
     Sei $p$ eine Permutation der Länge $n$. $p^*$ bezeichnet die Permutation, sodass $\mu(p) + \mu(p^*) = n! - 1$.
 \end{definition}
 
-$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Aus der Definition folgt direkt, dass $\mu(p)_i + \mu(p^*)_i = n - i - 1$. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Dafür wird allerdings noch folgender Zusammenhang zwischen $\nu(p)$ und $\nu(p^*)$ benötigt.
+$p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. Aus der Definition folgt direkt, dass $\mu(p)_i + \mu(p^*)_i = n - i - 1$. Ist das nicht der Fall, ist es leich nachzuvollziehen, dass $\mu(p) + \mu(p^*)$ nicht $n! - 1$ sein kann. Zum Beweis der Symmetrie von $G_n$ soll gezeigt werden, dass $\mu(\gamma_i p) + \mu(\gamma_i p^*) = (n - 1)! - 1$ ist. Denn daraus folgt direkt, dass $\gamma_i p$ und $\gamma_i p^*$ wieder ein symmetrisches Paar von Permutationen ist. Die Strategie ist, zunächst zu zeigen, dass wenn ein Präfix zweier symmetrisch gelegener Permutationen umgekehrt wird, wieder zwei symmetrisch gelegene Permutationen entstehen. Zunächst wird folgender Zusammenhang zwischen $\nu(p)$ und $\nu(p^*)$ benötigt.
 
 \begin{lemma}
     $\nu(p) + \nu(p^*) = n! - 1$ 
@@ -357,30 +357,21 @@ $p$ und $p^*$ werden auch als symmetrisches Paar von Permutationen bezeichnet. A
     \end{align*}
 \end{proof}
 
+Ähnlich wie für $\mu$, folgt für $\nu$ direkt, dass $\nu(p)_i + \nu(p^*)_i = i$, ansonsten könnte $\nu(p) + \nu(p^*)$ nicht $n! - 1$ sein. (Man beachte die Indexierung von rechts bei $\nu$.)
+
 \begin{lemma}
     Sei $p$ eine Permutation der Länge $n$ und $p_i$ ein Element von $p$ $(0 \le i \le n - 1)$. Für jedes $0 \le j \le n-1, j \ne i$ ist entweder ($p_i < p_j$ und $p^*_i > p^*_j$) oder ($p_i > p_j$ und $p^*_i < p^*_j$).
 \end{lemma}
 
 \begin{proof}
-    In anderen Worten sagt das Lemma, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, die für den Beweis nötig ist.
+    In anderen Worten sagt das Lemma, dass die kleineren, rechts bzw. links gelegenen Elemente von $p_i$ und $p^*_i$ alle an unterschiedlichen Positionen liegen. Für jede Position $j$ ist also entweder $p_i$ und $p_j$ oder $p^*_i$ und $p^*_j$ eine Inversion. Zunächst soll eine etwas schwächere Eigenschaft gezeigt werden, die für den Beweis nötig ist: Es gilt $\mu(p)_i + \mu(p^*)_i = n - i - 1$, und $\mu(p)_i$ zählt die Anzahl an rechts gelegenen, kleineren Elementen. Daher muss die Anzahl an kleineren, rechts gelgenen Elementen von $p_i$ plus der Anzahl an kleineren, rechts gelegenen Elementen von $p^*_i$ genau $n-i-1$ sein. Da $\nu(p)_i + \nu(p^*)_i = i$, und $\nu(p)_i$ die Anzahl links gelegener, größerer Elemente zählt, ist die Anzahl links gelegener, größerer Elementen von $p_i$ plus der Anzahl links gelegener, größerer Elementen von $p^*_i$ genau $i$. Die Anzahl an links gelegenen, größeren und rechts gelegenen, kleineren Elementen von $p_i$ und $p^*_i$ zusammengezählt ist also allein anbhängig von $i$ und unabhängig davon, welche Permutation $p$ ist.
 
-    Aufgrund der Definition von $p^*$ gilt
-    \begin{align*}
-        \mu(p) + \mu(p^*) & = n! - 1                                                                           \\
-                          & =(n - 1) \cdot (n - 1)! + (n - 2) \cdot (n - 2)! + \dots + 1 \cdot 1! + 0 \cdot 0!
-    \end{align*}
-    Die Koeffizienten der Fakultäten in der zweiten Zeile sind genau die Ziffern von $\mu(p) + \mu(p^*)$ in fakultätsbasierter Schreibweise, daher gilt
-    \begin{align*}
-        \mu(p)_i + \mu(p^*)_i = n - i - 1 \quad 0 \le i \le n - 1
-    \end{align*}
-    Ist das nicht der Fall, ist es leicht zu überprüfen, dass $\mu(p) + \mu(p^*) \ne n! - 1$. Daher muss die Anzahl an kleineren, rechts gelgenen Elementen von $p_i$ plus der Anzahl an kleineren, rechts gelegenen Elementen von $p^*_i$ genau $n-i-1$ sein. Mit ähnlicher Begründung kann gezeigt werden, dass $\nu(p)_i + \nu(p^*)_i = i$, folglich ist die Anzahl an größeren, links gelegenen Elementen von $p_i$ plus der Anzahl an größeren, links gelegenen Elementen von $p^*_i$ genau $i$. Die Anzahl an links gelegenen, größeren und rechts gelegenen, kleineren Elementen von $p_i$ und $p^*_i$ zusammengezählt ist also allein anbhängig von $i$ und unabhängig davon, welche Permutation $p$ ist.
-
-    Nun wird der eigentliche Beweis durchgeführt, er funktioniert über unendlichen Abstieg. Man nehme an, dass für irgendein $j_0 > i$ sowohl $p_{j_0} < p_i$, als auch $p^*_{j_0} < p^*_i$ gilt. Der Fall $j_0 < i$ funktioniert ähnlich. Auch der Fall $p_{j_0} > p_i$ und $p^*_{j_0} > p^*_i$ kann mit der gleichen Methode bewiesen werden. Da $\nu(p)_{n - j_0 - 1} + \nu(p^*)_{n - j_0 - 1} = j_0$, muss für irgendein ein $j_1 < j_0$ gelten, dass $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$. Andernfalls wäre es nicht möglich, auf insgesamt $j_0$ links gelegene, größere Elemente von $p_{j_0}$ und $p^*_{j_0}$ zu kommen. Nun gibt es zwei Fälle:
+    Nun wird der eigentliche Beweis durchgeführt, er funktioniert über unendlichen Abstieg. Man nehme an, dass für irgendein $j_0 > i$ sowohl $p_{j_0} < p_i$, als auch $p^*_{j_0} < p^*_i$ gilt. Der Fall $j_0 < i$ funktioniert ähnlich. Auch der Fall $p_{j_0} > p_i$ und $p^*_{j_0} > p^*_i$ kann mit der gleichen Methode bewiesen werden. Da $\nu(p)_{j_0} + \nu(p^*)_{j_0} = j_0$, muss für irgendein ein $j_1 < j_0$ gelten, dass $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$. Andernfalls wäre es nicht möglich, auf insgesamt $j_0$ links gelegene, größere Elemente von $p_{j_0}$ und $p^*_{j_0}$ zu kommen. Nun gibt es zwei Fälle:
     \begin{enumerate}
-        \item $j_1 < i$: Rechts von $j_1$ liegen $i$ und $j_0$, das heißt, es muss zwei Indizes $j_2, j_3 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$, $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Andernfalls wäre es wieder nicht möglich, auf die nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ nötigen, kleineren, rechts gelegenen Elemente zu kommen. Denn bereits zwei der $n - j_1 - 1$ rechts gelegenen Plätze sind sowohl in $p$ als auch in $p^*$ durch größere Zahlen besetzt, aber $n - j_1 - 1$ kleinere Elemente sind erforderlich.
-        \item $i < j_1 < j_0$: Da $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$, muss es rechts von $j_1$ einen Index $j_2 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$. Auch links von $j_1$ muss es einen Index $j_3 < j_1$ geben, sodass $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Erneut wäre andernfalls das Erreichen der nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ rechts gelegenen, kleineren und der $\nu(p)_{n - j_1 - 1} + \nu(p^*)_{n - j_1 - 1} = j_1$ links gelegenen, größeren Elemente unmöglich.
+        \item $j_1 < i$: Rechts von $j_1$ liegen $i$ und $j_0$, das heißt, es muss zwei Indizes $j_2, j_3 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$, $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Andernfalls wäre es nicht möglich, auf die nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ nötigen, kleineren, rechts gelegenen Elemente zu kommen. Denn bereits zwei der $n - j_1 - 1$ rechts gelegenen Plätze sind sowohl in $p$ als auch in $p^*$ durch größere Zahlen besetzt, aber $n - j_1 - 1$ kleinere Elemente sind erforderlich.
+        \item $i < j_1 < j_0$: Da $p_{j_1} < p_{j_0}$ und $p^*_{j_1} < p^*_{j_0}$, muss es rechts von $j_1$ einen Index $j_2 > j_1$ geben, sodass $p_{j_2} < p_{j_1}$ und $p^*_{j_2} < p^*_{j_1}$. Auch links von $j_1$ muss es einen Index $j_3 < j_1$ geben, sodass $p_{j_3} < p_{j_1}$ und $p^*_{j_3} < p^*_{j_1}$. Erneut wäre andernfalls das Erreichen der nötigen $\mu(p)_{j_1} + \mu(p^*)_{j_1} = n - j_1 - 1$ rechts gelegenen, kleineren und der $\nu(p)_{j_1} + \nu(p^*)_{j_1} = j_1$ links gelegenen, größeren Elemente unmöglich.
     \end{enumerate}
-    Man sieht, dass immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen erzeugt werden. Das ist ein Widerspruch, da natürliche Zahlen, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
+    Man sieht, dass immer kleinere Zahlen in $p$ und $p^*$ gezwungen werden. Um diese herum sind aber nur größere Elemente, wodurch wieder kleinere Zahlen zum Ausgleich nötig werden. Dieser Prozess endet niemals, da mit jedem Schritt immer noch kleinere Zahlen erzeugt werden. Das ist ein Widerspruch, da ganze Zahlen größer gleich 0, wie sie in einer Permutation vorkommen, nicht unendlich oft verringert werden können. Das zeigt, dass die Annahme $p_{j_0} < p_i$ und $p^*_{j_0} < p^*_i$ falsch war.
 \end{proof}
 
 Für eine Permutation $p$ und $0 \le i, j, k \le n - 1$ wird nun die Funktion $\eta(p, i, j, k)$ definiert.
@@ -536,24 +527,24 @@ In diesem Abschnitt werden drei Lösungsverfahren für Teilaufgabe a) entwickelt
 Die Vorgängerliste wird durch ein Array von Hashmaps \emph{pre} realisiert. Für jede Permutationslänge wird für eine besuchte Permutation $p$ bei $\mu(p)$ der $\mu$-Wert des Vorgängers von $p$ gespeichert. Bei Index $k - 1$ von \emph{pre} werden Knoten der Länge $k$ verwaltet. Um Speicher zu sparen, wird in der Warteschlange nicht die gesamte Permutation gespeichert, sondern lediglich ihre Länge und ihr $\mu$-Wert, wodurch sie eindeutig bestimmt ist. Wie $\mu(p)$ berechnet und $p$ aus $\mu(p)$ rekonstruiert werden kann, wird später diskutiert. Die Funktion, die eine Permutation $s$ zurückgibt, sodass $\mu(s) = i$ und $|s| = n$, wird im Folgenden einfach mit \textsc{IthPermutation}$(n, i)$ bezeichnet. Der Brute-Force Algorithmus wird mit dem Pseudocode \textsc{MinOperationsBFS} zusammengefasst.
 
 \begin{algorithm}
-    $Q \gets$ Queue containing $(|p|, \mu(p))$ \;
-    $pre \gets$ Array of Hashmaps of size $|p|$ \;
+    $Q \gets$ Queue containing $(\mu(p), |p|)$ \;
+    $\text{pre} \gets$ Array of Hashmaps of size $|p|$ \;
 
-    \While{$Q \ne \{\}$}
+    \While{$Q \ne \emptyset$}
     {
-        $(m, i) \gets $ \textsc{Dequeue}$(Q)$ \;
-        $s \gets$ \textsc{IthPermutation}$(m, i)$ \;
-        \If{$i = 0$}
+        $(\text{index, length}) \gets $ \textsc{Dequeue}$(Q)$ \;
+        $s \gets$ \textsc{IthPermutation}$(\text{length, index})$ \;
+        \If{$\mathrm{index} = 0$}
         {
-            \Return{} \textsc{ReconstructOperations}$(pre, m, i)$ \;
+            \Return{} \textsc{ReconstructOperations}$(\text{pre, length, index})$ \;
         }
 
-        \For{$j \gets 0$ \KwTo $m - 1$}
+        \For{$j \gets 0$ \KwTo $\mathrm{length} - 1$}
         {
-            \If{$\mu(\gamma_j s) \notin pre\mathrm{[m - 2]}$}
+            \If{$\mu(\gamma_j s) \notin \mathrm{pre[length - 2]}$}
             {
-                $pre[m - 2][\mu(\gamma_j s)] \gets i$ \;
-                \textsc{Enqueue}$(Q, (m - 1, \mu(\gamma_j s)))$ \;
+                $\text{pre[length} - 2][\mu(\gamma_j s)] \gets \text{index}$ \;
+                \textsc{Enqueue}$(Q, (\mu(\gamma_j s), \text{length} - 1))$ \;
             }
         }
     }
@@ -564,26 +555,26 @@ Die Vorgängerliste wird durch ein Array von Hashmaps \emph{pre} realisiert. Fü
 Um die durchgeführten $\gamma_i$-Operationen aus \emph{pre} zu rekonstruieren, wird der aus der Breitensuche entstehende Baum von unten nach oben durchlaufen. Auf dem direkten Vorgänger wird jede mögliche $\gamma_i$-Operation ausprobiert, bis die Richtige gefunden ist. Das Verfahren ist im Algorithms \textsc{ReconstructOperations} dargestellt.
 
 \begin{algorithm}
-    $t \gets$ empty Array \;
+    $\text{operations} \gets$ empty Array \;
 
-    \While{$m < n$}{
-        $s \gets$ \textsc{IthPermutation}$(m + 1, pre[m - 1][i])$ \;
+    \While{$\mathrm{length} < n$}{
+        $s \gets$ \textsc{IthPermutation}$(\text{length} + 1, \text{pre}[\text{length} - 1][\text{index}])$ \;
 
-        \For{$j \gets 0$ \KwTo $m + 1$}
+        \For{$j \gets 0$ \KwTo $\mathrm{length} + 1$}
         {
-            \If{$\mu(\gamma_j s) = i$}
+            \If{$\mu(\gamma_j s) = \mathrm{index}$}
             {
-                append $j$ to the front of $t$ \;
+                append $j$ to the front of operations \;
                 \textbf{break} \;
             }
         }
 
-        $i \gets pre[m - 1][i]$ \;
-        $m \gets m + 1$ \;
+        index $\gets$ pre[length - 1][index] \;
+        length $\gets$ length + 1 \;
     }
-    \Return{t} \;
+    \Return{$\mathrm{operations}$} \;
 
-    \caption{\textsc{ReconstructOperations}$(pre, m, i)$}
+    \caption{\textsc{ReconstructOperations}$(\text{pre, length, index})$}
 \end{algorithm}
 
 Nun werden die Algorithmen zur Berechnung von $\mu(p)$ und \textsc{IthPermutation} skizziert. Sie werden von Bonet \cite{permutationranking} übernommen, eine formale Beschreibung ist dort zu finden. In dem Artikel wurden mehrere Verfahren zur Abbildung von Permutationen auf Zahlen und umgekehrt vorgestellt. Einige laufen in linearer Zeit, sind aber auf große, vorher erstellte Datenstrukturen angewiesen oder funktionieren nur bis zu einer bestimmten Länge. Daher werden die zwei Verfahren verwendet, die in $\Theta(n \log n)$ Zeit laufen, ohne zusätzliche Datenstrukturen auskommen, und für jede Permutationslänge verwendet werden können.
@@ -659,20 +650,21 @@ Die untere Schranke kann mit dem Algorithmus \textsc{LowerBound} berechnet werde
     }
 
     $x \gets 1$ \;
-    $incr \gets p_1 > p_0$ \;
+    incr $\gets p_1 > p_0$ \;
 
     \For{$i \gets 2$ \KwTo $n - 1$}
     {
-        \If{$(incr \land (p_{i-1} > p_i)) \lor (\neg incr \land (p_{i-1} < p_i))$}
+        \If{$(\mathrm{incr} \land (p_{i-1} > p_i)) \lor 
+            (\neg \mathrm{incr} \land (p_{i-1} < p_i))$}
         {
-            $incr \gets \neg incr$ \;
+            incr $\gets \neg$incr \;
             $x \gets x + 1$ \;
         }
     }
 
     \Return{$\lfloor (x + 1)/ 3 \rfloor$} \;
 
-    \caption{\textsc{LowerBound}(p)}
+    \caption{\textsc{LowerBound}($p$)}
 \end{algorithm}
 
 \emph{Ein A*-basiertes Verfahren.} Mit der unteren Schranke wird das Brute-Force Verfahren nun in zwei Aspekten verbessert.
@@ -687,41 +679,39 @@ Aus graphentheoretischer Sicht entspricht das einer Ausführung des A*-Algorithm
 \begin{algorithm}
 
     $Q \gets$ Priority Queue containing $(\mu(p), n, \textsc{LowerBound}(p))$ \;
-    $pre \gets$ Array of Hashmaps of size $n$ \;
-    $ubound \gets n$ \;
-    $n'$ \;
+    pre $\gets$ Array of Hashmaps of size $n$ \;
+    ubound $\gets n$ \;
 
-    \While{$Q \ne \{\}$}
+    \While{$Q \ne \emptyset$}
     {
-        $(i, m, b) \gets$ \textsc{Dequeue}$(Q)$ \;
-        \If{$b \ge ubound$}
+        (index, length, lbound) $\gets$ \textsc{Dequeue}$(Q)$ \;
+        \If{$\mathrm{lbound} \ge \mathrm{ubound}$}
         {
             \textbf{break} \;
         }
 
-        \If{$i = 0$}
+        \If{$\mathrm{index} = 0$}
         {
-            \If{$n - m < ubound$}
+            \If{$n - \mathrm{length} < \mathrm{ubound}$}
             {
-                $n' \gets m$ \;
-                $ubound \gets n - m$ \;
+                ubound $\gets n - \text{length}$ \;
             }
             \textbf{continue} \;
         }
 
-        $s \gets$ \textsc{IthPermutation}$(m, i)$ \;
+        $s \gets$ \textsc{IthPermutation}$(\text{length, index})$ \;
 
-        \For{$j \gets 0$ \KwTo $m - 1$}
+        \For{$j \gets 0$ \KwTo $\mathrm{length} - 1$}
         {
-            \If{$\mu(\gamma_j s) \notin pre[m - 2] \land n - m + \text{\textsc{LowerBound}}(\gamma_j s) + 1 < ubound$}
+            \If{$\mu(\gamma_j s) \notin \mathrm{pre[length - 2]} \land n - \mathrm{length} + \text{\textsc{LowerBound}}(\gamma_j s) + 1 < \mathrm{ubound}$}
             {
-                $pre[m - 2][\mu(\gamma_j s)] \gets i$ \;
-                \textsc{Enqueue}$(Q, (\mu(\gamma_j s), m - 1, n - m + \textsc{LowerBound}(\gamma_j s) + 1))$ \;
+                $\text{pre}[\text{length} - 2][\mu(\gamma_j s)] \gets$ index \;
+                \textsc{Enqueue}$(Q, (\mu(\gamma_j s), \text{length} - 1, n - \text{length} + \textsc{LowerBound}(\gamma_j s) + 1))$ \;
             }
         }
     }
 
-    \Return{\textsc{ReconstructOperations}$(pre, n', 0)$} \;
+    \Return{\textsc{ReconstructOperations}$(\mathrm{pre}, n - \mathrm{ubound}, 0)$} \;
 
     \caption{\textsc{MinOperationsA*}(p)}
 \end{algorithm}
@@ -734,36 +724,36 @@ Aus graphentheoretischer Sicht entspricht das einer Ausführung des A*-Algorithm
     {
         \Return{\emph{(empty array, \textbf{true})}} \;
     }
-    \If{$\mu(p) \in vis[n - 1]$}
+    \If{$\mu(p) \in \mathrm{vis}[n - 1]$}
     {
         \Return{\emph{(empty array, \textbf{false})}} \;
     }
 
-    $Q \gets \{(\textsc{LowerBound}(\gamma_i p), i) : 0 \le i \le n - 1\}$ \;
-    $res \gets$ empty array \;
-    $better \gets$ \textbf{false} \;
+    $Q \gets$ Priority Queue containing $\{(\textsc{LowerBound}(\gamma_i p), i) : 0 \le i \le n - 1\}$ \;
+    result $\gets$ empty array \;
+    better $\gets$ \textbf{false} \;
 
-    \While{$Q \ne \{\}$}
+    \While{$Q \ne \emptyset$}
     {
-        $(lbound, i) \gets$ \textsc{Dequeue}$(Q)$ \;
-        \If{$lbound \ge ubound$}
+        (lbound, index) $\gets$ \textsc{Dequeue}$(Q)$ \;
+        \If{$\mathrm{lbound} \ge \mathrm{ubound}$}
         {
             \textbf{break} \;
         }
 
-        (\emph{op}, \emph{found}) $\gets$ \textsc{MinOperationsBnB}$(\gamma_i p, vis, ubound - 1)$ \;
-        \If{$\text{found} \land |op| + 1 < ubound$}
+        (operations, found) $\gets$ \textsc{MinOperationsBnB}$(\gamma_i p, \mathrm{vis}, \mathrm{ubound} - 1)$ \;
+        \If{$\mathrm{found} \land |\mathrm{operations}| + 1 < \mathrm{ubound}$}
         {
-            $ubound \gets |op| + 1$ \;
-            $res \gets op$ with $i$ appended at front \;
-            $better \gets$ \textbf{true} \;
+            ubound $\gets |\text{operations}| + 1$ \;
+            result $\gets$ operations with index appended at front \;
+            better $\gets$ \textbf{true} \;
         }
     }
 
-    $vis[n - 1] \gets vis[n - 1] \cup \mu(p)$ \;
-    \Return{\emph{(}res, better\emph{)}} \;
+    $\text{vis}[n - 1] \gets \text{vis}[n - 1] \cup \mu(p)$ \;
+    \Return{$(\mathrm{result, better})$} \;
 
-    \caption{\textsc{MinOperationsBnB}$(p, vis, ubound)$}
+    \caption{\textsc{MinOperationsBnB}$(p, \text{vis, ubound})$}
 \end{algorithm}
 
 \subsection{Berechnung der PWUE-Zahl}
@@ -772,34 +762,30 @@ Für diese Teilaufgabe wird Dynamische Programmierung verwendet. Man nehme an, e
 \begin{align*}
     A(q) = \min_{0 \le i \le k - 1}  y[\mu(\gamma_i q)] + 1
 \end{align*}
-Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(q)$ für jede Permutation der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor $y$ mit den Werten aller Permutationen von Länge $k$ überschrieben werden kann, müssen alle davon berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Hier kann außerdem die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können die Berechnungen von $\mu$ auf die Hälfte reduziert werden. Für Permutationen der Länge $n$ gilt außerdem, dass $A(p)$ nicht mehr in $z$ gespeichert werden muss, sondern nur ein laufendes Maximum $a_{\max}$ aller $A(p)$ aktualisiert werden muss. Der Ansatz ist im Algorithmus \textsc{Pwue} zusammengefasst. $u$ und $v$ enthalten in der äußeren for-Schleife immer $k!$ bzw. $(k - 1)!$.
+Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(q)$ für jede Permutation der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor $y$ mit den Werten aller Permutationen von Länge $k$ überschrieben werden kann, müssen alle davon berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Hier kann außerdem die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können die Berechnungen von $\mu$ auf die Hälfte reduziert werden. Für Permutationen der Länge $n$ gilt außerdem, dass $A(p)$ nicht mehr in $z$ gespeichert werden muss, sondern nur ein laufendes Maximum $a_{\max}$ aller $A(p)$ aktualisiert werden muss. Der Ansatz ist im Algorithmus \textsc{Pwue} zusammengefasst.
 
 \begin{algorithm}
     $y \gets \{0\}, z \gets$ empty array \;
-    $u \gets 1, v \gets 1$ \;
 
     \For{$k \gets 2$ \KwTo $n - 1$}
     {
-        $u \gets u \cdot k$ \;
-
-        \For{$i \gets 0$ \KwTo $u / 2$}
+        \For{$i \gets 0$ \KwTo $k! / 2$}
         {
             $p \gets$ \textsc{IthPermutation}$(k, i)$ \;
 
             \For{$j \gets 0$ \KwTo $k$} {
                 $l \gets \mu(\gamma_j p)$ \;
                 $z[i] \gets \min(z[i], y[l] + 1)$ \;
-                $z[u - i - 1] \gets \min(z[u - i - 1], y[v - l - 1] + 1)$ \;
+                $z[k! - i - 1] \gets \min(z[k! - i - 1], y[(k-1)! - l - 1] + 1)$ \;
             }
         }
 
         $z[0] \gets 0$ \;
         swap($y, z$) \;
-        $v \gets v \cdot k$ \;
     }
-    $u \gets u \cdot n$ \;
-    $a_{\max} \gets 0$, \emph{example} $\gets 0$ \;
-    \For {$i \gets 0$ \KwTo $u/2$}
+    $a_{\max} \gets 0$ \; 
+    example $\gets 0$ \;
+    \For {$i \gets 0$ \KwTo $n!/2$}
     {
         $a_1 \gets n, a_2 \gets n$ \;
         $p \gets$ \textsc{IthPermutation}$(n, i)$ \;
@@ -807,21 +793,21 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
         {
             $l \gets \mu(\gamma_j p)$ \;
             $a_1 \gets \min(a_1, y[l])$ \;
-            $a_2 \gets \min(a_2, y[v - l - 1])$ \;
+            $a_2 \gets \min(a_2, y[(n - 1)! - l - 1])$ \;
         }
         \If{$a_1 > a_{\max}$}
         {
             $a_{\max} \gets a_1$ \;
-            \emph{example} $\gets i$ \;
+            example $\gets i$ \;
         }
         \If{$a_2 > a_{\max}$}
         {
             $a_{\max} \gets a_2$ \;
-            \emph{example} $\gets u - i - 1$ \;
+            example $\gets u - i - 1$ \;
         }
     }
 
-    \Return{\emph{(}$a_{\max}, example$\emph{)}} \;
+    \Return{\emph{(}$a_{\max}, \mathrm{example}$\emph{)}} \;
 
     \caption{\textsc{Pwue}$(n)$}
 \end{algorithm}

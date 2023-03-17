@@ -111,16 +111,16 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
 // gespeichert und aufsteigend nach unterer Schranke abgearbeitet.
 vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 {
+    size_t const n = p.size();
     priority_queue<Node> q;
-    q.emplace(ind(p), (unsigned)p.size(), get_lbound(p));
+    q.emplace(ind(p), n, get_lbound(p));
 
     // Speichert für jede Permutationslänge die Indizes besuchter
     // Permutationen und deren Vorgänger.
-    vector<unordered_map<size_t, size_t>> pre(p.size());
-    pre[p.size() - 1][ind(p)] = SIZE_MAX;
+    vector<unordered_map<size_t, size_t>> pre(n);
+    pre[n - 1][ind(p)] = SIZE_MAX;
 
-    unsigned ubound = p.size(); // aktuelle Oberschranke
-    size_t n_res = SIZE_MAX;
+    unsigned ubound = n; // aktuelle Oberschranke
 
     while (!q.empty() && q.top().lbound < ubound)
     {
@@ -130,11 +130,8 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
         if (!index)
         {
             // Eine identische Permutation wurde gefunden.
-            if (p.size() - length < ubound)
-            {
-                n_res = length;
-                ubound = p.size() - length;
-            }
+            if (n - length < ubound)
+                ubound = n - length;
             continue;
         }
 
@@ -145,7 +142,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
         for (size_t j = 0; j < length; j++)
         {
             Node const y(ind_gamma(s, j), length - 1,
-                         p.size() - length + get_lbound_gamma(s, j) + 1);
+                         n - length + get_lbound_gamma(s, j) + 1);
 
             if (pre[length - 2].find(y.index) == pre[length - 2].end() &&
                 y.lbound < ubound)
@@ -156,7 +153,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
         }
     }
 
-    return reconstruct_operations(pre, n_res, 0);
+    return reconstruct_operations(pre, n - ubound, 0);
 }
 
 // Bestimmt rekursiv die kürzestmögliche Folge an gamma-Operationen zum
