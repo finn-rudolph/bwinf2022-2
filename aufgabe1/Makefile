@@ -1,12 +1,8 @@
 CC = g++
-CFLAGS = -Wall -g
-obj = aufgabe1.o
+CFLAGS = -Wall -Wextra -O2 -g
 
-all: $(obj)
-	$(CC) $(CFLAGS) $(obj) -lhighs -lz -o aufgabe1
-
-%.o: %.cpp %.hpp
-	$(CC) $(CFLAGS) -c $^
+all:
+	$(CC) $(CFLAGS) aufgabe1.cpp -lhighs -lz -o aufgabe1
 
 clean:
 	rm *.o *.gch aufgabe1

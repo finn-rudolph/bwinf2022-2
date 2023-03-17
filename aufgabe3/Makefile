@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -O3 -march=native -DNDEBUG 
+CFLAGS = -Wall -Wextra -O3 -march=native -DNDEBUG
 obj_a = aufgabe3_a.o util.o
 obj_b = aufgabe3_b.o util.o
 
