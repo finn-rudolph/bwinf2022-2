@@ -9,9 +9,10 @@ size_t factorial(size_t n) { return !n ? 1 : n * factorial(n - 1); }
 size_t ind(vector<unsigned> const &p)
 {
     size_t k = 0; // Der Index von p.
-    size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
+    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size()),
+                 m = 1ULL << lgn;
     unsigned tree[2 * m];
-    memset(tree, 0, 2 * m * sizeof(unsigned));
+    memset(tree, 0, sizeof tree);
 
     for (size_t j = 0; j < p.size(); j++)
     {
@@ -50,9 +51,10 @@ vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
 size_t ind_gamma(vector<unsigned> const &p, size_t i)
 {
     size_t k = 0;
-    size_t const lgn = 32 - __builtin_clz(p.size() - 1), m = 1 << lgn;
+    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size() - 1),
+                 m = 1 << lgn;
     unsigned tree[2 * m];
-    memset(tree, 0, 2 * m * sizeof(unsigned));
+    memset(tree, 0, sizeof tree);
 
     // Die Elemente vor i werden in umgekehrter Reihenfolge bearbeitet. Das j-te
     // Element gamma_i p ist das (i - j - 1)-te Element von p, fuer j < i.
@@ -106,7 +108,8 @@ vector<unsigned> ith_permutation(size_t n, size_t i)
     vector<unsigned> p(n);
     calc_factorial_digits(i, p);
 
-    size_t const lgn = 32 - __builtin_clz(p.size()), m = 1 << lgn;
+    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size()),
+                 m = 1 << lgn;
     unsigned tree[2 * m];
     for (size_t l = 0; l <= lgn; l++) // Initialisiere den Baum mit Einsen.
         for (size_t j = 0; j < (1ULL << l); j++)

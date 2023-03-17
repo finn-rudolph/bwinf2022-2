@@ -33,19 +33,9 @@
 
 \setlist[enumerate]{label*={\arabic*.}}
 
-\definecolor{keyword}{rgb}{0.2, 0.0, 0.7}
-\definecolor{comment}{rgb}{0.5, 0.5, 0.5}
-\definecolor{number}{rgb}{0.5, 0.5, 0.5}
-\definecolor{string}{rgb}{0.3, 0.65, 0.0}
-
 \lstset
 {
-    basicstyle=\footnotesize\ttfamily,
-    keywordstyle=\color{keyword},
-    commentstyle=\color{comment},
-    numberstyle=\tiny\color{number},
-    stringstyle=\color{string},
-    numbers=left,
+    basicstyle=\scriptsize\ttfamily,
     showspaces=false,
     showstringspaces=false
 }
@@ -935,7 +925,7 @@ ist. Folglich beträgt die Laufzeit von \textsc{Pwue} $\Theta(n! \cdot n^2 \log 
 
 \section{Implementierung}
 
-Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \verb|aufgabe3_a.cpp| und \verb|aufgabe3_b.cpp| steht der Quellcode speziell für die Teilaufgaben, in \verb|util.cpp| Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann \verb|make a| bzw. \verb|make b| im Ordner \verb|aufgabe3| ausgeführt werden. Mit nur \verb|make| werden beide Teilaufgaben kompiliert.
+Die zwei Programme für Teilaufgabe a) und b) werden in C$++$ implementiert. In den Dateien \verb|aufgabe3_a.cpp| und \verb|aufgabe3_b.cpp| steht der Quellcode speziell für die Teilaufgaben, in \verb|util.cpp| Funktionen, die von beiden benötigt werden. Zum Kompilieren auf Linux kann \verb|make a| bzw. \verb|make b| im Ordner \verb|aufgabe3| ausgeführt werden. Mit nur \verb|make| werden beide Teilaufgaben kompiliert. Zur Kompilierung wird mindestens C$++$20 benötigt. 
 
 Dem Programm \verb|aufgabe3_a| kann in der Kommandozeile als Argument \verb|--bfs| oder \verb|--bnb| mitgegeben werden, um \textsc{MinOperationsBFS} bzw. \textsc{MinOperationsBnB} als Algorithmus zu verwenden. Standardmäßig wird \textsc{MinOperationsA*} verwendet. Wenn z. B. \textsc{MinOperationsBnB} verwendet werden soll und \verb|pancake0.txt| die Eingabe ist, sieht der Befehl (im Ordner \verb|aufgabe3|) wie folgt aus:
 
@@ -1077,116 +1067,69 @@ Bei $j = n - 1$ gilt offensichtlich $k = \mu(p)$. Die Invariante für die Koeffi
 
 \subsection{Ausgaben}
 
-Das Programm für a) gibt neben den Indizes der nötigen $\gamma_i$-Operationen (0-indexiert) auch den aktuellen Stapel nach jedem Sortierschritt aus. Damit kann man nachvollziehen, dass tatsächlich gültige Wendeoperationen ausgeführt wurden. Aus Platzgründen wird das in der Dokumentation nur für \emph{pancake0} abgedruckt. Die Ausgaben stammen von \textsc{MinOperationsA*}, die anderen zwei Algorithmen geben im Allgemeinen andere, kürzeste Folgen aus. Die Beispiele \emph{pancake8} bis \emph{pancake11} wurden selbst hinzugefügt, wobei versucht wurde, möglichst schwierige Beispiele zu erstellen. ,,Schwierig'' bedeutet nicht unbedingt ein großes $n$, sondern eine hohe Anzahl nötiger Operationen, weil so die Suchtiefe groß wird. Die Beispiele \emph{pancake10} und \emph{pancake11} haben die Form
+Das Programm für a) gibt neben den Indizes der nötigen $\gamma_i$-Operationen (0-indexiert) auch den aktuellen Stapel nach jedem Sortierschritt aus. Damit kann man nachvollziehen, dass tatsächlich gültige Wendeoperationen ausgeführt wurden. Aus Platzgründen wird das in der Dokumentation nur für \emph{pancake0} abgedruckt. Die Ausgaben stammen von \textsc{MinOperationsA*}, die anderen zwei Algorithmen geben im Allgemeinen andere, kürzeste Folgen aus. Die Beispiele \emph{pancake8} bis \emph{pancake13} wurden selbst hinzugefügt, wobei versucht wurde, möglichst schwierige Beispiele zu erstellen. ,,Schwierig'' bedeutet nicht unbedingt ein großes $n$, sondern eine hohe Anzahl nötiger Operationen, weil so die Suchtiefe groß wird. Die Beispiele \emph{pancake10} und \emph{pancake11} haben die Form
 \begin{align*}
     1, n, 2, n - 1, 3, n - 2, 4, n - 3, \dots, \lfloor n/2 \rfloor + 1
 \end{align*}
 die meistens eine hohe Zahl an Operationen benötigt (nicht immer, $n = 14$ ist ein Gegenbeispiel). (Mit einer ,,hohen Zahl'' ist gemeint, dass durch einfaches Ausprobieren einiger Permutationen keine mit höherem $A(p)$ gefunden werden konnte.)
 
 \subsubsection{pancake0}
-\begin{lstlisting}[numbers=none]
-2 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-4, 3
-
-Index |  p
-4     |  3   2   4   5   1   
-3     |  5   4   2   3   
-      |  2   4   5   
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake0.out}
 
 \subsubsection{pancake1}
-\begin{lstlisting}[numbers=none]
-3 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-2, 3, 4
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake1.out}
 
 \subsubsection{pancake2}
-\begin{lstlisting}[numbers=none]
-4 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-1, 3, 3, 4  
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake2.out}
 
 \subsubsection{pancake3}
-\begin{lstlisting}[numbers=none]
-6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-10, 4, 5, 2, 2, 4 
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake3.out}
 
 \subsubsection{pancake4}
-\begin{lstlisting}[numbers=none]
-7 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-3, 10, 9, 7, 3, 0, 6 
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake4.out}
 
 \subsubsection{pancake5}
-\begin{lstlisting}[numbers=none]
-6 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-0, 12, 6, 8, 4, 5  
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake5.out}
 
 \subsubsection{pancake6}
-\begin{lstlisting}[numbers=none]
-8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-6, 9, 8, 3, 0, 4, 8, 0
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake6.out}
 
 \subsubsection{pancake7}
-\begin{lstlisting}[numbers=none]
-8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-2, 2, 5, 9, 3, 10, 9, 5
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake7.out}
 
 \subsubsection{pancake8}
 \scriptsize \emph{Eingabe:} \verb|14 9 2 12 4 11 5 14 6 3 13 8 10 7 1|
 \normalsize
-\begin{lstlisting}
-8 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-12, 4, 8, 6, 4, 7, 6, 6
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake8.out}
 
 \subsubsection{pancake9}
 \scriptsize \emph{Eingabe:} \verb|16 15 2 6 10 4 8 12 1 13 16 9 14 7 5 11 3|
 \normalsize
-\begin{lstlisting}[numbers=none]
-9 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-2, 10, 9, 5, 6, 4, 8, 6, 7
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake9.out}
 
 \subsubsection{pancake10}
 \scriptsize \emph{Eingabe: }\verb|18 1 18 2 17 3 16 4 15 5 14 6 13 7 12 8 11 9 10|
 \normalsize
-\begin{lstlisting}[numbers=none]
-10 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-3, 10, 9, 5, 1, 5, 9, 8, 6, 5
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake10.out}
 
 \subsubsection{pancake11}
 \scriptsize \emph{Eingabe: }\verb|20 1 20 2 19 3 18 4 17 5 16 6 15 7 14 8 13 9 12 10 11|
 \normalsize
-\begin{lstlisting}[numbers=none]
-11 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-1, 8, 11, 9, 1, 7, 13, 3, 7, 6, 8
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake11.out}
 
 \subsubsection{pancake12}
 \scriptsize \emph{Eingabe: }\verb|19 9 14 1 17 7 15 2 5 16 10 4 3 12 6 19 8 11 18 13|
 \normalsize
-\begin{lstlisting}[numbers=none]
-10 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-14, 8, 16, 5, 11, 2, 11, 4, 5, 9
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake12.out}
 
 \subsubsection{pancake13}
 \scriptsize \emph{Eingabe: }\verb|20 5 11 12 16 15 17 18 2 7 10 4 8 20 3 1 13 6 19 14 9|
 \normalsize
-\begin{lstlisting}[numbers=none]
-9 Operationen notwendig. Dazu hinter folgenden Indizes wenden:
-12, 1, 17, 9, 7, 11, 13, 6, 28
-\end{lstlisting}
+\lstinputlisting{aufgabe3/ausgaben/pancake13.out}
 
 \subsection{Vergleich der drei Algorithmen}
 
-Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jeweils die Laufzeit (in s) sowie die Anzahl besuchter Permutationen gemessen. Diese Zahl wurde durch \emph{pre} bzw. \emph{vis} erhalten. Der verwendete Laptop hat einen AMD Ryzen 7 3700U (Mobile) Prozessor und ca. 5,7 GB verfügbaren Arbeitsspeicher.
+Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jeweils die Laufzeit (in s) sowie die Anzahl besuchter Permutationen gemessen. Diese Zahl wurde durch Zählen der Einträge in \emph{pre} bzw. \emph{vis} erhalten. Der verwendete PC hat einen AMD Ryzen 7 3700U (Mobile) Prozessor und ca. 5,7 GB verfügbaren Arbeitsspeicher.
 
 \begin{table}[H]
     \centering
@@ -1214,7 +1157,7 @@ Die drei Verfahren für Aufgabe a) wurden auf alle Beispiele angewandt und jewei
     \caption{Laufzeit (in s) und Anzahl besuchter Knoten der drei Algorithmen für Teilaufgabe a)}
 \end{table}
 
-Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen deutlich verringern können. Sie ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} und \emph{pancake13} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei \emph{pancake11} bei ca. 5 GB und für \emph{pancake13} bei ca. 1 GB.
+Für die kleinen Beispiele ist die Laufzeit wenig aussagekräftig, hier sieht man aber bereits, dass die zwei verbesserten Verfahren die Anzahl besuchter Permutationen verringern. Diese ist in allein Beispielen kleiner gleich der von \textsc{MinOperationsBFS}. Für größere Beispiele wirkt sich das auch positiv auf die Laufzeit aus. Zwischen \textsc{MinOperationsA*} und \textsc{MinOperationsBnB} lässt sich kein klarer Gewinner ausmachen. \textsc{MinOperationsA*} ist meistens schneller, obwohl manchmal mehr Knoten besucht wurden, was möglicherweise am zuätzlichen Aufwand der Rekursion von \textsc{MinOperationsBnB} liegt. \emph{pancake11} und \emph{pancake13} konnte von \textsc{MinOperationsBFS} aufgrund des zu hohen Speicherverbrauchs nicht gelöst werden. Der Speicherverbrauch der anderen zwei Verfahren lag bei \emph{pancake11} bei ca. 5 GB und für \emph{pancake13} bei ca. 1 GB.
 
 \subsection{Werte von $P(n)$}
 
