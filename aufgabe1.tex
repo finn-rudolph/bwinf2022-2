@@ -177,6 +177,33 @@ Die Anzahl an Bedingungen aus (5) beträgt $2^n - 1$, da für jede nichtleere Te
 
 In \cite{tsp-formulations} finden sich noch viele andere Möglichkeiten zur Formulierung von Subtour Elimination Constraints für das TSP, von denen die meisten auch auf dieses Problem übertragbar sind. Da viele von diesen für das TSP sowohl theoretisch als auch praktisch effizienter als die DFJ-Formulierung sind, soll begründet werden, warum sie dennoch gewählt wurde. Durch die Einschränkung des Abbiegewinkels werden bereits einige Subtouren eliminiert, z. B. alle mit 2 oder 3 Knoten, alle mit 4 Knoten, die kein Rechteck bilden, und allgemein alle, die mindestens einen Abbiegewinkel größer $\pi / 2$ haben. Für all diese Subtouren sind SECs redundant, weshalb bei diesem Problem meistens schon nach wenigen Iterationen des beschriebenen Verfahrens genügend SECs vorhanden sind. Bei anderen Formulierungen wird dagegen die Komplexität des IP durch zusätzliche Variablen erhöht, da für jede andere Formulierung mindestens $\Theta(n^2)$ zusätzliche Variablen nötig sind. Mit der DFJ-Formulierung kann die Laufzeit also insgesamt geringer sein, da in jeder Iteration ein deutlich kleineres IP gelöst werden muss. Diese Begründung konnte experimentell unterstützt werden, siehe den Abschnitt Beispiele.
 
+\section{Beweis der NP-Schwere}
+
+Von dem nah verwandten Problem, einen Hamiltonzyklus mit einer Einschränkung des  Abbiegewinkels zu finden, wurde die NP-Schwere von Dumitrescu und Jiang \cite{nphard} bereits bewiesen. Dieses Problem wird dort ,,Angle-bounded Hamiltonian Tour'' genannt, analog wird das hier vorliegende ,,Angle-bounded Hamiltonian Path'' genannt. Der Beweis für Hamiltonpfade sieht ähnlich aus und wird hier auf Basis des Beweises in \cite{nphard} gezeigt. In \cite{nphard} wurde das NP-schwere Problem, eine Menge an Punkten im zweidimensionalen Raum mit möglichst wenigen Geraden abzudecken (Covering points by lines) auf Angle-bounded Hamiltonian Tour reduziert. Sei $P$ die Punktemenge der Instanz von Covering Points by Lines. Zunächst wird eine Gerade durch jedes Paar an unterschiedlichen Punkten in $P$ gelegt, wobei man annehmen kann, dass keine Gerade vertikal verläuft, da man die Punkte einfach leicht rotieren könnte. Diese Menge an Geraden wird $L_P$ genannt. Anschließend wird eine Kurve $\gamma$ wie in Abbildung 1 zu sehen um $P$ herumgelegt, wobei für jede Gerade aus $L_P$ ein kleines Segment auf der linken und rechten Seite eingefügt wird.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=250pt]{grafiken/wenigerkrumm-np.png}
+    \caption{Konstruktion der Kurve $\gamma$ (übernommen von \cite{nphard}).}
+\end{figure}
+
+Anschließend wird jede Ecke in $\gamma$ abgerundet, indem $2|L_p| + 2(|L_P| + 1) + 1$ neue Punkte auf einem Kreissegment eingefügt werden, wie in Abbildung 2 zu sehen. Daneben werden $n$ Punkte auf jedem Liniensegment von $\gamma$ eingefügt (nicht ausgefüllt in Abbildung 2).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=250pt]{grafiken/wenigerkrumm-np2.png}
+    \caption{Abrundung der Ecken von $\gamma$ (übernommen von \cite{nphard}).}
+\end{figure}
+
+ Die Punktemenge $Q$, die Eingabe für Angle-bounded Hamilton Path ist, besteht aus $P$, den Punkten auf den Kreissegmenten und den jeweils $n$ Punkten auf den Liniensegmenten. In \cite{nphard} wurde für $Q$ folgendes bewiesen.
+
+\begin{enumerate}
+    \item Wenn es $k$ Geraden gibt ($k \le n)$, die die Punkte aus $P$ abdecken, dann gibt es einen Hamiltonzyklus in $Q$ mit Abbiegewinkeln kleiner gleich $(k + 2)\theta$.
+    \item Wenn es einen Hamiltonzyklus in $Q$ mit Abbiegewinkeln kleiner gleich $k\theta$ gibt ($k \le n)$, dann gibt es $k$ Geraden, die alle Punkte in $P$ abdecken. 
+\end{enumerate}
+
+$\theta$ ist dabei definiert als $\pi / t$, wobei $t = \lceil 9 n^2 \pi / \alpha \rceil$, und $\alpha = \alpha_P / n^\mu$. $\alpha_P$ ist der kleinste Winkel zwischen zwei unterschiedlichen Geraden aus $L_P$. Die genaue Definition ist aber nicht wichtig für die Anpassung des Beweises für Hamiltonpfade. Aus 1. folgt direkt, dass es einen Hamiltonpfad mit Abbiegewinkeln kleiner gleich $(k + 2)\theta$ in $Q$ gibt, denn eine Kante kann einfach weggelassen werden. Bezüglich 2. wurde in \cite{nphard} der Hamiltonzyklus in $Q$ in mehrere Runden aufgeteilt, wobei eine Runde aus einigen Punkten im Halbkreis von $a$ zu $b$ (siehe Abbildung 1), und einigen Punkten auf der rechten und linken Seite besteht. In einer Runde kann der Zyklus maximal eine Abkürzung über Punkte aus $P$ verwenden, und die dabei besuchten Punkte aus $P$ müssen immer kolinear sein. Andernfalls würde die Einschränkung des Abbiegewinkels nicht eingehalten werden \cite{nphard}. Anschließend wird in \cite{nphard} gezeigt, dass es maximal $k$ Runden gibt, woraus direkt folgt, dass sich die Punkte aus $P$ mit $k$ Geraden abdecken lassen, da jede Abkürzung einer Geraden zugeordnet werden kann und jeder Punkt in $P$ besucht wird. Auch einen Hamiltonpfad kann man in Runden aufteilen, und der Beweis, dass es in ihm höchstens $k$ Runden gibt, ist identisch zu dem für den Hamiltonzyklus in \cite{nphard}. Nun gibt es zwei Fälle: Keiner der Endpunkte des Hamiltonpfads liegt in $P$ oder mindestens einer. Im ersten Fall folgt, dass es $k$ Geraden gibt, die die Punkte von $P$ abdecken, da jeder Runde maximal eine Gerade zugeordnet werden kann. Im zweiten Fall kann der Pfad in der ersten bzw. letzten Runde zweimal Punkte aus $P$ besuchen, wie in Abbildung 3 veranschaulicht. Es folgt, dass es $k + 1$ Geraden gibt, die die Punkte aus $P$ abdecken. Das zeigt, dass Angle-bounded Hamiltonian Path NP-schwer ist.
+
 \section{Laufzeitanalyse}
 
 Um die Laufzeit des Ansatzes zu charakterisieren, soll die Größe des IP in Abhängigkeit von $n$, der Anzahl an Knoten analysiert werden. Da es für jedes unterschiedliche Paar an Knoten eine Variable $x_{ij}$ gibt, ist die Anzahl an Variablen $\binom n 2 = n(n - 1) / 2 = \Theta(n^2)$. Im Folgenden wird die Anzahl an Bedingungen in den Gleichungen (2) - (6) analysiert.
@@ -411,21 +438,26 @@ Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
 
 \inputminted{c++}{aufgabe1/aufgabe1.cpp}
 
-\begin{thebibliography}{1}
+\begin{thebibliography}{4}
     \bibitem{tsp-formulations}
     Öncan, T., Altinel, I. K., Laporte, G. (2009).
     A comparative analysis of several asymmetric traveling salesman problem formulations. \\
-    https://mate.unipv.it/\textasciitilde{}gualandi/famo2conti/papers/tsp\_formulations.pdf
+    \href{https://mate.unipv.it/gualandi/famo2conti/papers/tsp_formulations.pdf}{https://mate.unipv.it/\textasciitilde{}gualandi/famo2conti/papers/tsp\_formulations.pdf}
     
     \bibitem{highs}
-    Huangfu, Q., Hall, J. A. J. (2018)
+    Huangfu, Q., Hall, J. A. J. (2018).
     Parallelizing the dual revised simplex method. \\
-    https://www.maths.ed.ac.uk/hall/HuHa13/ \\
-    https://github.com/ERGO-Code/HiGHS
+    \href{https://www.maths.ed.ac.uk/hall/HuHa13/}{https://www.maths.ed.ac.uk/hall/HuHa13/} \\
+    \href{https://github.com/ERGO-Code/HiGHS}{https://github.com/ERGO-Code/HiGHS}
 
     \bibitem{tsplib}
     Ruprecht-Karls Universität Heidelberg. TSPLIB \\
-    http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/ 
+    \href{http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/}{http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/}
+
+    \bibitem{nphard}
+    Dumitrescu, A., Jiang, M. (2018).
+    On the approximability of covering points by lines and related problems. \\
+    \href{https://arxiv.org/pdf/1312.2549.pdf}{https://arxiv.org/pdf/1312.2549.pdf}
 \end{thebibliography}
 
 \section*{Anhang}
