@@ -823,6 +823,8 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man $A(
 
 \section{Laufzeitanalyse}
 
+Für die Berechnung von Fakultäten wird im Folgenden stets eine konstante Laufzeit angenommen, da diese entweder im Voraus berechnet werden können, oder so zwischengespeichert werden können, dass das asymptotische Laufzeitverhalten unverändert bleibt.
+
 \subsection{Teilaufgabe a)}
 
 Zunächst wird die Laufzeit von \textsc{ReconstructOperations} bestimmt. Die while-Schleife wird maximal $n - m$ Mal durchgeführt, da $m$ in jeder Iteration um 1 erhöht wird. Die for-Schleife durchläuft jeweils $m + 2$ Iterationen und in jeder wird einmal $\mu(s)$ berechnet, wobei $|s| = m+1$ gilt. Im schlechtesten Fall, wenn $m = 1$, kann die Laufzeit wie folgt beschränkt werden. ($c$ ist eine positive Konstante.)
@@ -852,43 +854,51 @@ Um die Laufzeit der drei Algorithmen für Teilaufgabe a) begrenzen zu können, w
 
 Dass die Oberschranke nicht schlecht ist, zeigt das Beispiel $n = 3$. Denn $P(3) = 2$, und die Oberschranke für 3 wäre ebensfalls 2.
 
-Die Gesamtlaufzeit von \textsc{MinOperationsBFS} wird durch die Anzahl besuchter Knoten auf jeder Ebene und die Zeit pro Knoten abgeschätzt. Von Länge $n$ wird genau eine Permutation, $p$, besucht. Davon ausgehend gibt es $n$ Möglichkeiten für eine $\gamma_i$-Operation, also werden maximal $n$ Permutationen der Länge $n - 1$ besucht. Von diesen werden durch $\gamma_i$-Operationen maximal $n(n-1)$ Permutationen der Länge $n - 2$ erreicht. Diese Argumentation lässt sich rekursiv fortführen, es werden also maximal $n! / k!$ Knoten der Länge $k$ besucht. Für kleine $k$ ist $n! / k!$ jedoch größer als $k!$, da es aber nur $k!$ Permutationen der Länge $k$ gibt und kein Knoten doppelt besucht wird, kann die Anzahl besuchter Knoten durch $\min(n! / k!, k!)$ beschränkt werden. Mit Lemma 4 kann $k$ nach unten durch $\lfloor n/3 \rfloor$ begrenzt werden. Summiert man für alle $k$ von $\lfloor n/3 \rfloor$ bis $n$ auf, ergibt sich folgende Oberschranke für die Anzahl besuchter Knoten. Zur Auswertung der Fakultät wird die Stirlingformel verwendet.
+Die Gesamtlaufzeit von \textsc{MinOperationsBFS} wird durch die Anzahl besuchter Knoten auf jeder Ebene und die Zeit pro Knoten abgeschätzt. Von Länge $n$ wird genau eine Permutation, $p$, besucht. Davon ausgehend gibt es $n$ Möglichkeiten für eine $\gamma_i$-Operation, also werden maximal $n$ Permutationen der Länge $n - 1$ besucht. Von diesen werden durch $\gamma_i$-Operationen maximal $n(n-1)$ Permutationen der Länge $n - 2$ erreicht. Diese Argumentation lässt sich rekursiv fortführen, es werden also maximal $n! / k!$ Knoten der Länge $k$ besucht. Für kleine $k$ ist $n! / k!$ jedoch größer als $k!$, da es aber nur $k!$ Permutationen der Länge $k$ gibt und kein Knoten doppelt besucht wird, kann die Anzahl besuchter Knoten durch $\min(n! / k!, k!)$ beschränkt werden. Mit Lemma 4 kann $k$ nach unten durch $\lfloor n/3 \rfloor$ begrenzt werden. Summiert man für alle $k$ von $\lfloor n/3 \rfloor$ bis $n$ auf, ergibt sich folgende Oberschranke für die Anzahl besuchter Knoten. Zur Auswertung der Fakultät wird die Stirlingformel verwendet. $c$ steht für eine positive Konstante.
 \begin{align*}
     \sum_{k = \lfloor n/3 \rfloor}^n \min \bigg ( \frac {n!}{k!}, k! \bigg )
-     & \le \sum_{k = \lfloor n/3 \rfloor}^n  \frac {n!} {(n/3)!}
-    \\ & \le n \cdot \frac {n!} {(n/3)!}
-    \\ & \approx n \cdot
+       & \le \sum_{k = \lfloor n/3 \rfloor}^n \frac {n!} {k!} 
+    \\ & \le \frac {n!} {(n/3)!} + \sum_{k = \lfloor n/3 \rfloor + 1}^n \frac {n!} {(n / 3 + 1)!}
+    \\ & = \frac {n!} {(n/3)!} + \sum_{k = \lfloor n/3 \rfloor + 1}^n \frac {n!} {(n/3)! \cdot (n / 3 + 1)}
+    \\ & \le \frac {n!} {(n/3)!} + n \cdot \frac {n!} {(n/3)! \cdot (n/3 + 1)}
+    \\ & = c \cdot \frac {n!} {(n/3)!}
+    \\ & \approx c \cdot
     \frac {\sqrt{2 \pi n} \cdot (n/e)^n} {\sqrt{2 \pi n/3} \cdot (n/3e)^{n/3}}
-    \\ & = n \cdot
+    \\ & = c \cdot
     \frac {3^{n/3} \cdot (n/e)^n } {\sqrt{1/3} \cdot (n/e)^{n/3}}
-    \\ & = n \cdot \sqrt 3 \cdot 3^{n/3} \cdot (n/e)^{2n/3}
+    \\ & = c \cdot \sqrt 3 \cdot 3^{n/3} \cdot (n/e)^{2n/3}
 \end{align*}
 
-Die Anzahl besuchter Knoten ist also $O(n \cdot 3^{n/3} \cdot (n/e)^{2n/3})$. Beim Einsetzen des kleinstmöglichen $k = \lfloor n/3 \rfloor$ in der ersten Zeile wurde die Abrundungsfunktion der Einfachheit halber weggelassen, am asymptotischen Verhalten ändert das jedoch nichts. Von der $\min$-Funktion wurde das erste Argument gewählt, da eine Wahl des zweiten Arguments nur zu der schwächeren Schranke von $O(n!)$ geführt hätte.
+Die Anzahl besuchter Knoten ist also $O(3^{n/3} \cdot (n/e)^{2n/3})$. Beim Einsetzen des kleinstmöglichen $k = \lfloor n/3 \rfloor$ in der ersten Zeile wurde die Abrundungsfunktion der Einfachheit halber weggelassen, am asymptotischen Verhalten ändert das jedoch nichts. Von der $\min$-Funktion wurde das erste Argument gewählt, da eine Wahl des zweiten Arguments nur zu der schwächeren Schranke von $O(n!)$ geführt hätte.
 
 Für einen Knoten der Länge $k$ ergeben sich $\Theta(k^2 \log k)$ Schritte, denn in der for-Schleife wird für jeden der $k$ Nachfolger einmal $\mu$ berechnet. $\gamma_i$ kann einfach in $\Theta(k)$ Schritten berechnet werden und ist damit nicht relevant. Mit der Oberschranke für die Anzahl besuchter Knoten lässt sich die Worst Case-Laufzeit von \textsc{MinOperationsBFS} durch
 \begin{align*}
-    O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^3 \log n)
+    O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n + n^3 \log n)
 \end{align*}
-beschränken. Da die Laufzeit exponentiell steigt, ist der Beitrag von $O(n^3 \log n)$ von \textsc{ReconstructOperations} nicht relevant.
+beschränken. Der Term $O(n^3 \log n)$ stammt von \textsc{ReconstructOperations}.
 
-Für \textsc{MinOperationsA*} bleibt die Laufzeit grundsätzlich gleich, da im schlechtesten Fall dennoch alle Knoten besucht werden. Für einen Knoten kommt lediglich ein logarithmischer Faktor vom Einfügen in die Prioritätswarteschlange hinzu. Die Größe der Prioritätswarteschlange kann mit der Anzahl besuchter Knoten, $O(3^n \cdot n)$ begrenzt werden. Folglich ist die Worst-Case Zeitkomplexität von \textsc{MinOperationsA*}
+Für \textsc{MinOperationsA*} bleibt die Laufzeit grundsätzlich gleich, da im schlechtesten Fall dennoch alle Knoten besucht werden. Für einen Knoten kommt lediglich ein logarithmischer Faktor vom Einfügen in die Prioritätswarteschlange hinzu. Die Größe der Prioritätswarteschlange kann mit der Anzahl besuchter Knoten, $O(3^{n/3} \cdot (n/3)^{2n/3})$ begrenzt werden. Folglich ist die Worst-Case Zeitkomplexität von \textsc{MinOperationsA*} 
 \begin{align*}
-    O(3^n \cdot n^3 \log n) \cdot \log O(3^n \cdot n)
-     & = O(3^n \cdot n^3 \log n) \cdot O(\log (3^n \cdot n)) \\
-     & = O(3^n \cdot n^3 \log n) \cdot O(n \log n)           \\
-     & = O(3^n \cdot n^4 \log^2 n)
+    O(3^{n/3} \cdot (n/e)^{2n/3} & \cdot n^2 \log n) \cdot \log O(3^{n/3} \cdot (n/e)^{2n/3}) \\
+     & = O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n) \cdot 
+     O(\log (3^{n/3} \cdot (n/e)^{2n/3})) \\
+     & = O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n) \cdot O(\log (3^{n/3}) + \log((n/e)^{2n/3})) \\
+     & = O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n) \cdot O(n/3 \cdot \log (3) + 2n/3 \cdot \log(n/e)) \\
+     & = O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n) \cdot O(n \log n) \\
+     & = O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^3 \log^2 n)
 \end{align*}
 
-Die Worst Case-Laufzeit von \textsc{MinOperationsBnB} pro besuchter Permutation der Länge $k$ beträgt $O(k^2 \log k)$. Im Pseudocode ist das nicht direkt ersichtlich, denn pro Aufruf von \textsc{MinOperationsBnB} fällt ohne Beachtung der rekursiven Aufrufe nur eine Laufzeit von $O(k^2)$ an. Die Anzahl an besuchten Permutationen entspricht aber nicht der Anzahl an Aufrufen von \textsc{MinOperationsBnB}. Wenn eine Permutation bereits besucht wurde, geschieht trotzdem ein rekursiver Aufruf, der dann nach einer Berechnung von $\mu(p)$ und einer Befragung von \emph{vis} beendet wird. Im Worst Case beträgt die Laufzeit von \textsc{MinOperationsBnB} also
+\textsc{ReconstructOperations} kann hier außer Acht gelassen werden, da $n^3 \log n$ bereits als Faktor vorhanden ist.
+
+Die Worst Case-Laufzeit von \textsc{MinOperationsBnB} pro besuchter Permutation der Länge $k$ beträgt $O(k^2 \log k)$. Im Pseudocode ist das nicht direkt ersichtlich, denn pro Aufruf von \textsc{MinOperationsBnB} fällt ohne Beachtung der rekursiven Aufrufe nur eine Laufzeit von $O(k^2)$ an. Die Anzahl an besuchten Permutationen entspricht aber nicht der Anzahl an Aufrufen von \textsc{MinOperationsBnB}. Wenn eine Permutation bereits besucht wurde, geschieht dennoch ein rekursiver Aufruf, der dann nach einer Berechnung von $\mu(p)$ und einer Befragung von \emph{vis} beendet wird. Man muss für einen besuchten Knoten also die $O(n)$ Berechnungen von $\mu(p)$ auf der folgenden Rekursionsebene mit jeweils $O(n \log n)$ Kosten einberechnen. Im Worst Case beträgt die Laufzeit von \textsc{MinOperationsBnB} also
 \begin{align*}
-    O(3^n \cdot n^3 \log n)
+    O(3^{n/3} \cdot (n/e)^{2n/3} \cdot n^2 \log n + n^3 \log n)
 \end{align*}
 
 Aussagen über die Average Case-Laufzeit würden eine Formel für das durchschnittliche $A(p)$ erfordern. Nimmt man an, dass es immer in einem konstanten Verhältnis zu $n$ steht, das heißt $A(p)$ ist im Durchschnitt $rn$, für $r \le 2/3$, bleibt auch die Average Case Laufzeit exponentiell, denn
 \begin{align*}
     \sum_{k = \lfloor (1 - r)n \rfloor}^n \min \bigg ( \frac {n!}{k!}, k! \bigg ) 
-    = O((1 - r)^{-n} \cdot n) 
+    = O((1 - r)^{-n(1 - r)} \cdot (n/e)^{rn}) 
 \end{align*}
 nach der gleichen Begründung wie oben.
 
