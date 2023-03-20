@@ -2,6 +2,8 @@
 #include "util.hpp"
 using namespace std;
 
+constexpr size_t TwoOptIterationLimit = 400000;
+
 struct Node
 {
     Node *adj[2];
@@ -22,12 +24,15 @@ double optimize_path(vector<complex<double>> &path)
     for (size_t i = 0; i + 1 < nodes.size(); i++)
         q.emplace(&nodes[i], 0), q.emplace(&nodes[i + 1], 1);
 
-    while (!q.empty())
+    size_t iteration_count = 0;
+    while (!q.empty() && iteration_count < TwoOptIterationLimit)
     {
         auto const [w, direction] = q.front();
         q.pop();
         if (!w->adj[!direction])
             continue;
+
+        iteration_count++;
         Node *v = w->adj[!direction], *u = v->adj[!direction],
              *x = w->adj[direction], *a = w, *b = x;
 
