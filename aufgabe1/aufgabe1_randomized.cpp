@@ -26,6 +26,8 @@ double optimize_path(vector<complex<double>> &path)
     {
         auto const [w, direction] = q.front();
         q.pop();
+        if (!w->adj[!direction])
+            continue;
         Node *v = w->adj[!direction], *u = v->adj[!direction],
              *x = w->adj[direction], *a = w, *b = x;
 
@@ -35,15 +37,16 @@ double optimize_path(vector<complex<double>> &path)
 
             if ((!u || dot_product(v->p - u->p, b->p - v->p) >= 0) &&
                 dot_product(b->p - v->p, a->p - b->p) >= 0 &&
-                dot_product(w->p - x->p, c->p - w->p) &&
+                dot_product(w->p - x->p, c->p - w->p) >= 0 &&
                 (!d || dot_product(c->p - w->p, d->p - c->p) >= 0) &&
                 abs(v->p - w->p) + abs(b->p - c->p) >
                     abs(v->p - b->p) + abs(w->p - c->p))
             {
-                while (x != b)
+                Node *z = x;
+                while (z != b)
                 {
-                    swap(x->adj[0], x->adj[1]);
-                    x = x->adj[!direction];
+                    swap(z->adj[0], z->adj[1]);
+                    z = z->adj[!direction];
                 }
                 v->adj[direction] = b;
                 b->adj[direction] = a;
