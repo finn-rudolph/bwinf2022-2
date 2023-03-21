@@ -6,12 +6,14 @@ constexpr size_t TwoOptIterationLimit = 400000;
 
 struct Node
 {
-    Node *adj[2];
+    Node *adj[2]; // 0: Vorgänger, 1: Nachfolger.
     complex<double> p;
 
     Node() { adj[0] = adj[1] = nullptr; }
 };
 
+// Optimiert den gegebenen Hamiltonpfad in-place mit der 2-opt Heuristik, ohne
+// Abbiegewinkel > pi / 2 zu erzeugen. Gibt die neue Länge zurück.
 double optimize_path(vector<complex<double>> &path)
 {
     vector<Node> nodes(path.size());
@@ -40,6 +42,8 @@ double optimize_path(vector<complex<double>> &path)
         {
             Node *c = b->adj[direction], *d = c->adj[direction];
 
+            // Überprüfe, ob die 4 neuen Abbiegewinkel (uvb, vba, xwc, wcd) alle
+            // <= pi / 2 sind.
             if ((!u || dot_product(v->p - u->p, b->p - v->p) >= 0) &&
                 dot_product(b->p - v->p, a->p - b->p) >= 0 &&
                 dot_product(w->p - x->p, c->p - w->p) >= 0 &&
@@ -47,42 +51,42 @@ double optimize_path(vector<complex<double>> &path)
                 abs(v->p - w->p) + abs(b->p - c->p) >
                     abs(v->p - b->p) + abs(w->p - c->p))
             {
-                Node *z = x;
-                while (z != b)
+                Node *z = x;   // Vertausche die Nachbarn aller Knoten von x
+                while (z != b) // bis a.
                 {
                     swap(z->adj[0], z->adj[1]);
                     z = z->adj[!direction];
                 }
-                v->adj[direction] = b;
-                b->adj[direction] = a;
+                v->adj[direction] = b; // Entferne die Kanten {v, w}, {b, c}
+                b->adj[direction] = a; // und füge {v, b}, {w, c} ein.
                 b->adj[!direction] = v;
                 w->adj[!direction] = x;
                 w->adj[direction] = c;
                 c->adj[!direction] = w;
-                q.emplace(v, !direction);
-                q.emplace(b, direction);
-                q.emplace(w, !direction);
+                q.emplace(v, !direction); // Die neu eingefügten Kanten können
+                q.emplace(b, direction);  // erneut mit anderen vertauscht
+                q.emplace(w, !direction); // werden.
                 q.emplace(c, direction);
                 break;
             }
-            a = a->adj[direction];
+            a = a->adj[direction]; // Gehe zur nächsten Kante im Pfad.
             b = b->adj[direction];
         }
     }
 
     Node *x = nullptr;
     bool direction;
-    for (size_t i = 0; i < nodes.size(); i++)
-        if (!nodes[i].adj[0] || !nodes[i].adj[1])
+    for (size_t i = 0; i < nodes.size(); i++)     // Find den Anfang des Pfads
+        if (!nodes[i].adj[0] || !nodes[i].adj[1]) // (Knoten mit Grad 1).
         {
             x = &nodes[i];
-            direction = nodes[i].adj[1];
+            direction = nodes[i].adj[1]; // Lege die Laufrichtung fest.
             break;
         }
     path.clear();
     double new_length = 0.0;
-    while (x)
-    {
+    while (x) // Schreibe die neue Knotenfolge in path und berechne die neue
+    {         // Länge.
         path.push_back(x->p);
         x = x->adj[direction];
         if (x)
@@ -115,8 +119,8 @@ pair<vector<complex<double>>, double> obtuse_path(
 
     while (path.size() < n)
     {
-        if (no_added_node > n / 2)
-            restart_search();
+        if (no_added_node > n / 2) // Zu große Anzahl aufeinanderfolgener
+            restart_search();      // Iterationen ohne Hinzufügen eines Knotens.
 
         size_t const u = extending_back ? path.back() : path.front();
 
@@ -125,8 +129,8 @@ pair<vector<complex<double>>, double> obtuse_path(
             if (!visited[v])
             {
                 bool can_extend = path.size() < 2;
-                if (!can_extend)
-                {
+                if (!can_extend) // Überprüfe, ob eine Erweiterung des Pfads mit
+                {                // v zu einem Abbiegewinkel <= pi / 2 führt.
                     size_t const pre = extending_back ? *++path.crbegin()
                                                       : *++path.cbegin();
                     can_extend = dot_product(z[u] - z[pre], z[v] - z[u]) >= 0;
@@ -134,8 +138,8 @@ pair<vector<complex<double>>, double> obtuse_path(
                 if (can_extend)
                     successors.push_back(v);
             }
-        if (!successors.empty())
-        {
+        if (!successors.empty()) // Wähle einen zufälligen Knoten aus, um den
+        {                        // Pfad zu erweitern.
             size_t const v = successors[rand() % successors.size()];
             if (extending_back)
                 path.push_back(v);
@@ -154,8 +158,8 @@ pair<vector<complex<double>>, double> obtuse_path(
 
         if (front_is_dead_end && back_is_dead_end)
         {
-            // Laufe den Pfad vom Ende zurück und versuche ein Suffix
-            // umzukehren.
+            // Laufe den Pfad vom Ende zurück und finde alle Suffixe, die
+            // umgekehrt werden können.
             vector<deque<size_t>::reverse_iterator> rev_points;
             auto it = path.rbegin() + 2;
             size_t const last = *path.rbegin(), scn_last = *++path.rbegin();
@@ -169,15 +173,13 @@ pair<vector<complex<double>>, double> obtuse_path(
                 }
                 it++;
             }
-            if (!rev_points.empty())
-            {
+            if (!rev_points.empty()) // Drehe ein zufälliges Suffix des Pfades
+            {                        // um (von den möglichen Suffixen).
                 reverse(path.rbegin(), rev_points[rand() % rev_points.size()]);
                 back_is_dead_end = 0;
             }
-            else
-            {
+            else // Kein Suffix kann umgekehrt werden -> Versuche ein Präfix.
                 reverse(path.begin(), path.end());
-            }
         }
         else // Versuche den Pfad am anderen Ende zu erweitern.
             extending_back = !extending_back;
