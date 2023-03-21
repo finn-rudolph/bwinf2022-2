@@ -183,51 +183,65 @@ Mithilfe eines IP-Solvers und der obigen Formulierung konnten alle Instanzen von
 
 Der Algorithmus funktioniert wie folgt: Zuerst wird ein zufälliger Startknoten ausgewählt. Anschließend wird ein zufälliger Knoten gewählt, der noch nicht im Pfad ist und vom letzten Knoten erreichbar ist, ohne dass ein Abbiegewinkel kleiner $\pi / 2$ entsteht. Existiert kein solcher Knoten, wird dieses Ende des Pfads als Sackgasse markiert und versucht, das andere Ende auf die gleiche Weise zu erweitern. Sind beide Enden des Pfads als Sackgasse markiert, wird eine zufällige Kante aus dem Pfad ausgewählt und entfernt. Anschließend wird der Knoten am hinteren Ende des Pfads so mit einem der Endpunkte der entfernten Kante verbunden, dass der Pfad wieder verbunden ist. Natürlich werden bei der zufälligen Wahl der Kante nur solche Kanten in Betracht gezogen, dass die neu eingefügte Kante vom Knoten am Ende des Pfads nicht die Beschränkung des Abbiegewinkels verletzt. Existiert keine solche Kante, wird das gleiche mit dem Knoten am vorderen Ende des Pfads versucht. Dem Pfad eine Richtung zu geben, auch wenn er eigentlich ungerichtet ist, ist für die Implementierung nötig und erlaubt präzisere Beschreibungen. Durch Aufbrechen des Pfads und neues Verbinden des vorderen oder hinteren Knotens kann der Pfad anschließend häufig erweitert werden. Die beschriebene Operation wird im Folgenden \emph{Neuverbindung} genannt. Es kann aber vorkommen, dass weder eine Neuverbindung des vorderen noch des hinteren Knotens möglich ist, oder dass sich die gleichen Neuverbindungen in eine Zyklus immer wieder abwechseln. Durch eine zufällige Wahl der entfernten Kante kann das meistens verhindert werden, aber nicht immer. Für diesen Fall wird eine Oberschranke an aufeinanderfolgenden Neuverbindungen festgelegt. Wird diese überschritten, wird die gesamte Suche von neuem gestartet.
 
-Das Verfahren ist im Algorithmus \textsc{RandomizedObtusePath} zusammengefasst. $z$ bezeichnet ein Array, das die Ortsvektoren aller Punkte enthält, sodass $\vec z_i$ der Ortsvektor des $i$-ten Punkts, wie oben definiert, ist. Um mit den Namen im echten Code übereinzustimmen, wird der Pseudocode auf Englisch präsentiert.
+Das Verfahren ist im Algorithmus \textsc{RandomizedObtusePath} zusammengefasst. $z$ bezeichnet ein Array, das die Ortsvektoren aller Punkte enthält, sodass $\vec z_i$ der Ortsvektor des $i$-ten Punkts, wie oben definiert, ist. Damit die Namen im Pseudocode mit denen im echten Code übereinstimmen, ist er auf Englisch. \emph{path} enthält den aktuellen Pfad, \emph{extendingBack} gibt an, ob der Pfad gerade vorne oder hinten erweitert wird, und \emph{noAddedNode} ist der Zähler für die Anzahl konsekutiver Neuverbindungen (oder, äquivalent, der Anzahl an Ausführungen der while-Schleife, in denen kein Knoten zu \emph{path} hinzugefügt wurde). In der while-Schleife wird zunächst geprüft, ob das Limit von \emph{noAddedNode} überschritten wurde, wobei sich $n/2$ experimentell als gutes Limit herausgestellt hat. Ein zu großes Limit sorgt für eine größere Laufzeit, wenn ein ohnehin aussichtsloser Pfad noch lange versucht wird, zu erweitern, mit einem zu kleinen Limit wird die Suche dagegen sehr schnell abgebrochen, obwohl eine Erweiterung möglicherweise doch noch möglich gewesen wäre. Denn manchmal ist eine längere Folge an Neuverbindungen nötig, um den Pfad wieder erweiterbar zu machen. $u$ bezeichnet anschließend den Endknoten des Pfads, $v$ einen zufällig ausgewählten, der nach bzw. vor $u$ angefügt werden könnte. Gibt es einen solchen Knoten $v$, wird der Pfad erweitert und \emph{noAddedNode} zurückgesetzt. Andernfalls wird \emph{noAddedNode} erhöht und das aktuell behandelte Ende des Pfads als Sackgasse (,,dead end'') markiert. Wenn nicht beide Seiten als Sackgasse markiert sind, wird versucht, den Pfad am anderen Ende zu erweitern, indem \emph{extendingBack} invertiert wird (vorletzte Zeile, nach dem \textbf{else}). Andernfalls 
 
 \begin{algorithm}
-    \emph{path} $\gets \{\text{random integer between 0 and $n - 1$}\}$ \; 
-    \emph{extendingBack} $\gets$ true \;
+    \emph{path} $\gets [\text{random integer between 0 and $n - 1$}]$ \; 
     \emph{noAddedNode} $\gets$ 0 \;
+    \emph{frontIsDeadEnd} $\gets$ \textbf{false}, \emph{backIsDeadEnd}  $\gets$ \textbf{false}\;
 
     \While{path.length $< n$}
     {
         \If{noAddedNode $> n/2$}
         {
-            reset \emph{path, extendingBack, noAddedNode} and restart search
+            reset \emph{path, noAddedNode, frontIsDeadEnd, backIsDeadEnd} and restart \;
         }
+        $u \gets$ last element of \emph{path}, $v \gets$ second last element of path \;
+        $w \gets$ nil; \;
+        \emph{candidates} $\gets$ 0 \;
 
-        $u \gets$ back of \emph{path} \textbf{if} \emph{extendingBack} \textbf{else} front of \emph{path} \;
-        $v \gets$ random node $\notin$ \emph{path} such that $(\vec{z}_u - \vec{z}_{\text{predecessor of } u \text{ in \emph{path}}}) \cdot (\vec{z_v} - z_u) \ge 0$ \;
-        \If{$v$ \emph{exists}}
+        \For{\emph{node} $x \notin \text{path}$}
         {
-            append $v$ at the back of \emph{path} \textbf{if} extendingBack \textbf{else} at the front of \emph{path} \;
+            \If{$\vec z_{vu} \cdot \vec z_{ux} \ge 0$}
+            {
+                \emph{candidates} $\gets \emph{candidates} + 1$ \;
+                $w \gets x$ with probability $1 / \emph{candidates}$ \;
+            }
+        }
+        \If{$v \ne \mathrm{nil}$}
+        {
+            append $v$ at the back of \emph{path} \;
             \emph{noAddedNode} = 0 \;
             \textbf{continue} \;
         }
 
         \emph{noAddedNode} $\gets$ $\emph{noAddedNode} + 1$ \;
-        \If{extendingBack}
-        {
-            mark the back as dead end \;
-        } \Else {
-            mark the front as dead end \;
-        }
+        \emph{backIsDeadEnd} $\gets$ \textbf{true} \;
 
-        \If{\emph{front and back are both marked as dead end}}
+        \If{frontIsDeadEnd \emph{\textbf{and}} backIsDeadEnd}
         {
-            $r \gets$ \emph{path}[$\emph{path.length} - 1$], $s \gets$ \emph{path}[$\emph{path.length} - 2$] \;
-            $i \gets$ random integer $\in [0, \emph{path.length} - 2]$ such that $\vec{z}_{sr} \cdot \vec{z}_{r,\emph{path}[i]} \ge 0$ \textbf{and} $\vec{z}_{r,\emph{path}[i]} \cdot \vec{z}_{\emph{path}[i - 1], \emph{path}[i]} \ge 0$ \;
+            \emph{candidates} $\gets 0$ \;
+            $w \gets$ nil \;
 
-            \If{$i$ \emph{exists}}
+            \For{$i \gets \emph{path.length} - 3$ \KwTo $0$}
             {
-                reverse \emph{path} from $i$ to end \;
-                mark the back as not dead end \;
+                \If{$\vec z_{vu} \cdot \vec z_{u,\text{path}[i]} \ge 0$ \emph{\textbf{and}} $\vec z_{u,\text{path}[i]} \cdot \vec z_{\text{path}[i], \text{path}[i - 1]} \ge 0$}
+                {
+                    \emph{candidates} $\gets \emph{candidates} + 1$ \;
+                    $w \gets$ \emph{path}$[i]$ with probability $1 / \emph{candidates}$ \;
+                }
+            }
+
+            \If{$w \ne \emph{nil}$}
+            {
+                reverse the suffix of \emph{path} starting at the node after $w$ \;
+                \emph{backIsDeadEnd} $\gets$ \textbf{true} \;
             } \Else {
-                reverse \emph{path} from begin to end \;
+                reverse \emph{path} \;
             }
         } \Else {
-            \emph{extendingBack} $\gets \neg\emph{extendingBack}$ \;  
+            reverse \emph{path} \;  
+            exchange \emph{frontIsDeadEnd} with \emph{backIsDeadEnd} \;
         }
 
     }

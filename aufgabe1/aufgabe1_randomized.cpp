@@ -102,7 +102,7 @@ void optimize_path(vector<complex<double>> &path)
 vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
-    deque<size_t> path;
+    vector<size_t> path;
     list<size_t> unvisited;
     bool front_is_dead_end, back_is_dead_end;
     size_t no_added_node;
@@ -129,7 +129,7 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
 
         // u: erster Knoten, v: zweiter Knoten (wenn existent)
         // w: Iterator in unvisited zum neu hinzugefügten Knoten
-        size_t u = path[0], v = path.size() >= 2 ? path[1] : SIZE_MAX,
+        size_t u = path.back(), v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX,
                candidates = 0;
         list<size_t>::iterator w = unvisited.end();
 
@@ -142,7 +142,7 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
             }
         if (candidates)
         {
-            path.push_front(*w); // Erweitere den Pfad um w.
+            path.push_back(*w); // Erweitere den Pfad um w.
             unvisited.erase(w);
             no_added_node = 0;
             continue;
@@ -151,18 +151,18 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
         // Der Pfad kann von u aus nicht mehr erweitert werden, da alle mit
         // Abbiegewinkel <= pi / 2 schon besucht wurden. Das Ende des Pfads wird
         // als Sackgasse markiert.
-        front_is_dead_end = 1;
+        back_is_dead_end = 1;
         no_added_node++; // In dieser Iteration wurde kein Knoten hinzugefügt.
 
         if (front_is_dead_end && back_is_dead_end)
         {
             size_t candidates = 0;
-            deque<size_t>::iterator it = path.begin() + 2, w = path.end();
+            auto it = path.rbegin() + 2, w = path.rend();
 
-            while (it != path.end())
+            while (it != path.rend())
             {
                 if (dot_product(z[u] - z[v], z[*it] - z[u]) >= 0 &&
-                    (it + 1 == path.end() ||
+                    (it + 1 == path.rend() ||
                      dot_product(z[*it] - z[u], z[*(it + 1)] - z[*it]) >= 0))
                 {
                     candidates++;
@@ -172,10 +172,10 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
                 it++;
             }
 
-            if (w != path.end())
+            if (w != path.rend())
             {
-                reverse(path.begin(), w);
-                front_is_dead_end = 0;
+                reverse(path.rbegin(), w);
+                back_is_dead_end = 0;
             }
             else
                 reverse(path.begin(), path.end());
