@@ -288,11 +288,17 @@ $\theta$ ist definiert als $\pi / t$, wobei $t = \lceil 9 n^2 \pi / \alpha \rcei
 
 \section{Laufzeitanalyse}
 
+\subsection{Analyse der Größe des ganzzahligen linearen Programms}
+
 Um die Laufzeit des Ansatzes zu charakterisieren, soll die Größe des IP in Abhängigkeit von $n$, der Anzahl an Knoten analysiert werden. Da es für jedes unterschiedliche Paar an Knoten eine Variable $x_{ij}$ gibt, ist die Anzahl an Variablen $\binom n 2 = n(n - 1) / 2 = \Theta(n^2)$. Im Folgenden wird die Anzahl an Bedingungen in den Gleichungen (2) - (6) analysiert.
 
 Von (2) und (3) werden jeweils $n$ Bedingungen in das IP eingefügt. Gleichung (4) trägt eine Bedingung bei, sodass Gleichungen (2) - (4) insgesamt $\Theta(n)$ Bedingungen beitragen. Von Ungleichung (5) wird im schlechtesten Fall eine Bedingung für jede nichtleere Teilmenge von $V$ eingefügt, was zu $O(2^n)$ Bedingungen führt. Die genaue Anzahl an Bedingungen von (6) hängt von der gegebenen Instanz ab. Wie bereits angemerkt wurde, werden für jedes ungeordnete Tripel an Punkten, von denen es $\Theta(n^3)$ gibt, 2 oder 3 Bedingungen eingefügt, insgesamt also $\Theta(n^3)$ Bedingungen. Das ganzzahlige lineare Programm in (1) - (7) hat also $\Omega(n^3)$ und $O(2^n + n^3)$ Bedingungen.
 
 Die Lösung eines ganzzahligen linearen Programms ist NP-schwer und benötigt im schlechtesten Fall exponentielle Zeit in der Anzahl an Variablen. Die Laufzeit einer einzigen Lösung ist also exponentiell in $n(n-1)/2$. Durch das allmähliche Hinzufügen von SECs wird das IP mehrmals gelöst, im schlechtesten Fall $O(2^n)$ mal. Die Laufzeit bleibt dadurch immer noch exponentiell. Eine genauere Charakterisierung als ,,exponentiell'' ist nicht wirklich sinnvoll, da dafür Details des IP-Solvers einbezogen werden müssten.
+
+\subsection{Analyse der Heuristik}
+
+Die Laufzeit von \textsc{RandomizedObtusePath} kann nicht nach oben beschränkt werden, denn es ist nicht garantiert, dass \textsc{RandomizedObtusePath} terminiert. Bei hinreichend unglücklicher Wahl der Knoten zur Erweiterung oder Neuverbindung kann es sein, dass nie alle Knoten zum Pfad hinzugefügt werden. Insbesondere terminiert \textsc{RandomizedObtusePath} nicht, wenn es keinen zulässigen Pfad in der gegebenen Instanz gibt, denn dann kann die Abbruchbedingung der while-Schleife ($\emph{path.length} \ge n$) niemals wahr sein. Nach unten kann die Laufzeit mit $\Omega(n^2)$ beschränkt werden. Es sind mindestens $n - 1$ Iterationen der while-Schleife nötig sind, um alle Knoten zum Pfad hinzuzufügen, und in jeder Iteration wird jeder Knoten, der noch nicht im Pfad ist, für eine Erweiterung in Betracht gezogen. Alle Operationen, die für die Überprüfung nötig sind, haben konstante Laufzeit. Die Anzahl an nötigen Schritten ist also $\Omega((n - 1) + (n - 2) + \dots + 1) = \Omega(n^2)$ (kleiner Gauß).
 
 \section{Implementierung}
 
