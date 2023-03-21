@@ -8,7 +8,8 @@
 *.o
 *.gch
 .vscode
-aufgabe1/aufgabe1
+aufgabe1/aufgabe1_ip
+aufgabe1/aufgabe1_randomized
 aufgabe3/aufgabe3_a
 aufgabe3/aufgabe3_b
 svg-inkscape
