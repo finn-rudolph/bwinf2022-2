@@ -4,14 +4,6 @@ using namespace std;
 
 constexpr size_t TwoOptIterationLimit = 1000000;
 
-double path_length(vector<complex<double>> const &z)
-{
-    double length = 0.0;
-    for (size_t i = 1; i < z.size(); i++)
-        length += abs(z[i] - z[i - 1]);
-    return length;
-}
-
 // Optimiert den gegebenen Hamiltonpfad in-place mit der 2-opt Heuristik, ohne
 // Abbiegewinkel > pi / 2 zu erzeugen.
 void optimize_path(vector<complex<double>> &path)
@@ -41,8 +33,9 @@ void optimize_path(vector<complex<double>> &path)
         {
             size_t c = b + direction, d = c + direction;
 
-            // Überprüfe, ob die 4 neuen Abbiegewinkel (uvb, vba, xwc, wcd) alle
-            // <= pi / 2 sind.
+            // Überprüfe, ob die Tour durch Erstetzen von {v, w}, {b, c} durch
+            // {v, b}, {w, c} verkürzt wird und die 4 neuen Abbiegewinkel (uvb,
+            // vba, xwc, wcd) alle <= pi / 2 sind.
             if ((u >= n ||
                  dot_product(path[v] - path[u], path[b] - path[v]) >= 0) &&
                 dot_product(path[b] - path[v], path[a] - path[b]) >= 0 &&
@@ -69,7 +62,7 @@ void optimize_path(vector<complex<double>> &path)
     }
 }
 
-vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
+vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
     vector<size_t> path;
@@ -83,9 +76,9 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
         unvisited.clear();
         path.clear();
         srand(time(0));
-        path.push_back(rand() % n); // Wähle einen zufälligen Startknoten.
-        for (size_t i = 0; i < n; i++)
-            if (i != path.front())
+        path.push_back(rand() % n);    // Wähle einen zufälligen Startknoten.
+        for (size_t i = 0; i < n; i++) // Fülle unvisited mit allen Knoten
+            if (i != path.front())     // außer dem Startknoten.
                 unvisited.push_back(i);
         no_added_node = 0;
     };
@@ -97,7 +90,7 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
         if (no_added_node > n / 2) // Zu große Anzahl aufeinanderfolgener
             restart_search();      // Iterationen ohne Hinzufügen eines Knotens.
 
-        // u: erster Knoten, v: zweiter Knoten (wenn existent)
+        // u: letzter Knoten, v: vorletzter Knoten (wenn existent)
         // w: Iterator in unvisited zum neu hinzugefügten Knoten
         size_t u = path.back(),
                v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX,
@@ -128,6 +121,8 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
         if (front_is_dead_end && back_is_dead_end)
         {
             size_t candidates = 0;
+            // it: Iterator zum aktuell betrachteten Knoten
+            // w: Iterator zum Knoten, nach dem der Pfad aufgebrochen wird.
             auto it = path.rbegin() + 2, w = path.rend();
 
             while (it != path.rend())
@@ -143,8 +138,8 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
                 it++;
             }
 
-            if (w != path.rend())
-            {
+            if (candidates) // Füge die Kante {u, w} ein und entferne die Kante
+            {               // von w zu seinem Nachfolger.
                 reverse(path.rbegin(), w);
                 back_is_dead_end = 0;
             }
@@ -171,7 +166,7 @@ int main()
     while (scanf("%lf %lf", &x, &y) == 2)
         z.emplace_back(x, y);
 
-    vector<complex<double>> path = obtuse_path(z);
+    vector<complex<double>> path = randomized_obtuse_path(z);
     cerr << "Zulässige Tour mit Länge " << path_length(path) << " gefunden.\n"
          << "Starte 2-opt...\n";
     optimize_path(path);

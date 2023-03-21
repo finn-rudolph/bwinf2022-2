@@ -149,10 +149,9 @@ bool check_for_subtours(Highs &highs, size_t n)
 }
 
 // Gibt den kürzesten Hamiltonpfad zurück, auf dem der Abbiegewinkel jedes
-// benachbarten Kantenpaares <= pi / 2 ist, und dessen Länge. Existiert kein
-// solcher Pfad, ist der Vektor in der Rückgabe leer.
-pair<vector<complex<double>>, double> shortest_obtuse_path(
-    vector<complex<double>> const &z)
+// benachbarten Kantenpaares <= pi / 2 ist. Existiert kein solcher Pfad, ist der
+// zurückgegebene Vektor leer.
+vector<complex<double>> shortest_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
 
@@ -187,17 +186,17 @@ pair<vector<complex<double>>, double> shortest_obtuse_path(
 
     while (has_subtours && model_status != HighsModelStatus::kInfeasible)
     {
-        status = highs.run(); // Löse das ILP.
+        status = highs.run(); // Löse das ganzzahlige lineare Programm.
         assert(status == HighsStatus::kOk);
         model_status = highs.getModelStatus();
         has_subtours = check_for_subtours(highs, n);
     }
 
-    if (model_status == HighsModelStatus::kInfeasible) // Kein Tour möglich.
-        return make_pair(vector<complex<double>>(), 0.0);
+    if (model_status == HighsModelStatus::kInfeasible) // Keine Tour möglich.
+        return vector<complex<double>>();
 
     vector<vector<size_t>> graph = build_graph(highs, n);
-    vector<complex<double>> tour;
+    vector<complex<double>> path;
 
     size_t j = SIZE_MAX, last = SIZE_MAX; // aktueller und vorheriger Knoten
     for (size_t i = 0; i < n; i++)
@@ -206,16 +205,16 @@ pair<vector<complex<double>>, double> shortest_obtuse_path(
 
     while (j != SIZE_MAX)
     {
-        tour.push_back(z[j]);
+        path.push_back(z[j]);
         size_t next = SIZE_MAX;
-        for (size_t k : graph[j])
-            if (k != last)
-                next = k;
+        for (size_t k : graph[j]) // Wähle den der maximal zwei benachbarten
+            if (k != last)        // Knoten als Nachfolger, der nicht Vorgänger
+                next = k;         // ist.
         last = j;
         j = next;
     }
 
-    return make_pair(tour, highs.getObjectiveValue());
+    return path;
 }
 
 int main()
@@ -225,16 +224,17 @@ int main()
     while (scanf("%lf %lf", &x, &y) == 2)
         z.emplace_back(x, y);
 
-    auto const [tour, length] = shortest_obtuse_path(z);
+    vector<complex<double>> const path = shortest_obtuse_path(z);
 
-    if (tour.empty())
+    if (path.empty())
     {
         cout << "Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.\n";
     }
     else
     {
-        cout << setprecision(6) << fixed << "Tourlänge: " << length << '\n';
-        for (complex<double> const &u : tour)
+        cout << setprecision(6) << fixed
+             << "Tourlänge: " << path_length(path) << '\n';
+        for (complex<double> const &u : path)
             cout << u.real() << ' ' << u.imag() << '\n';
     }
 }
