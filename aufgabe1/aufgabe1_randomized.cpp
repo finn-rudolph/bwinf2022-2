@@ -12,9 +12,17 @@ struct Node
     Node() { adj[0] = adj[1] = nullptr; }
 };
 
+double path_length(vector<complex<double>> const &z)
+{
+    double length = 0.0;
+    for (size_t i = 1; i < z.size(); i++)
+        length += abs(z[i] - z[i - 1]);
+    return length;
+}
+
 // Optimiert den gegebenen Hamiltonpfad in-place mit der 2-opt Heuristik, ohne
-// Abbiegewinkel > pi / 2 zu erzeugen. Gibt die neue Länge zurück.
-double optimize_path(vector<complex<double>> &path)
+// Abbiegewinkel > pi / 2 zu erzeugen.
+void optimize_path(vector<complex<double>> &path)
 {
     vector<Node> nodes(path.size());
     for (size_t i = 0; i < path.size(); i++)
@@ -84,34 +92,31 @@ double optimize_path(vector<complex<double>> &path)
             break;
         }
     path.clear();
-    double new_length = 0.0;
     while (x) // Schreibe die neue Knotenfolge in path und berechne die neue
     {         // Länge.
         path.push_back(x->p);
         x = x->adj[direction];
-        if (x)
-            new_length += abs(x->p - path.back());
     }
-    return new_length;
 }
 
-pair<vector<complex<double>>, double> obtuse_path(
-    vector<complex<double>> const &z)
+vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
     deque<size_t> path;
-    vector<bool> visited(n);
-    bool front_is_dead_end, back_is_dead_end, extending_back;
+    list<size_t> unvisited;
+    bool front_is_dead_end, back_is_dead_end;
     size_t no_added_node;
 
     auto restart_search = [&]()
     {
-        front_is_dead_end = back_is_dead_end = extending_back = 0;
-        fill(visited.begin(), visited.end(), 0);
+        front_is_dead_end = back_is_dead_end = 0;
+        unvisited.clear();
         path.clear();
         srand(time(0));
-        path.push_back(rand() % n);
-        visited[path.front()] = 1;
+        path.push_back(rand() % n); // Wähle einen zufälligen Startknoten.
+        for (size_t i = 0; i < n; i++)
+            if (i != path.front())
+                unvisited.push_back(i);
         no_added_node = 0;
     };
 
@@ -122,74 +127,70 @@ pair<vector<complex<double>>, double> obtuse_path(
         if (no_added_node > n / 2) // Zu große Anzahl aufeinanderfolgener
             restart_search();      // Iterationen ohne Hinzufügen eines Knotens.
 
-        size_t const u = extending_back ? path.back() : path.front();
+        // u: erster Knoten, v: zweiter Knoten (wenn existent)
+        // w: Iterator in unvisited zum neu hinzugefügten Knoten
+        size_t u = path[0], v = path.size() >= 2 ? path[1] : SIZE_MAX,
+               candidates = 0;
+        list<size_t>::iterator w = unvisited.end();
 
-        vector<size_t> successors;
-        for (size_t v = 0; v < n; v++)
-            if (!visited[v])
+        for (auto it = unvisited.begin(); it != unvisited.end(); it++)
+            if (path.size() < 2 || dot_product(z[u] - z[v], z[*it] - z[u]) >= 0)
             {
-                bool can_extend = path.size() < 2;
-                if (!can_extend) // Überprüfe, ob eine Erweiterung des Pfads mit
-                {                // v zu einem Abbiegewinkel <= pi / 2 führt.
-                    size_t const pre = extending_back ? *++path.crbegin()
-                                                      : *++path.cbegin();
-                    can_extend = dot_product(z[u] - z[pre], z[v] - z[u]) >= 0;
-                }
-                if (can_extend)
-                    successors.push_back(v);
+                candidates++;
+                if (!(rand() % candidates)) // wahr mit Wahrscheinlichkeit
+                    w = it;                 // 1 / candidates.
             }
-        if (!successors.empty()) // Wähle einen zufälligen Knoten aus, um den
-        {                        // Pfad zu erweitern.
-            size_t const v = successors[rand() % successors.size()];
-            if (extending_back)
-                path.push_back(v);
-            else
-                path.push_front(v);
-            visited[v] = 1;
+        if (candidates)
+        {
+            path.push_front(*w); // Erweitere den Pfad um w.
+            unvisited.erase(w);
             no_added_node = 0;
             continue;
         }
 
         // Der Pfad kann von u aus nicht mehr erweitert werden, da alle mit
-        // Abbiegewinkel <= pi / 2 schon besucht wurden. Das Ende des Pfads mit
-        // u wird als Sackgasse markiert.
-        (extending_back ? back_is_dead_end : front_is_dead_end) = 1;
-        no_added_node++;
+        // Abbiegewinkel <= pi / 2 schon besucht wurden. Das Ende des Pfads wird
+        // als Sackgasse markiert.
+        front_is_dead_end = 1;
+        no_added_node++; // In dieser Iteration wurde kein Knoten hinzugefügt.
 
         if (front_is_dead_end && back_is_dead_end)
         {
-            // Laufe den Pfad vom Ende zurück und finde alle Suffixe, die
-            // umgekehrt werden können.
-            vector<deque<size_t>::reverse_iterator> rev_points;
-            auto it = path.rbegin() + 2;
-            size_t const last = *path.rbegin(), scn_last = *++path.rbegin();
-            while (it != path.rend())
+            size_t candidates = 0;
+            deque<size_t>::iterator it = path.begin() + 2, w = path.end();
+
+            while (it != path.end())
             {
-                if (dot_product(z[last] - z[scn_last], z[*it] - z[last]) >= 0 &&
-                    (it + 1 == path.rend() ||
-                     dot_product(z[*it] - z[last], z[*(it + 1)] - z[*it]) >= 0))
+                if (dot_product(z[u] - z[v], z[*it] - z[u]) >= 0 &&
+                    (it + 1 == path.end() ||
+                     dot_product(z[*it] - z[u], z[*(it + 1)] - z[*it]) >= 0))
                 {
-                    rev_points.push_back(it);
+                    candidates++;
+                    if (!(rand() % candidates)) // wahr mit Wahrscheinlichkeit
+                        w = it;                 // 1 / candidates.
                 }
                 it++;
             }
-            if (!rev_points.empty()) // Drehe ein zufälliges Suffix des Pfades
-            {                        // um (von den möglichen Suffixen).
-                reverse(path.rbegin(), rev_points[rand() % rev_points.size()]);
-                back_is_dead_end = 0;
+
+            if (w != path.end())
+            {
+                reverse(path.begin(), w);
+                front_is_dead_end = 0;
             }
-            else // Kein Suffix kann umgekehrt werden -> Versuche ein Präfix.
+            else
                 reverse(path.begin(), path.end());
         }
         else // Versuche den Pfad am anderen Ende zu erweitern.
-            extending_back = !extending_back;
+        {
+            reverse(path.begin(), path.end());
+            swap(front_is_dead_end, back_is_dead_end);
+        }
     }
 
-    vector<complex<double>> point_order = {z[path[0]]};
-    for (size_t i = 1; i < n; i++)
+    vector<complex<double>> point_order;
+    for (size_t i = 0; i < n; i++)
         point_order.push_back(z[path[i]]);
-    double length = optimize_path(point_order);
-    return {point_order, length};
+    return point_order;
 }
 
 int main()
@@ -199,9 +200,10 @@ int main()
     while (scanf("%lf %lf", &x, &y) == 2)
         z.emplace_back(x, y);
 
-    auto const [tour, length] = obtuse_path(z);
+    vector<complex<double>> path = obtuse_path(z);
+    optimize_path(path);
 
-    cout << setprecision(6) << fixed << "Tourlänge: " << length << '\n';
-    for (complex<double> const &u : tour)
+    cout << setprecision(6) << fixed << "Tourlänge: " << path_length(path) << '\n';
+    for (complex<double> const &u : path)
         cout << u.real() << ' ' << u.imag() << '\n';
 }
