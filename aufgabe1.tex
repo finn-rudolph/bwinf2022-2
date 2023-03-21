@@ -298,11 +298,11 @@ Die Lösung eines ganzzahligen linearen Programms ist NP-schwer und benötigt im
 
 \subsection{Analyse der Heuristik}
 
-Die Laufzeit von \textsc{RandomizedObtusePath} kann nicht nach oben beschränkt werden, denn es ist nicht garantiert, dass \textsc{RandomizedObtusePath} terminiert. Bei hinreichend unglücklicher Wahl der Knoten zur Erweiterung oder Neuverbindung kann es sein, dass nie alle Knoten zum Pfad hinzugefügt werden. Insbesondere terminiert \textsc{RandomizedObtusePath} nicht, wenn es keinen zulässigen Pfad in der gegebenen Instanz gibt, denn dann kann die Abbruchbedingung der while-Schleife ($\emph{path.length} \ge n$) niemals wahr sein. Nach unten kann die Laufzeit mit $\Omega(n^2)$ beschränkt werden. Es sind mindestens $n - 1$ Iterationen der while-Schleife nötig sind, um alle Knoten zum Pfad hinzuzufügen, und in jeder Iteration wird jeder Knoten, der noch nicht im Pfad ist, für eine Erweiterung in Betracht gezogen. Alle Operationen, die für die Überprüfung nötig sind, haben konstante Laufzeit. Die Anzahl an nötigen Schritten ist also $\Omega((n - 1) + (n - 2) + \dots + 1) = \Omega(n^2)$ (kleiner Gauß).
+Die Laufzeit von \textsc{RandomizedObtusePath} kann nicht nach oben beschränkt werden, denn es ist nicht garantiert, dass \textsc{RandomizedObtusePath} terminiert. Bei hinreichend unglücklicher Wahl der Knoten zur Erweiterung oder Neuverbindung kann es sein, dass nie alle Knoten zum Pfad hinzugefügt werden. Insbesondere terminiert \textsc{RandomizedObtusePath} nicht, wenn es keinen zulässigen Pfad in der gegebenen Instanz gibt, denn dann kann die Abbruchbedingung der while-Schleife ($\emph{path.length} \ge n$) niemals wahr sein. Nach unten kann die Laufzeit mit $\Omega(n^2)$ beschränkt werden. Es sind mindestens $n - 1$ Iterationen der while-Schleife nötig sind, um alle Knoten zum Pfad hinzuzufügen, und in jeder Iteration wird jeder Knoten, der noch nicht im Pfad ist, für eine Erweiterung in Betracht gezogen. Alle Operationen, die für die Überprüfung nötig sind, haben konstante Laufzeit. Für das Anfügen an \emph{path} wird ebenfalls eine konstante Laufzeit angenommen. Die Anzahl an nötigen Schritten ist also $\Omega((n - 1) + (n - 2) + \dots + 1) = \Omega(n^2)$ (kleiner Gauß).
 
 \section{Implementierung}
 
-Das Programm wird in C++ geschrieben und wurde auf Linux-Systemen getestet. Als IP-Solver wird der Open-Source Solver HiGHS verwendet \cite{highs}. Zum Ausführen des Programms muss dieser installiert werden, eine Anleitung dazu findet sich in der \href{https://ergo-code.github.io/HiGHS/dev/cpp/get-started/}{Dokumentation von HiGHS}. Zum Kompilieren kann im Order \verb|aufgabe1| einfach \verb|make| im Terminal ausgeführt werden. Um das Programm z. b. auf \verb|wenigerkrumm1| auszuführen kann im Ordner \verb|aufgabe1|
+Die IP-Lösung und die heuristische Lösung werden in zwei getrennten Programmen implementiert, beide in C++. Sie wurden auf Linux-Systemen getestet. Als IP-Solver wird der Open-Source Solver HiGHS verwendet \cite{highs}. Eine Installationsanleitung für diesen findet sich in der \href{https://ergo-code.github.io/HiGHS/dev/cpp/get-started/}{Dokumentation von HiGHS}. Zum Kompilieren der IP-Lösung kann im Order \verb|aufgabe1| einfach \verb|make ip| im Terminal ausgeführt werden, für die heuristische Lösung \verb|make randomized|. Mit nur \verb|make| werden beide Programme kompiliert. Die auführbaren Dateien heißen dann \verb|aufgabe1_ip| und \verb|aufgabe1_randomized|. Um z. B. die IP-Lösung auf \verb|wenigerkrumm1| auszuführen, kann im Ordner \verb|aufgabe1|
 
 \medskip
 \verb|./aufgabe1 < beispiele/wenigerkrumm1.txt|
@@ -316,67 +316,75 @@ Einen Überblick über HiGHS verschafft \href{https://ergo-code.github.io/HiGHS/
 
 Es erweist sich als praktisch, Punkte im zweidimensionalen Raum als komplexe Zahlen \verb|complex<double>| zu repräsentieren, d. h. die $x$-Koordinate entspricht dem Realteil und $y$-Koordinate dem Imaginärteil. 
 
-\subsection{nchoose2}
-\verb|size_t nchoose2(size_t n)|
+\subsection{util.hpp}
+
+\subsubsection{nchoose2}
+\verb|template <typename T>| \\
+\verb|T nchoose2(T n)|
 \medskip
 
 \noindent Gibt $\binom n 2$ zurück.
 
-\subsection{edge\_index}
+\subsubsection{dot\_product}
+\verb|template <typename T>| \\
+\verb|T dot_product(complex<T> const &a, complex<T> const &b)|
+\medskip
+
+\noindent Gibt das Skalarprodukt von $a$ und $b$, als Vektoren interpretiert, zurück. Es entspricht dem Realteil von $a \bar b$, da $a \bar b = a_1 b_1 + a_2 b_2 - a_1 b_2 i + a_2 b_1 i$, wenn $a = a_1 + a_2 i, b = b_1 + b_2 i$.
+
+\subsection{aufgabe1\_ip.cpp}
+
+\subsubsection{edge\_index}
 
 \verb|size_t edge_index(size_t n, size_t i, size_t j)|
 \medskip
 
 \noindent Gibt den Index der zur Kante $\{i, j\}$ zugehörigen Variable $x_{ij}$ zurück. Die Variablen $x_{ij}$ für $i < j$ werden lexikographisch nummeriert, das heißt $x_{01}$ hat Index 0, $x_{02}$ Index 1, \dots, $x_{12}$ Index $n - 1$, $x_{23}$ Index $n - 1 + n - 2$ und so weiter. Der Term $\binom n 2 - \binom {n - \min(i, j)} 2$ gibt den Anfang des ,,Blocks'' von $\min(i, j)$ an, und $\max(i, j) - \min(i, j) - 1$ den Index innerhalb des Blocks.
 
-\subsection{dot\_product}
-\verb|double dot_product(complex<double> const &a, complex<double> const &b)|
-\medskip
 
-\noindent Gibt das Skalarprodukt von $a$ und $b$, als Vektoren interpretiert, zurück. Es entspricht dem Realteil von $a \bar b$, da $a \bar b = a_1 b_1 + a_2 b_2 - a_1 b_2 i + a_2 b_1 i$, wenn $a = a_1 + a_2 i, b = b_1 + b_2 i$.
 
-\subsection{add\_angle\_constraints}
+\subsubsection{add\_angle\_constraints}
 \verb|void add_angle_constraints(| \\
 \verb|    HighsModel &model, vector<complex<double>> const &z)|
 \medskip
 
 \noindent Fügt die in Ungleichung (6) bestimmten Bedingungen zu \verb|model| hinzu. Dazu wird über jeden möglichen Scheitelpunkt ($j$) und alle unterschiedlichen Knotenpaare $i, k$ mit $i \ne j \ne k$ und $i < k$ iteriert. Wenn der Winkel $ijk$ spitz ist, werden die Variablen von $\{i, j\}$ und $\{j, k\}$ zu einer neuen Zeile hinzugefügt und ihre Koeffizienten auf 1 gesetzt. Die Unterschranke für die neue Zeile der Matrix ist 0, die Oberschranke 1.
 
-\subsection{add\_degree\_constraints}
+\subsubsection{add\_degree\_constraints}
 \verb|void add_degree_constraints(HighsModel &model, size_t n)|
 \medskip
 
 \noindent Fügt für jeden Knoten $i$ eine Zeile in die Bedingungsmatrix ein, in der die Variablen aller Kanten aufsummiert werden, von denen $i$ ein Endpunkt ist. Der Wert der Zeile wird auf $[1, 2]$ beschränkt, womit Ungleichungen (2) und (3) umgesetzt werden.
 
-\subsection{add\_num\_edges\_constraint}
+\subsubsection{add\_num\_edges\_constraint}
 \verb|void add_num_edges_constraint(HighsModel &model, size_t n)|
 \medskip
 
 \noindent Beschränkt die Anzahl verwendeter Kanten auf genau $n - 1$, indem alle $\binom n 2$ Variablen in einer neuen Zeile aufsummiert werden, und der Wert der Zeile auf $n - 1$ fixiert wird.
 
-\subsection{add\_subtour\_elimination\_constraint}
+\subsubsection{add\_subtour\_elimination\_constraint}
 \verb|void add_subtour_elimination_constraint(| \\
 \verb|    Highs &highs, size_t n, vector<size_t> const &tour)|
 \medskip
 
 \noindent Fügt für die Knoten in \verb|tour| einen Subtour Elimination Constraint ein, wie in Ungleichung (5) beschrieben. Da diese Funktion nach nach Übergabe des \verb|HighsModel| an das \verb|Highs|-Objekt verwendet wird, wird die Funktion \verb|Highs::addRow| verwendet. Ihre Parameter sind die Unterschranke und Oberschranke der neuen Zeile, die Anzahl an Einträgen, die nicht 0 sind, und Zeiger zu den Indizes und Werten. Zuerst werden zwei Arrays \verb|ind| und \verb|val| angelegt. Da in der neuen Zeile die Variablen für jede Kante zwischen zwei Knoten in \verb|tour| aufsummiert werden sollen, wird über jedes Paar an Knoten in \verb|tour| iteriert. Der Index der Kante zwischen dem Paar wird in \verb|ind| eingefügt und der Koeffizient in \verb|val| auf 1 gesetzt. Schließlich wird \verb|Highs::addRow| aufgerufen und die Oberschranke der neuen Zeile auf \verb|tour.size() - 1| gesetzt.
 
-\subsection{build\_graph}
+\subsubsection{build\_graph}
 \verb|vector<vector<size_t>> build_graph(Highs const &highs, size_t n)|
 \medskip
 
 \noindent Gibt den Graphen in Form einer Adjazenzliste zurück, der genau die Kanten aus der in \verb|highs| gespeicherten Lösung enthält. Dazu wird über jedes Knotenpaar $i, j$ mit $i < j$ iteriert, und wenn der Wert der zu $\{i, j\}$ zugehörigen Variable 1 ist, wird die Kante $\{i, j\}$ in den Graphen eingefügt. Da die Variablen in der Lösung nur 0 oder 1 sein können aber aufgrund von Rundungsfehlern möglicherweise nicht exakt 0 oder 1 sind, wird die Bedingung \verb|> 0.5| anstatt \verb|== 1| verwendet.
 
-\subsection{check\_for\_subtours}
+\subsubsection{check\_for\_subtours}
 \verb|bool check_for_subtours(Highs &highs, size_t n)|
 \medskip
 
 \noindent Gibt zurück, ob in der in \verb|highs| enthaltenen Lösung Subtouren existieren und eliminiert dies gegebenenfalls. Dafür werden alle Zyklen in dem von \verb|build_graph| erstellten Graphen gefunden. Von jedem noch nicht besuchten Knoten aus wird eine Suche (ähnlich zur Tiefensuche) durchgeführt und festgestellt, ob der Ausgangsknoten \verb|i| wieder erreicht wird. Jeder besuchte Knoten wird als besucht markiert und zu \verb|subtour| hinzugefügt. Der Unterschied zur Tiefensuche ist, dass immer nur ein Nachbar betrachtet wird, was ausreicht, da jeder Knoten maximal Grad 2 hat. Wird \verb|i| wieder erreicht, enthält \verb|subtour| den gesamten Zyklus, von dem \verb|i| Teil ist, und es wird ein Subtour Elimination Constraint für ihn hinzugefügt.
 
-\subsection{get\_optimal\_tour}
+\subsubsection{shortest\_obtuse\_path}
 
-\verb|pair<vector<complex<double>>, double> get_optimal_tour(| \\
-\verb|    vector<complex<double>> const &z)|
+\verb|vector<complex<double>| \\
+\verb|    shortest_obtuse_path(vector<complex<double>> const &z)|
 \medskip
 
 \noindent Gibt den kürzesten Hamiltonpfad mit Abbiegewinkeln von maximal $\pi / 2$ als Permutation der in \verb|z| gegebenen Punkte zurück, sowie dessen Länge. Falls keine Lösung existiert, wird ein leerer Vektor zurückgegeben.
@@ -385,7 +393,23 @@ Zunächst werden grundsätzliche Eigenschaften des \verb|model| festgelegt, z. B
 
 Danach wird das Objekt \verb|highs| angelegt und ihm \verb|model| übergeben. Solange Subtouren existieren und nicht festgestellt wurde, dass es keine Lösung gibt (signalisiert durch \verb|HighsModelStatus::kInfeasible|), wird das IP mit \verb|Highs::run| gelöst und entsprechende SECs eingefügt.
 
-Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe von \verb|build_graph| erstellt. Anschließend wird ein Knoten mit Grad 1 als Startpunkt für eine Suche durch den Graphen ausgewählt. Die Suche zum Finden des Hamiltonpfads funktioniert wie in \verb|check_for_subtours|, es wird immer ein aktueller Knoten \verb|j| und dessen Vorgänger \verb|last| verwaltet. Jeder besuchte Knoten wird zum Vektor \verb|tour| hinzugefügt, der am Ende zurückgegeben wird.
+Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe von \verb|build_graph| erstellt. Anschließend wird ein Knoten mit Grad 1 als Startpunkt für eine Suche durch den Graphen ausgewählt. Die Suche zum Finden des Hamiltonpfads funktioniert wie in \verb|check_for_subtours|, es wird immer ein aktueller Knoten \verb|j| und dessen Vorgänger \verb|last| verwaltet. Jeder besuchte Knoten wird zum Vektor \verb|path| hinzugefügt, der am Ende zurückgegeben wird.
+
+\subsection{aufgabe1\_randomized.cpp}
+
+\subsubsection{randomized\_obtuse\_path}
+
+\verb|vector<complex<double>>| \\
+\verb|    randomized_obtuse_path(vector<complex<double>> const &z)|
+\medskip
+
+\noindent Gibt einen Hamiltonpfad durch die in \verb|z| gegebenen Punkte als Permutation der Punkte zurück. Die grundlegende Funktionsweise entsptricht genau der im Algorithms \textsc{RandomizedObtusePath}, dieser sollte zum Verständnis bekannt sein. Einige Implementierungsdetails müssen aber dennoch geklärt werden.
+
+\verb|path| wurde mit einem \verb|vector<size_t>| umgesetzt und enthält die Indizes der Punkte in Reihenfolge. Da alle Datenstrukturen sowohl am Anfang initialisiert als auch später möglicherweise zurückgesetzt werden müssen, wurde das Lambda \verb|restart_search| eingefügt - das vermeidet Codewiederholung. Um schnell über alle noch nicht besuchten Knoten iterieren zu können, wird eine verkettete Liste \verb|unvisited| verwendet, in der stets alle Knoten enthalten sind, die nicht in \verb|path| sind. Bei der Auswahl des Knotens zur Erweiterung des Pfads wird daher nicht dessen Index gespeichert, sondern ein Iterator zu seiner Position in \verb|unvisited| - so kann er in $O(1)$ aus \verb|unvisited| entfernt werden. Um \verb|w| mit einer Wahrscheinlichkeit von \verb|1 / candidates| zuzuweisen, wird die pseudozufällige Funktion \verb|rand()| aus der Standardbibliothek verwendet. Wenn ihr zurückgegebener Wert $\equiv 0 \mod$\verb|candidates| ist, wird \verb|w| aktualisiert. Beim Neuverbinden des Pfads (zweite Hälfte der while-Schleife) wurde mit umgekehrten Iteratoren gearbeitet, um den Pfad zurückzulaufen. \verb|it| fängt zwei Knoten vor dem Ende an und wird in jeder Iteration der (inneren) while-Schleife um eine Position weiter bewegt. \verb|w| enthält den Iterator zum aktuell ausgewählten Knoten für die Neuverbindung. So kann mithilfe von \verb|reverse| aus der Standardbibliothek einfach das Suffix des Pfades bis $w$ umgekehrt werden.
+
+\subsubsection{optimize\_path}
+
+\verb||
 
 \section{Beispiele}
 
