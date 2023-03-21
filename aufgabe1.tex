@@ -177,6 +177,66 @@ Die Anzahl an Bedingungen aus (5) beträgt $2^n - 1$, da für jede nichtleere Te
 
 In \cite{tsp-formulations} finden sich noch viele andere Möglichkeiten zur Formulierung von Subtour Elimination Constraints für das TSP, von denen die meisten auch auf dieses Problem übertragbar sind. Da viele von diesen für das TSP sowohl theoretisch als auch praktisch effizienter als die DFJ-Formulierung sind, soll begründet werden, warum sie dennoch gewählt wurde. Durch die Einschränkung des Abbiegewinkels werden bereits einige Subtouren eliminiert, z. B. alle mit 2 oder 3 Knoten, alle mit 4 Knoten, die kein Rechteck bilden, und allgemein alle, die mindestens einen Abbiegewinkel größer $\pi / 2$ haben. Für all diese Subtouren sind SECs redundant, weshalb bei diesem Problem meistens schon nach wenigen Iterationen des beschriebenen Verfahrens genügend SECs vorhanden sind. Bei anderen Formulierungen wird dagegen die Komplexität des IP durch zusätzliche Variablen erhöht, da für jede andere Formulierung mindestens $\Theta(n^2)$ zusätzliche Variablen nötig sind. Dafür ist bei diesen nur eine einzige Lösung des IPs nötig. Mit der DFJ-Formulierung kann die Laufzeit aber insgesamt geringer sein, da in jeder Iteration ein deutlich kleineres IP gelöst werden muss, und aufgrund der Winkelbeschränkungen nur wenige Iterationen nötig sind. Diese Begründung konnte experimentell unterstützt werden, siehe den Abschnitt Beispiele.
 
+\subsection{Heuristische Lösung für große Instanzen}
+
+Mithilfe eines IP-Solvers und der obigen Formulierung konnten alle Instanzen von BWINF optimal gelöst werden. Größere Instanzen als lin318 (318 Knoten) von TSPLIB \cite{tsplib} konnten aufgrund der zu hohen Laufzeit und des zu hohen Speicherverbrauchs aber nicht gelöst werden. Daher soll noch ein heuristisches Verfahren, basierend auf dem randomisierten Algorithmus zum Finden von Hamiltonzyklen von Posá vorgestellt werden. Mit ihm war es möglich, einen zulässigen Pfad für die Instanz pla85900 (85900 Knoten) von TSPLIB zu finden. 
+
+Der Algorithmus funktioniert wie folgt: Zuerst wird ein zufälliger Startknoten ausgewählt. Anschließend wird ein zufälliger Knoten gewählt, der noch nicht im Pfad ist und vom letzten Knoten erreichbar ist, ohne dass ein Abbiegewinkel kleiner $\pi / 2$ entsteht. Existiert kein solcher Knoten, wird dieses Ende des Pfads als Sackgasse markiert und versucht, das andere Ende auf die gleiche Weise zu erweitern. Sind beide Enden des Pfads als Sackgasse markiert, wird eine zufällige Kante aus dem Pfad ausgewählt und entfernt. Anschließend wird der Knoten am hinteren Ende des Pfads so mit einem der Endpunkte der entfernten Kante verbunden, dass der Pfad wieder verbunden ist. Natürlich werden bei der zufälligen Wahl der Kante nur solche Kanten in Betracht gezogen, dass die neu eingefügte Kante vom Knoten am Ende des Pfads nicht die Beschränkung des Abbiegewinkels verletzt. Existiert keine solche Kante, wird das gleiche mit dem Knoten am vorderen Ende des Pfads versucht. Dem Pfad eine Richtung zu geben, auch wenn er eigentlich ungerichtet ist, ist für die Implementierung nötig und erlaubt präzisere Beschreibungen. Durch Aufbrechen des Pfads und neues Verbinden des vorderen oder hinteren Knotens kann der Pfad anschließend häufig erweitert werden. Die beschriebene Operation wird im Folgenden \emph{Neuverbindung} genannt. Es kann aber vorkommen, dass weder eine Neuverbindung des vorderen noch des hinteren Knotens möglich ist, oder dass sich die gleichen Neuverbindungen in eine Zyklus immer wieder abwechseln. Durch eine zufällige Wahl der entfernten Kante kann das meistens verhindert werden, aber nicht immer. Für diesen Fall wird eine Oberschranke an aufeinanderfolgenden Neuverbindungen festgelegt. Wird diese überschritten, wird die gesamte Suche von neuem gestartet.
+
+Das Verfahren ist im Algorithmus \textsc{RandomizedObtusePath} zusammengefasst. $z$ bezeichnet ein Array, das die Ortsvektoren aller Punkte enthält, sodass $\vec z_i$ der Ortsvektor des $i$-ten Punkts, wie oben definiert, ist. Um mit den Namen im echten Code übereinzustimmen, wird der Pseudocode auf Englisch präsentiert.
+
+\begin{algorithm}
+    \emph{path} $\gets \{\text{random integer between 0 and $n - 1$}\}$ \; 
+    \emph{extendingBack} $\gets$ true \;
+    \emph{noAddedNode} $\gets$ 0 \;
+
+    \While{path.length $< n$}
+    {
+        \If{noAddedNode $> n/2$}
+        {
+            reset \emph{path, extendingBack, noAddedNode} and restart search
+        }
+
+        $u \gets$ back of \emph{path} \textbf{if} \emph{extendingBack} \textbf{else} front of \emph{path} \;
+        $v \gets$ random node $\notin$ \emph{path} such that $(\vec{z}_u - \vec{z}_{\text{predecessor of } u \text{ in \emph{path}}}) \cdot (\vec{z_v} - z_u) \ge 0$ \;
+        \If{$v$ \emph{exists}}
+        {
+            append $v$ at the back of \emph{path} \textbf{if} extendingBack \textbf{else} at the front of \emph{path} \;
+            \emph{noAddedNode} = 0 \;
+            \textbf{continue} \;
+        }
+
+        \emph{noAddedNode} $\gets$ $\emph{noAddedNode} + 1$ \;
+        \If{extendingBack}
+        {
+            mark the back as dead end \;
+        } \Else {
+            mark the front as dead end \;
+        }
+
+        \If{\emph{front and back are both marked as dead end}}
+        {
+            $r \gets$ \emph{path}[$\emph{path.length} - 1$], $s \gets$ \emph{path}[$\emph{path.length} - 2$] \;
+            $i \gets$ random integer $\in [0, \emph{path.length} - 2]$ such that $\vec{z}_{sr} \cdot \vec{z}_{r,\emph{path}[i]} \ge 0$ \textbf{and} $\vec{z}_{r,\emph{path}[i]} \cdot \vec{z}_{\emph{path}[i - 1], \emph{path}[i]} \ge 0$ \;
+
+            \If{$i$ \emph{exists}}
+            {
+                reverse \emph{path} from $i$ to end \;
+                mark the back as not dead end \;
+            } \Else {
+                reverse \emph{path} from begin to end \;
+            }
+        } \Else {
+            \emph{extendingBack} $\gets \neg\emph{extendingBack}$ \;  
+        }
+
+    }
+
+    \Return{\emph{points in $z$ in the permutation stored in \emph{path}}}
+
+    \caption{\textsc{RandomizedObtusePath}(z)}
+\end{algorithm}
+
 \section{Beweis der NP-Schwere}
 
 Von dem nah verwandten Problem, einen Hamiltonzyklus mit einer Einschränkung des  Abbiegewinkels zu finden, wurde die NP-Schwere von Dumitrescu und Jiang \cite{nphard} bereits bewiesen. Dieses Problem wird dort \emph{Angle-bounded Hamiltonian Tour} genannt, analog wird das hier vorliegende \emph{Angle-bounded Hamiltonian Path} genannt. Der Beweis für Hamiltonpfade sieht ähnlich aus und wird hier auf Basis des Beweises in \cite{nphard} gezeigt. In \cite{nphard} wurde das NP-schwere Problem, eine Menge an Punkten im zweidimensionalen Raum mit möglichst wenigen Geraden abzudecken (\emph{Covering points by lines}) auf \emph{Angle-bounded Hamiltonian Tour} reduziert. Sei $P$ die Punktemenge der Instanz von \emph{Covering points by lines}. Zunächst wird eine Gerade durch jedes Paar an unterschiedlichen Punkten in $P$ gelegt, wobei man annehmen kann, dass keine Gerade vertikal verläuft, da man die Punkte einfach leicht rotieren könnte. Diese Menge an Geraden wird $L_P$ genannt. Anschließend wird eine Kurve $\gamma$ wie in Abbildung 1 zu sehen um $P$ herumgelegt, wobei für jede Gerade aus $L_P$ ein kleines Segment auf der linken und rechten Seite eingefügt wird.
@@ -442,7 +502,17 @@ Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
 
 \section{Quellcode}
 
-\inputminted{c++}{aufgabe1/aufgabe1.cpp}
+\subsection{util.hpp}
+
+\inputminted{c++}{aufgabe1/util.hpp}
+
+\subsection{aufgabe1\_ip.cpp}
+
+\inputminted{c++}{aufgabe1/aufgabe1_ip.cpp}
+
+\subsection{aufgabe1\_randomized.cpp}
+
+\inputminted{c++}{aufgabe1/aufgabe1_randomized.cpp}
 
 \begin{thebibliography}{4}
     \bibitem{tsp-formulations}
@@ -464,6 +534,10 @@ Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
     Dumitrescu, A., Jiang, M. (2018).
     On the approximability of covering points by lines and related problems. \\
     \href{https://arxiv.org/pdf/1312.2549.pdf}{https://arxiv.org/pdf/1312.2549.pdf}
+
+    \bibitem{discrete-math}
+    Johnsonbaugh, R. (2018). 
+    Discrete Mathematics (Eighth Edition).
 \end{thebibliography}
 
 \section*{Anhang}
