@@ -2,15 +2,7 @@
 #include "util.hpp"
 using namespace std;
 
-constexpr size_t TwoOptIterationLimit = 400000;
-
-struct Node
-{
-    Node *adj[2]; // 0: Vorgänger, 1: Nachfolger.
-    complex<double> p;
-
-    Node() { adj[0] = adj[1] = nullptr; }
-};
+constexpr size_t TwoOptIterationLimit = 1000000;
 
 double path_length(vector<complex<double>> const &z)
 {
@@ -24,78 +16,56 @@ double path_length(vector<complex<double>> const &z)
 // Abbiegewinkel > pi / 2 zu erzeugen.
 void optimize_path(vector<complex<double>> &path)
 {
-    vector<Node> nodes(path.size());
-    for (size_t i = 0; i < path.size(); i++)
-        nodes[i].p = path[i];
-    for (size_t i = 0; i + 1 < nodes.size(); i++)
-        nodes[i].adj[1] = &nodes[i + 1], nodes[i + 1].adj[0] = &nodes[i];
-
-    queue<pair<Node *, bool>> q;
-    for (size_t i = 0; i + 1 < nodes.size(); i++)
-        q.emplace(&nodes[i], 0), q.emplace(&nodes[i + 1], 1);
+    size_t const n = path.size();
+    array<vector<bool>, 2> processed;
+    processed[0] = vector<bool>(n, 0);
+    processed[1] = vector<bool>(n, 0);
+    queue<pair<size_t, ptrdiff_t>> q;
+    for (size_t i = 0; i + 1 < n; i++)
+        q.emplace(i, -1), q.emplace(i + 1, 1);
 
     size_t iteration_count = 0;
     while (!q.empty() && iteration_count < TwoOptIterationLimit)
     {
         auto const [w, direction] = q.front();
         q.pop();
-        if (!w->adj[!direction])
+        if (processed[direction][w])
             continue;
-
+        processed[(direction + 1) / 2][w] = 1;
         iteration_count++;
-        Node *v = w->adj[!direction], *u = v->adj[!direction],
-             *x = w->adj[direction], *a = w, *b = x;
 
-        while (b && b->adj[direction])
+        size_t const v = w - direction, u = v - direction, x = w + direction;
+        size_t a = w, b = x;
+
+        while (b && b + 1 < n)
         {
-            Node *c = b->adj[direction], *d = c->adj[direction];
+            size_t c = b + direction, d = c + direction;
 
             // Überprüfe, ob die 4 neuen Abbiegewinkel (uvb, vba, xwc, wcd) alle
             // <= pi / 2 sind.
-            if ((!u || dot_product(v->p - u->p, b->p - v->p) >= 0) &&
-                dot_product(b->p - v->p, a->p - b->p) >= 0 &&
-                dot_product(w->p - x->p, c->p - w->p) >= 0 &&
-                (!d || dot_product(c->p - w->p, d->p - c->p) >= 0) &&
-                abs(v->p - w->p) + abs(b->p - c->p) >
-                    abs(v->p - b->p) + abs(w->p - c->p))
+            if ((u >= n ||
+                 dot_product(path[v] - path[u], path[b] - path[v]) >= 0) &&
+                dot_product(path[b] - path[v], path[a] - path[b]) >= 0 &&
+                dot_product(path[w] - path[x], path[c] - path[w]) >= 0 &&
+                (d >= n ||
+                 dot_product(path[c] - path[w], path[d] - path[c]) >= 0) &&
+                abs(path[v] - path[w]) + abs(path[b] - path[c]) >
+                    abs(path[v] - path[b]) + abs(path[w] - path[c]))
             {
-                Node *z = x;   // Vertausche die Nachbarn aller Knoten von x
-                while (z != b) // bis a.
-                {
-                    swap(z->adj[0], z->adj[1]);
-                    z = z->adj[!direction];
-                }
-                v->adj[direction] = b; // Entferne die Kanten {v, w}, {b, c}
-                b->adj[direction] = a; // und füge {v, b}, {w, c} ein.
-                b->adj[!direction] = v;
-                w->adj[!direction] = x;
-                w->adj[direction] = c;
-                c->adj[!direction] = w;
-                q.emplace(v, !direction); // Die neu eingefügten Kanten können
+                reverse(path.begin() + min(w, b), path.begin() + max(w, b) + 1);
+                q.emplace(v, -direction); // Die neu eingefügten Kanten können
                 q.emplace(b, direction);  // erneut mit anderen vertauscht
-                q.emplace(w, !direction); // werden.
+                q.emplace(w, -direction); // werden.
                 q.emplace(c, direction);
+                processed[(-direction + 1) / 2][v] = 0;
+                processed[(direction + 1) / 2][b] = 0;
+                processed[(-direction + 1) / 2][w] = 0;
+                processed[(direction + 1) / 2][c] = 0;
                 break;
             }
-            a = a->adj[direction]; // Gehe zur nächsten Kante im Pfad.
-            b = b->adj[direction];
+            a += direction; // Gehe zur nächsten Kante im Pfad.
+            b += direction;
         }
-    }
-
-    Node *x = nullptr;
-    bool direction;
-    for (size_t i = 0; i < nodes.size(); i++)     // Find den Anfang des Pfads
-        if (!nodes[i].adj[0] || !nodes[i].adj[1]) // (Knoten mit Grad 1).
-        {
-            x = &nodes[i];
-            direction = nodes[i].adj[1]; // Lege die Laufrichtung fest.
-            break;
-        }
-    path.clear();
-    while (x) // Schreibe die neue Knotenfolge in path und berechne die neue
-    {         // Länge.
-        path.push_back(x->p);
-        x = x->adj[direction];
     }
 }
 
@@ -129,7 +99,8 @@ vector<complex<double>> obtuse_path(vector<complex<double>> const &z)
 
         // u: erster Knoten, v: zweiter Knoten (wenn existent)
         // w: Iterator in unvisited zum neu hinzugefügten Knoten
-        size_t u = path.back(), v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX,
+        size_t u = path.back(),
+               v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX,
                candidates = 0;
         list<size_t>::iterator w = unvisited.end();
 
@@ -201,9 +172,13 @@ int main()
         z.emplace_back(x, y);
 
     vector<complex<double>> path = obtuse_path(z);
+    cerr << "Zulässige Tour mit Länge " << path_length(path) << " gefunden.\n"
+         << "Starte 2-opt...\n";
     optimize_path(path);
+    cerr << "Tourlänge nach Optimierung: " << path_length(path) << '\n';
 
-    cout << setprecision(6) << fixed << "Tourlänge: " << path_length(path) << '\n';
+    cout << setprecision(6) << fixed
+         << "Tourlänge: " << path_length(path) << '\n';
     for (complex<double> const &u : path)
         cout << u.real() << ' ' << u.imag() << '\n';
 }
