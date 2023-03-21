@@ -1,10 +1,10 @@
 CC = g++
 CFLAGS = -Wall -Wextra -O3 -march=native
 
-all: ilp randomized
+all: ip randomized
 
-ilp:
-	$(CC) $(CFLAGS) aufgabe1_ilp.cpp -lhighs -lz -o aufgabe1_ilp
+ip:
+	$(CC) $(CFLAGS) aufgabe1_ip.cpp -lhighs -lz -o aufgabe1_ip
 
 randomized:
 	$(CC) $(CFLAGS) aufgabe1_randomized.cpp -o aufgabe1_randomized
