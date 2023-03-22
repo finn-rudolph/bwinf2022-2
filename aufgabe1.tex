@@ -415,8 +415,89 @@ Falls eine Lösung existiert, wird der Graph mit Kanten aus der Lösung mithilfe
 \noindent Wendet die 2-opt-Heuristik auf \verb|path| mit Beachtung von Abbiegewinkeln an. Um effizient Kanten aus dem Pfad entfernen und neu einfügen zu könne, wird in dem Vektor \verb|nodes| für jeden Knoten der Vorgänger (Index \verb|0|) und Nachfolger (Index \verb|1|) im Pfad verwaltet. Für die zwei Endknoten wird der nicht existente Vorgänger bzw. Nachfolger auf \verb|SIZE_MAX| gesetzt. In einer Warteschlange \verb|q| werden alle noch zu bearbeitenden Kanten (repräsentiert als \verb|pair<size_t, size_t>|) verwaltet. In der for-Schleife am Anfang wird der Vorgänger und Nachfolger jedes Knoten auf den den direkt vorangehenden bzw. folgenden Index gesetzt, sodass der in \verb|nodes| gespeicherte Pfad anfänglich genau dem in \verb|path| entspricht. Des Weiteren wird jede Kante in beiden Richtungen in \verb|q| eingefügt. In der folgenden while-Schleife wird in jeder Iteration genau eine Kante aus \verb|q| bearbeitet, deren Knoten heißen \verb|v| und \verb|w|. Da die Kante durch vorherige Operationen entfernt sein worden könnte, wird überprüft, ob \verb|v| \verb|w| noch als Nachbarn hat. Für die Anzahl an Iterationen der while-Schleife, in denen eine vorhandene Kante bearbeitet wird, ist durch die Konstante \verb|TwoOptIterationLimit| ein Limit festgelegt, da die Funktion bei großen Instanzen sonst sehr viel Zeit benötigen kann.
 
 Nun zum Inneren der while-Schleife: In einer Iteration wird nach möglichen Kanten zum Tauschen in dem Teil des Pfads gesucht, wenn man sich ausgehend von \verb|w| von der Kante wegbewegt. Nur eine Richtung pro Iteration zu bearbeiten, verkürzt die Implementierung deutlich, da der Pfad nur in eine Richtung abgelaufen werden muss. Die boolesche Variable \verb|direction| gibt an, ob man vorwärts auf dem Pfad läuft. Sie wird als Index in \verb|nodes| verwendet, um den Vorgänger bzw. Nachfolger in der aktuellen Laufrichtung zu erhalten (z. B. gibt \verb|nodes[w][direction]| den Nachfolger von \verb|w| in Laufrichtung). Für einen Überblick über den Rest der Variablen ist folgendes Diagramm hilfreich. \verb|{b, c}| ist immer der aktuell betrachtete Tauschpartner, die übrigen 4 Knoten müssen zur Überprüfung der neuen Abbiegewinkel verwaltet werden.
+\bigskip
 
-In jeder Iteration der inneren while-Schleife wird versucht, die Kanten \verb|{v, w}| und \verb|{b, c}| durch \verb|{v, b}| und \verb|{w, c}| zu ersetzen. Dafür müssen 4 Abbiegewinkel überprüft werden (großes \verb|if|-statement), wie in obigem Diagramm zu sehen. Da \verb|v| und \verb|c| Endpunkte des Pfads sein können, können \verb|u| und \verb|d| gleich \verb|SIZE_MAX| sein - dann gibt es keinen Abbiegewinkel, der überprüft werden muss. Daneben muss die Vertauschung der Endpunkte auch eine Verkürzung des Pfads bringen. Sind all diese Bedingungen erfüllt, wird der Pfad zwischen \verb|x| und \verb|a| umgekehrt sowie der Vorgänger und Nachfolger aller beteiligter Knoten aktualisiert. Die Operationen können gut anhand von obigem Diagramm nachvollzogen werden. Anschließend werden die zwei neuen Kanten in beiden Richtungen in \verb|q| eingefügt, da sie erneut zum Vertauschen von Endpunkten in Frage kommen. Ist das große \verb|if|-statement in der inneren while-Schleife nicht erfüllt, wird zur nächsten Kante vorangeschritten, indem \verb|a| und \verb|b| auf den Nachbar in Richtung \verb|direction| gesetzt werden.
+\noindent \begin{tikzpicture}[node distance = {13.3mm}, main/.style = {draw, circle}]
+    \node[main, draw=white](begin) at(0, 0) {...};
+    \node[main](u) [right of = begin] {u};
+    \node[main](v) [right of = u] {v};
+    \node[main](w) [right of = v] {w};
+    \node[main](x) [right of = w] {x};
+    \node[main, draw=white](mid) [right of = x] {...};
+    \node[main](a) [right of = mid] {a};
+    \node[main](b) [right of = a] {b};
+    \node[main](c) [right of = b] {c};
+    \node[main](d) [right of = c] {d};
+    \node[main, draw=white](end) [right of = d] {...};
+
+    \draw (begin) edge (u)
+          (u) edge (v)
+          (v) edge (w)
+          (w) edge (x)
+          (x) edge (mid)
+          (mid) edge (a)
+          (a) edge (b)
+          (b) edge (c)
+          (c) edge (d)
+          (d) edge (end);
+\end{tikzpicture}
+$$
+\downarrow
+$$
+\begin{tikzpicture}[node distance = {13.3mm}, main/.style = {draw, circle}]
+    \node[main, draw=white](begin) at(0, 0) {...};
+    \node[main](u) [right of = begin] {u};
+    \node[main](v) [right of = u] {v};
+    \node[main](w) [right of = v] {w};
+    \node[main](x) [right of = w] {x};
+    \node[main, draw=white](mid) [right of = x] {...};
+    \node[main](a) [right of = mid] {a};
+    \node[main](b) [right of = a] {b};
+    \node[main](c) [right of = b] {c};
+    \node[main](d) [right of = c] {d};
+    \node[main, draw=white](end) [right of = d] {...};
+
+    \draw (begin) edge (u)
+          (u) edge (v)
+          (v) edge [out=25, in=155] (b)
+          (w) edge (x)
+          (x) edge (mid)
+          (mid) edge (a)
+          (a) edge (b)
+          (c) edge [out=215, in=335] (w)
+          (c) edge (d)
+          (d) edge (end);
+\end{tikzpicture}
+$$
+\downarrow
+$$
+\begin{tikzpicture}[node distance = {13.3mm}, main/.style = {draw, circle}]
+    \node[main, draw=white](begin) at(0, 0) {...};
+    \node[main](u) [right of = begin] {u};
+    \node[main](v) [right of = u] {v};
+    \node[main](w) [right of = v] {b};
+    \node[main](x) [right of = w] {a};
+    \node[main, draw=white](mid) [right of = x] {...};
+    \node[main](a) [right of = mid] {x};
+    \node[main](b) [right of = a] {w};
+    \node[main](c) [right of = b] {c};
+    \node[main](d) [right of = c] {d};
+    \node[main, draw=white](end) [right of = d] {...};
+
+    \draw (begin) edge (u)
+          (u) edge (v)
+          (v) edge (w)
+          (w) edge (x)
+          (x) edge (mid)
+          (mid) edge (a)
+          (a) edge (b)
+          (b) edge (c)
+          (c) edge (d)
+          (d) edge (end);
+\end{tikzpicture}
+\medskip
+
+In jeder Iteration der inneren while-Schleife wird versucht, die Kanten \verb|{v, w}| und \verb|{b, c}| durch \verb|{v, b}| und \verb|{w, c}| zu ersetzen. Dafür müssen die 4 Abbiegewinkel \verb|uvb, vba, xwc| und \verb|wcd| überprüft werden (großes \verb|if|-statement), wie in obigem Diagramm zu sehen. Da \verb|v| und \verb|c| Endpunkte des Pfads sein können, können \verb|u| und \verb|d| gleich \verb|SIZE_MAX| sein - dann gibt es keinen Abbiegewinkel, der überprüft werden muss. Daneben muss die Vertauschung der Endpunkte auch eine Verkürzung des Pfads bringen. Sind all diese Bedingungen erfüllt, wird der Pfad zwischen \verb|x| und \verb|a| umgekehrt sowie der Vorgänger und Nachfolger aller beteiligter Knoten aktualisiert. Die Operationen können gut anhand von obigem Diagramm nachvollzogen werden. Anschließend werden die zwei neuen Kanten in beiden Richtungen in \verb|q| eingefügt, da sie erneut zum Vertauschen von Endpunkten in Frage kommen. Ist das große \verb|if|-statement in der inneren while-Schleife nicht erfüllt, wird zur nächsten Kante vorangeschritten, indem \verb|a| und \verb|b| auf den Nachbar in Richtung \verb|direction| gesetzt werden.
 
 Nach Ende der äußeren while-Schleife wird der neue Pfad abgelaufen und die neue Punktefolge in \verb|new_path| gespeichert. Diese wird anschließend zurückgegeben.
 
