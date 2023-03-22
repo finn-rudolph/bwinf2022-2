@@ -4,7 +4,7 @@ using namespace std;
 
 vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 {
-    size_t const n = z.size();
+    size_t const n = z.size(), sqrtn = sqrt(n);
     vector<size_t> path;
     list<size_t> unvisited;
     bool front_is_dead_end, back_is_dead_end;
@@ -27,7 +27,7 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 
     while (path.size() < n)
     {
-        if (no_added_node > n / 2) // Zu große Anzahl aufeinanderfolgener
+        if (no_added_node > sqrtn) // Zu große Anzahl aufeinanderfolgener
             restart_search();      // Iterationen ohne Hinzufügen eines Knotens.
 
         // u: letzter Knoten, v: vorletzter Knoten (wenn existent)
@@ -43,6 +43,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
                 candidates++;
                 if (!(rand() % candidates)) // wahr mit Wahrscheinlichkeit
                     w = it;                 // 1 / candidates.
+                if (candidates > sqrtn)
+                    break;
             }
         if (candidates)
         {
@@ -74,6 +76,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
                     candidates++;
                     if (!(rand() % candidates)) // wahr mit Wahrscheinlichkeit
                         w = it;                 // 1 / candidates.
+                    if (candidates > sqrtn)
+                        break;
                 }
                 it++;
             }
@@ -103,7 +107,7 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 // Abbiegewinkel > pi / 2 zu erzeugen.
 vector<complex<double>> optimize_path(vector<complex<double>> const &path)
 {
-    constexpr size_t TwoOptIterationLimit = 1000000;
+    size_t const TwoOptIterationLimit = 100000000000 / path.size();
 
     size_t const n = path.size();
     vector<array<size_t, 2>> nodes(n);
