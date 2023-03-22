@@ -503,7 +503,9 @@ Nach Ende der äußeren while-Schleife wird der neue Pfad abgelaufen und die neu
 
 \section{Beispiele}
 
-Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \emph{wenigerkrumm3} mit 120 Punkten, wurde 1 min 4,14 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 5 3600 durchgeführt, es standen 15,6 GB Arbeitsspeicher zur Verfügung. Alle Beispiele nach \emph{wenigerkrumm8} stammen von TSPLIB \cite{tsplib}, allerdings wurden die Eingabedateien vom TSPLIB-Format in das Format der anderen Eingaben umgewandelt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Mit 29 SECs waren bei der TSPLIB-Instanz a280 die meisten SECs nötig, was im Verhältnis zu den 280 Punkten dieser Instanz aber immer noch wenig ist. Die Zahl an Bedingungen der ganzzahligen linearen Programme wurde stets von den $\Theta(n^3)$ Winkelbedingungen dominiert. Die größte gelöste Instanz von TSPLIB (lin318) bestand aus 318 Punkten und benötigte ca. 30 min. Da die Programmausgaben viel Platz benötigen, sind die Ausgaben für die BWINF-Beispiele im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert. Die Ausgaben für alle Beispiele finden sich im Ordner \verb|ausgaben|.
+Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte von ihnen, \emph{wenigerkrumm3} mit 120 Punkten, wurde 1 min 4,14 s benötigt. Die Laufzeitmessungen wurden mit einem AMD Ryzen 5 3600 durchgeführt, es standen 15,6 GB Arbeitsspeicher zur Verfügung. Alle Beispiele nach \emph{wenigerkrumm8} stammen von TSPLIB \cite{tsplib}, allerdings wurden die Eingabedateien vom TSPLIB-Format in das Format der anderen Eingaben umgewandelt. Für die BWINF-Instanzen waren maximal 6 SECs nötig, was die obige Begründung für die DFJ-Formulierung unterstützt. Mit 29 SECs waren bei der TSPLIB-Instanz a280 die meisten SECs nötig, was im Verhältnis zu den 280 Punkten dieser Instanz aber immer noch wenig ist. Die Zahl an Bedingungen der ganzzahligen linearen Programme wurde stets von den $\Theta(n^3)$ Winkelbedingungen dominiert. Die größte gelöste Instanz von TSPLIB (lin318) bestand aus 318 Punkten und benötigte ca. 30 min. Da die Programmausgaben viel Platz benötigen, sind die Ausgaben für die BWINF-Beispiele im Anhang zu finden. Die Lösungen werden hier graphisch präsentiert. Die Ausgaben für alle Beispiele finden sich im Ordner \verb|ausgaben|. 
+
+Für größere Beispiele als lin318 wurde der randomisierte Algorithmus in Kombination mit 2-opt verwendet. Die erzielten Ergebnisse sind wahrscheinlich nicht reproduzierbar - jedoch sollten sich Laufzeit und Ergebnisqualität in der gleichen Größenordnung befinden. Der randomisierte Algorithmus wurde jeweils 5 mal  Bemerkenswert ist hier vor allem die Effektivität der 2-opt-Heuristik: Sie erlaubt
 
 \subsection{wenigerkrumm1}
 
@@ -552,7 +554,7 @@ Die Instanzen von BWINF konnten alle optimal gelöst werden. Für die größte v
 
 \subsection{wenigerkrumm8}
 
-Dieses Beispiel (ein Dreieck mit keinem Winkel größer gleich $\pi / 2$) zeigt, dass das Programm erkennt, wenn keine Tour möglich ist.
+Dieses Beispiel (ein Dreieck mit keinem Winkel größer gleich $\pi / 2$) zeigt, dass das Programm \verb|aufgabe1_ip| erkennt, wenn keine Tour möglich ist. Führt man das Programm \verb|aufgabe1_randomized| auf dieser Instanz aus, terminiert es nicht.
 \medskip
 
 \noindent Eingabe:
@@ -621,11 +623,25 @@ Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
 
 \noindent Tourlänge: 51648.008358 $\quad$ Laufzeit: 30 min 29 s $\quad$ \#SECs: 4
 
+\subsection{nrw1379}
+
+Für dieses Beispiel wurde der randomisierte Algorithmus verwendet. Die Laufzeit lag bei allen Ausführungen im Bereich 1 - 3 s. Die Länge der besten Lösung betrug vor 2-opt 846360, und danach 140123. In folgender Abbildung ist oben der Pfad vor 2-opt und unten nach 2-opt dargestellt, woran man gut die starke Verkürzung durch 2-opt nachvollziehen kann.
+
+\noindent \includesvg[width=398pt]{grafiken/nrw1379-1}
+
+\noindent \includesvg[width=398pt]{grafiken/nrw1379-2}
+
+\subsection{pla85900}
+
+Wegen der Größe dieser Instanz ist eine graphische Darstellung nicht mehr sinnvoll, genauso wie das Abdrucken der Punktefolge. Die Lösung befindet sich aber im Ordner \verb|ausgaben| in der Datei \verb|pla85900.out|. Die Laufzeit betrug bei allen Ausführungen ca. 2 - 4 min. Bei der besten Lösung betrug die Länge der von \verb|randomized_obtuse_path| gefundenen Tour $1,86592 \cdot 10^{10}$, sie konnte von der 2-opt-Heuristik auf $2,37135 \cdot 10^9$ verkürzt werden.
+
 \subsection{pr299}
 
 \includesvg[width=398pt]{grafiken/pr299}
 
 \noindent Tourlänge: 56257.537596 $\quad$ Laufzeit: 50 m 59 s $\quad$ \#SECs: 18
+
+\subsection{rl11849}
 
 \subsection{tsp225}
 
@@ -635,6 +651,8 @@ Keine Tour mit maximalem Abbiegewinkel von 90 Grad möglich.
 \medskip
 
 \noindent Die Form der Tour lässt vermuten, dass die Lösung nahezu mit der optimalen Lösung für das TSP übereinstimmt.
+
+\subsection{usa13509}
 
 \section{Quellcode}
 
