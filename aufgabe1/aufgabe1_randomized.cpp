@@ -4,64 +4,6 @@ using namespace std;
 
 constexpr size_t TwoOptIterationLimit = 1000000;
 
-// Optimiert den gegebenen Hamiltonpfad in-place mit der 2-opt Heuristik, ohne
-// Abbiegewinkel > pi / 2 zu erzeugen.
-void optimize_path(vector<complex<double>> &path)
-{
-    size_t const n = path.size();
-    array<vector<bool>, 2> processed;
-    processed[0] = vector<bool>(n, 0);
-    processed[1] = vector<bool>(n, 0);
-    queue<pair<size_t, ptrdiff_t>> q;
-    for (size_t i = 0; i + 1 < n; i++)
-        q.emplace(i, -1), q.emplace(i + 1, 1);
-
-    size_t iteration_count = 0;
-    while (!q.empty() && iteration_count < TwoOptIterationLimit)
-    {
-        auto const [w, direction] = q.front();
-        q.pop();
-        if (processed[direction][w])
-            continue;
-        processed[(direction + 1) / 2][w] = 1;
-        iteration_count++;
-
-        size_t const v = w - direction, u = v - direction, x = w + direction;
-        size_t a = w, b = x;
-
-        while (b && b + 1 < n)
-        {
-            size_t c = b + direction, d = c + direction;
-
-            // Überprüfe, ob die Tour durch Erstetzen von {v, w}, {b, c} durch
-            // {v, b}, {w, c} verkürzt wird und die 4 neuen Abbiegewinkel (uvb,
-            // vba, xwc, wcd) alle <= pi / 2 sind.
-            if ((u >= n ||
-                 dot_product(path[v] - path[u], path[b] - path[v]) >= 0) &&
-                dot_product(path[b] - path[v], path[a] - path[b]) >= 0 &&
-                dot_product(path[w] - path[x], path[c] - path[w]) >= 0 &&
-                (d >= n ||
-                 dot_product(path[c] - path[w], path[d] - path[c]) >= 0) &&
-                abs(path[v] - path[w]) + abs(path[b] - path[c]) >
-                    abs(path[v] - path[b]) + abs(path[w] - path[c]))
-            {
-                reverse(path.begin() + min(w, b), path.begin() + max(w, b) + 1);
-                q.emplace(v, -direction); // Die neu eingefügten Kanten können
-                q.emplace(b, direction);  // erneut mit anderen vertauscht
-                q.emplace(w, -direction); // werden.
-                q.emplace(c, direction);
-                processed[(-direction + 1) / 2][v] = 0;
-                processed[(direction + 1) / 2][b] = 0;
-                processed[(-direction + 1) / 2][w] = 0;
-                processed[(direction + 1) / 2][c] = 0;
-                break;
-            }
-            a += direction; // Gehe zur nächsten Kante im Pfad.
-            b += direction;
-        }
-    }
-}
-
 vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
@@ -72,15 +14,15 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 
     auto restart_search = [&]()
     {
-        front_is_dead_end = back_is_dead_end = 0;
-        unvisited.clear();
+        front_is_dead_end = back_is_dead_end = 0; // Setze alle Datenstrukturen
+        unvisited.clear();                        // zurück.
         path.clear();
+        no_added_node = 0;
         srand(time(0));
         path.push_back(rand() % n);    // Wähle einen zufälligen Startknoten.
         for (size_t i = 0; i < n; i++) // Fülle unvisited mit allen Knoten
             if (i != path.front())     // außer dem Startknoten.
                 unvisited.push_back(i);
-        no_added_node = 0;
     };
 
     restart_search();
@@ -125,8 +67,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
             // w: Iterator zum Knoten, nach dem der Pfad aufgebrochen wird.
             auto it = path.rbegin() + 2, w = path.rend();
 
-            while (it != path.rend())
-            {
+            while (it != path.rend()) // Überprüfe die Winkelbeschränkungen und
+            {                         // ziehe it als Kandidaten in Betracht.
                 if (dot_product(z[u] - z[v], z[*it] - z[u]) >= 0 &&
                     (it + 1 == path.rend() ||
                      dot_product(z[*it] - z[u], z[*(it + 1)] - z[*it]) >= 0))
@@ -138,9 +80,9 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
                 it++;
             }
 
-            if (candidates) // Füge die Kante {u, w} ein und entferne die Kante
-            {               // von w zu seinem Nachfolger.
-                reverse(path.rbegin(), w);
+            if (candidates) // Breche den Pfad nach w auf und verbinde u mit w.
+            {
+                reverse(path.rbegin(), w); // Kehre das Suffix bis w um.
                 back_is_dead_end = 0;
             }
             else
@@ -159,6 +101,90 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
     return point_order;
 }
 
+// Gibt einen mit der 2-opt Heuristik optimierten, ohne
+// Abbiegewinkel > pi / 2 zu erzeugen.
+vector<complex<double>> optimize_path(vector<complex<double>> const &path)
+{
+    size_t const n = path.size();
+    vector<array<size_t, 2>> nodes(n);
+    queue<pair<size_t, size_t>> q;
+    for (size_t i = 0; i + 1 < n; i++)
+    { // Füge alle Knoten in die Warteschlange ein.
+        q.emplace(i, i + 1), q.emplace(i + 1, i);
+        nodes[i][1] = i + 1, nodes[i + 1][0] = i;
+    }
+    nodes[0][0] = nodes[n - 1][1] = SIZE_MAX;
+
+    size_t iteration_count = 0;
+    while (!q.empty() && iteration_count < TwoOptIterationLimit)
+    {
+        auto const [v, w] = q.front();
+        q.pop();
+        if (nodes[v][0] != w && nodes[v][1] != w)
+            continue;
+        bool const direction = nodes[w][0] == v;
+        iteration_count++;
+
+        // Die aktuell bearbeitete Kante ist {v, w}. u kommt vor v, x nach w.
+        // Als mögliche Tauschpartner werden nur Kanten in Richtung von x in
+        // Betracht gezogen.
+        size_t const u = nodes[v][!direction], x = nodes[w][direction];
+        size_t a = w, b = x;
+
+        while (b != SIZE_MAX && nodes[b][direction] != SIZE_MAX)
+        {
+            size_t c = nodes[b][direction], d = nodes[c][direction];
+
+            // Überprüfe, ob die Tour durch Erstetzen von {v, w}, {b, c} durch
+            // {v, b}, {w, c} verkürzt wird und die 4 neuen Abbiegewinkel (uvb,
+            // vba, xwc, wcd) alle <= pi / 2 sind.
+            if ((u >= n ||
+                 dot_product(path[v] - path[u], path[b] - path[v]) >= 0) &&
+                dot_product(path[b] - path[v], path[a] - path[b]) >= 0 &&
+                dot_product(path[w] - path[x], path[c] - path[w]) >= 0 &&
+                (d >= n ||
+                 dot_product(path[c] - path[w], path[d] - path[c]) >= 0) &&
+                abs(path[v] - path[w]) + abs(path[b] - path[c]) >
+                    abs(path[v] - path[b]) + abs(path[w] - path[c]))
+            {
+                // Kehre den Teil des Pfads von x bis a um.
+                for (size_t i = x; i != b; i = nodes[i][!direction])
+                    swap(nodes[i][0], nodes[i][1]);
+                // Entferne {v, w}, {b, c} und füge {v, b}, {w, c} ein.
+                nodes[v][direction] = b;
+                nodes[b][direction] = a;
+                nodes[b][!direction] = v;
+                nodes[w][!direction] = x;
+                nodes[w][direction] = c;
+                nodes[c][!direction] = w;
+                // Die neu eingefügten Kanten können erneut mit anderen
+                // vertauscht werden, daher werden sie zu q hinzugefügt.
+                q.emplace(v, b);
+                q.emplace(b, v);
+                q.emplace(w, c);
+                q.emplace(c, w);
+                break;
+            }
+            a = nodes[a][direction]; // Gehe zur nächsten Kante im Pfad.
+            b = nodes[b][direction];
+        }
+    }
+
+    vector<complex<double>> new_path;
+    size_t start;
+    bool direction;
+    for (size_t i = 0; i < n; i++) // Suche nach einem Knoten mit Grad 1.
+        if (nodes[i][0] == SIZE_MAX || nodes[i][1] == SIZE_MAX)
+        {
+            start = i;
+            direction = nodes[i][1] != SIZE_MAX;
+            break;
+        }
+    for (size_t i = start; i != SIZE_MAX; i = nodes[i][direction])
+        new_path.push_back(path[i]);
+    return new_path;
+}
+
 int main()
 {
     vector<complex<double>> z;
@@ -169,7 +195,7 @@ int main()
     vector<complex<double>> path = randomized_obtuse_path(z);
     cerr << "Zulässige Tour mit Länge " << path_length(path) << " gefunden.\n"
          << "Starte 2-opt...\n";
-    optimize_path(path);
+    path = optimize_path(path);
     cerr << "Tourlänge nach Optimierung: " << path_length(path) << '\n';
 
     cout << setprecision(6) << fixed
