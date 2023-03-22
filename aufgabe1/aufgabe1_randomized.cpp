@@ -2,8 +2,6 @@
 #include "util.hpp"
 using namespace std;
 
-constexpr size_t TwoOptIterationLimit = 1000000;
-
 vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
@@ -105,6 +103,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 // Abbiegewinkel > pi / 2 zu erzeugen.
 vector<complex<double>> optimize_path(vector<complex<double>> const &path)
 {
+    constexpr size_t TwoOptIterationLimit = 1000000;
+
     size_t const n = path.size();
     vector<array<size_t, 2>> nodes(n);
     queue<pair<size_t, size_t>> q;
@@ -120,8 +120,8 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
     {
         auto const [v, w] = q.front();
         q.pop();
-        if (nodes[v][0] != w && nodes[v][1] != w)
-            continue;
+        if (nodes[v][0] != w && nodes[v][1] != w) // Überprüfe, ob es die Kante
+            continue;                             // noch gibt.
         bool const direction = nodes[w][0] == v;
         iteration_count++;
 
@@ -138,11 +138,11 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
             // Überprüfe, ob die Tour durch Erstetzen von {v, w}, {b, c} durch
             // {v, b}, {w, c} verkürzt wird und die 4 neuen Abbiegewinkel (uvb,
             // vba, xwc, wcd) alle <= pi / 2 sind.
-            if ((u >= n ||
+            if ((u == SIZE_MAX ||
                  dot_product(path[v] - path[u], path[b] - path[v]) >= 0) &&
                 dot_product(path[b] - path[v], path[a] - path[b]) >= 0 &&
                 dot_product(path[w] - path[x], path[c] - path[w]) >= 0 &&
-                (d >= n ||
+                (d == SIZE_MAX ||
                  dot_product(path[c] - path[w], path[d] - path[c]) >= 0) &&
                 abs(path[v] - path[w]) + abs(path[b] - path[c]) >
                     abs(path[v] - path[b]) + abs(path[w] - path[c]))
@@ -170,13 +170,13 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
         }
     }
 
-    vector<complex<double>> new_path;
+    vector<complex<double>> new_path; // nue
     size_t start;
     bool direction;
     for (size_t i = 0; i < n; i++) // Suche nach einem Knoten mit Grad 1.
         if (nodes[i][0] == SIZE_MAX || nodes[i][1] == SIZE_MAX)
         {
-            start = i;
+            start = i; // Startknoten gefunden.
             direction = nodes[i][1] != SIZE_MAX;
             break;
         }
