@@ -171,8 +171,8 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
     }
 
     vector<complex<double>> new_path; // nue
-    size_t start;
-    bool direction;
+    size_t start = SIZE_MAX;
+    bool direction = 0;
     for (size_t i = 0; i < n; i++) // Suche nach einem Knoten mit Grad 1.
         if (nodes[i][0] == SIZE_MAX || nodes[i][1] == SIZE_MAX)
         {
