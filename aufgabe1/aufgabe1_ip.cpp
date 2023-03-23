@@ -31,6 +31,7 @@ void add_angle_constraints(HighsModel &model, vector<complex<double>> const &z)
                     lp.a_matrix_.value_.push_back(1); // Kante ist 1.
                     lp.row_lower_.push_back(0);
                     lp.row_upper_.push_back(1);
+                    //
                     lp.a_matrix_.start_.push_back(lp.a_matrix_.index_.size());
                 }
             }
@@ -60,7 +61,7 @@ void add_degree_constraints(HighsModel &model, size_t n)
 // Schränkt die Anzahl verwendeter Kanten auf genau n - 1 ein.
 void add_num_edges_constraint(HighsModel &model, size_t n)
 {
-    for (size_t i = 0; i < nchoose2(n); i++)
+    for (size_t i = 0; i < nchoose2(n); i++) // Iteriere über alle Kanten.
     {
         model.lp_.a_matrix_.index_.push_back(i);
         model.lp_.a_matrix_.value_.push_back(1);
@@ -103,7 +104,7 @@ void add_subtour_elimination_constraint(
 vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
 {
     HighsSolution const &solution = highs.getSolution();
-    vector<vector<size_t>> graph(n);
+    vector<vector<size_t>> graph(n); // Adjazenzliste
 
     for (size_t i = 0; i < n; i++)         // Überprüfe für jede Kante, ob der
         for (size_t j = i + 1; j < n; j++) // Wert ihrer Variablen 1 ist.
@@ -182,7 +183,7 @@ vector<complex<double>> shortest_obtuse_path(vector<complex<double>> const &z)
     Highs highs;
     HighsStatus status;
     HighsModelStatus model_status = HighsModelStatus::kNotset;
-    status = highs.passModel(model);
+    status = highs.passModel(model); // Übergebe model an highs.
     assert(status == HighsStatus::kOk);
     bool has_subtours = 1;
 
@@ -191,7 +192,7 @@ vector<complex<double>> shortest_obtuse_path(vector<complex<double>> const &z)
         status = highs.run(); // Löse das ganzzahlige lineare Programm.
         assert(status == HighsStatus::kOk);
         model_status = highs.getModelStatus();
-        has_subtours = check_for_subtours(highs, n);
+        has_subtours = check_for_subtours(highs, n); // Füge SECs ein.
     }
 
     if (model_status == HighsModelStatus::kInfeasible) // Keine Tour möglich.
