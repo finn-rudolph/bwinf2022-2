@@ -760,16 +760,20 @@ Für diese Teilaufgabe wird Dynamische Programmierung verwendet. Man nehme an, e
 \begin{align*}
     A(q) = \min_{0 \le i \le k - 1}  y[\mu(\gamma_i q)] + 1
 \end{align*}
-Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man alle $A(q)$ für Permutationen der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor $y$ mit den Werten aller Permutationen von Länge $k$ überschrieben werden kann, müssen alle davon berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert. Hier kann außerdem die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können die Berechnungen von $\mu$ auf die Hälfte reduziert werden. Für Permutationen der Länge $n$ gilt außerdem, dass $A(p)$ nicht mehr in $z$ gespeichert werden muss, sondern nur ein laufendes Maximum $a_{\max}$ aller $A(p)$ aktualisiert werden muss. Der Ansatz ist im Algorithmus \textsc{Pwue} zusammengefasst.
+Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man alle $A(q)$ für Permutationen der Länge $k$ berechnet, schreibt man diese wieder in $y$ und kann mit $k + 1$ fortfahren. Dies wird solange fortgeführt, bis man $n$ erreicht hat. Der Ansatz ist im Algorithmus \textsc{Pwue} zusammengefasst. Zu Beginn enthält $y$ ausschließlich eine 0 bei Index 0, da für $I^1$ 0 Operationen benötigt werden. Bevor $y$ mit den Werten aller Permutationen von Länge $k$ überschrieben werden kann, müssen alle davon berechnet sein, daher werden sie in einem weiteren Array $z$ zwischengespeichert.
+
+Hier kann die Symmetrie des Pancake-Graphen ausgenutzt werden: Nach obiger Formel muss für eine Permutation $k$ Mal $\gamma_i p$ und anschließend $\mu(\gamma_i p)$ berechnet werden. Da $\mu(\gamma_i p^*) = (k - 1)! - \mu(\gamma_i p) - 1$, können die Berechnungen von $\mu$ auf die Hälfte reduziert werden. Damit wird die gesamte Laufzeit auf ca. die Hälfte reduziert, da die Berechnungen von $\mu$ mit $\Theta(k \log k)$ der asymptotische Flaschenhals sind. Für jede Permutationslänge $k$ wird also nur bis zum Permutationsindex $k!/2 - 1$ iteriert und die Permutationen mit Index $i$ und $k! - i - 1$ gleichzeitig nach obigem Verfahren bearbeitet. Nachdem alle Permutationen der Länge $k$ berabeitet wurden, werden $y$ und $z$ getauscht. Für Permutationen der Länge $n$ gilt außerdem, dass $A(p)$ nicht mehr in $z$ gespeichert werden muss. Daher geht $k$ in der ersten for-Schleife nur bis $n - 1$, Permutationen der Länge $n$ werden in der zweiten äußeren for-Schleife von \textsc{Pwue} behandelt. Für sie wird genauso verfahren, nur wird ein laufendes Maximum $a_{\max}$ aller $A(p)$ aktualisiert, sowie der Index einer Beispielpermutation \emph{example} mit $A(p) = P(n)$. Innerhalb der for-Schleife bezeichnet $a_1$ den aktuell kleinsten gefundenen Wert für $A(p)$ und $a_2$ den für $A(p^*)$. Nach der Berechnung von $A(p)$ und $A(p^*)$ werden $a_{\max}$ und \emph{example} gegebenenfalls aktualisiert. \textsc{Pwue} gibt $P(n)$ und den Index einer Beispielpermutation der Länge $n$ zurück.
 
 \begin{algorithm}
     $y \gets \{0\}, z \gets$ empty array \;
 
     \For{$k \gets 2$ \KwTo $n - 1$}
     {
-        \For{$i \gets 0$ \KwTo $k! / 2$}
+        \For{$i \gets 0$ \KwTo $k! / 2 - 1$}
         {
             $p \gets$ \textsc{IthPermutation}$(k, i)$ \;
+            $z[i] \gets \infty$ \;
+            $z[k! - i - 1] \gets \infty$ \;
 
             \For{$j \gets 0$ \KwTo $k$} {
                 $l \gets \mu(\gamma_j p)$ \;
@@ -782,10 +786,10 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man all
         swap($y, z$) \;
     }
     $a_{\max} \gets 0$ \; 
-    example $\gets 0$ \;
+    \emph{example} $\gets 0$ \;
     \For {$i \gets 0$ \KwTo $n!/2$}
     {
-        $a_1 \gets n, a_2 \gets n$ \;
+        $a_1 \gets \infty, a_2 \gets \infty$ \;
         $p \gets$ \textsc{IthPermutation}$(n, i)$ \;
         \For{$j \gets 0$ \KwTo $n$}
         {
@@ -796,28 +800,19 @@ Die einzige Ausnahme ist $q = I^k$, hier gilt natürlich $A(q) = 0$. Hat man all
         \If{$a_1 > a_{\max}$}
         {
             $a_{\max} \gets a_1$ \;
-            example $\gets i$ \;
+            \emph{example} $\gets i$ \;
         }
         \If{$a_2 > a_{\max}$}
         {
             $a_{\max} \gets a_2$ \;
-            example $\gets u - i - 1$ \;
+            \emph{example} $\gets n! - i - 1$ \;
         }
     }
 
-    \Return{\emph{(}$a_{\max}, \mathrm{example}$\emph{)}} \;
+    \Return{\emph{(}$a_{\max}, \text{example}$\emph{)}} \;
 
     \caption{\textsc{Pwue}$(n)$}
 \end{algorithm}
-
-\medskip
-\emph{Anmerkung.} Es wurden auch andere Verfahren in Betracht gezogen, die nicht einfach $A(p)$ für jede Permutation berechnen, sondern die Berechnung für ,,einfacher sortierbare'' Permutationen vermeiden. In der Praxis waren sie jedoch ineffizienter als der vorgestellte Algorithmus. Im Folgenden soll eines kurz erläutert werden. Es basiert darauf, dass für eine Permutation $p$ der Länge $n$, sodass $A(p) = P(n)$ jeder kürzeste Pfad zu einer identischen Permutation bei $I^{m}$ endet, wobei $m = n - P(n)$. Für jede Permutation der Länge $k$ mit $m \le k \le n$, die von einem solchen $p$ durch eine Folge von $\gamma_i$-Operationen erreicht werden kann, gilt außerdem, dass ihr kürzester Pfad zu einer identischen Permutation zu $I^m$ oder kleiner führt. Wir nennen im Folgenden die Menge an Permutationen der Länge $k$, deren kürzester Pfad zu $I^m$ oder einer kleineren identischen Permutation führt, $S_k$. Offensichtlich ist $S_n$ genau die gewünschte Menge von Permutationen mit $A(p) = P(n)$. Der Algorithmus arbeitet wie folgt: Man startet mit $S_m$, das aus allen Permutationen der Länge $m$ besteht. Nun definieren wir die Umkehrung von $\gamma_i$: Mit $q = \gamma_{i, r}^{-1} p$ wird die Permutation $q$ der Länge $|p| + 1$ bezeichnet, sodass $\gamma_i q = p$ und $q_i = r$. Der Parameter $r$ ist nötig, da die Umkehrung andernfalls nicht eindeutig wäre. Nun führt man $\gamma_{i, r}^{-1}$ für jede Permutation in $S_m$ aus und speichert für jede Permutation der Länge $m + 1$, die mindestens einmal Ergebnis einer solchen Operation war, wie oft sie Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war. Effizient lässt sich das mit einer Hashmap oder einem balancierten Binärbaum realisieren, wobei ein Zähler für jede betroffene Permutation verwaltet wird. Jede Permutation der Länge $m+ 1$, die $m + 1$ Mal Ergebnis einer $\gamma_{i, r}^{-1}$-Operation war, muss Teil von $S_{m + 1}$ sein und wird dort eingefügt. Nun wird das Verfahren für $S_{m+ 1}$, wiederholt, dann $S_{m + 2}$ und so weiter, bis $n - 1$. Schließlich enthält $S_n$ genau die gewünschte Menge von Permutationen. Bisher wurde angenommen, dass $m = n - P(n)$ bekannt ist, was nicht stimmt, da $P(n)$ berechnet werden soll. Wenn das beschriebene Verfahren aber von einem $k < m$ gestartet wird, ist $S_n$ am Ende leer, da es keine Permutationen der Länge $n$ gibt, deren kürzeste Pfade zu einer identischen Permutation zu $I^k$ oder kleiner führen, für $k < m$. Es wird also eine Binärsuche durchgeführt, um das tatsächliche $m$ zu finden. Da nicht für jede Permutation jeder Länge Speicher benötigt wird, und $A(p)$ nur für bestimmte Permutationen berechnet wird, sollten sowohl Laufzeit als auch Speicherverbrauch gegenüber \textsc{Pwue} verbessert sein. Es ergaben sich jedoch folgende praktische Probleme, die insgeamt zu höherer Laufzeit und höherem Speicherverbrauch führen.
-
-\begin{itemize}
-    \item Wenn nicht jede Permutation gespeichert wird und kein Array der Länge $n!$ angelegt werden möchte, muss zu $A(p)$ auch $\mu(p)$ gespeichert werden. Während $A(p)$ problemlos in 8 Bits passt, benötigt $\mu(p)$ 64 Bits, soadss der Speicherverbrauch pro Permutation 8 Mal größer wird. Daneben wird, wie bereits erwähnt, eine komplexere Datenstruktur zum Speichern der Zähler benötigt, die einen hohen konstanten bzw. logarithmischen Faktor zur Laufzeit beiträgt.
-    \item Das Ausnutzen der Symmetrie des Pancake-Graphen wird weniger effizient, da zu einer Permutation gespeichert werden muss, ob ihr symmetrischer Partner überhaupt in $S_k$ enthalten ist.
-    \item Eine Parallelisierung des Verfahrens ist schwierig. Wenn $\gamma_{i, r}^{-1}$-Operationen von mehreren Permutationen gleichzeitig ausgeführt werden, muss die Datenstruktur zum Speichern der Zähler für Permutationen der Länge $k + 1$ gleichzeitig verändert werden. Dagegen kann \textsc{Pwue} vollständig parallelisiert werden.
-\end{itemize}
 
 \section{Laufzeitanalyse}
 
