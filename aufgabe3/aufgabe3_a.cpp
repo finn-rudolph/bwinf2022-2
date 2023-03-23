@@ -40,9 +40,9 @@ vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 
         vector<unsigned> const s = ith_permutation(length, index);
 
-        for (size_t j = 0; j < length; j++) // Wende alle möglichen gamma_i-
+        for (size_t i = 0; i < length; i++) // Wende alle möglichen gamma_i-
         {                                   // Operationen (0 <= i < length) an.
-            Node const y(ind_gamma(s, j), length - 1, 0);
+            Node const y(ind_gamma(s, i), length - 1, 0);
             if (pre[y.length - 1].find(y.index) == pre[y.length - 1].end())
             {
                 pre[y.length - 1][y.index] = index; // Vorgänger im Suchbaum.
@@ -139,10 +139,10 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 
         // Füge jede durch eine gamma-Operation erreichbare Permutation zur
         // Warteschlange hinzu, die das Ergebnis noch verbessern kann.
-        for (size_t j = 0; j < length; j++)
+        for (size_t i = 0; i < length; i++)
         {
-            Node const y(ind_gamma(s, j), length - 1,
-                         n - length + get_lbound_gamma(s, j) + 1);
+            Node const y(ind_gamma(s, i), length - 1,
+                         n - length + get_lbound_gamma(s, i) + 1);
 
             if (pre[length - 2].find(y.index) == pre[length - 2].end() &&
                 y.lbound < ubound)
@@ -180,18 +180,18 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
     // bestimme rekursiv die kürzeste Operationenfolge.
     while (!q.empty() && q.top().lbound < ubound)
     {
-        auto const [index, lbound, length] = q.top();
+        auto const [i, lbound, length] = q.top();
         q.pop();
 
         auto const [op, found] = // Rekursionsschritt
-            min_operations_bnb_r(gamma(p, index), vis, ubound - 1);
+            min_operations_bnb_r(gamma(p, i), vis, ubound - 1);
 
         if (found && op.size() + 1 < ubound)
         {
             // Neue kürzeste Folge gefunden.
             ubound = op.size() + 1;
             res = op;
-            res.push_back(index);
+            res.push_back(i);
             found_better = 1;
         }
     }
