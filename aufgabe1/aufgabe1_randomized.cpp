@@ -103,11 +103,13 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
     return point_order;
 }
 
-// Gibt einen mit der 2-opt Heuristik optimierten, ohne
-// Abbiegewinkel > pi / 2 zu erzeugen.
-vector<complex<double>> optimize_path(vector<complex<double>> const &path)
+// Optimiert den gegebenen Pfad mit der 2-opt Heuristik, ohne die Beschränkung
+// von Abbiegewinkeln zu verletzen. Mit time_limit wird ein Zeitlimit in s
+// gesetzt.
+vector<complex<double>> optimize_path(
+    vector<complex<double>> const &path, double time_limit)
 {
-    size_t const TwoOptIterationLimit = 100000000000 / path.size();
+    auto start_time = chrono::system_clock::now();
 
     size_t const n = path.size();
     vector<array<size_t, 2>> nodes(n);
@@ -119,15 +121,15 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
     }
     nodes[0][0] = nodes[n - 1][1] = SIZE_MAX;
 
-    size_t iteration_count = 0;
-    while (!q.empty() && iteration_count < TwoOptIterationLimit)
+    while (!q.empty() &&
+           chrono::duration<double>(chrono::system_clock::now() - start_time)
+                   .count() < time_limit)
     {
         auto const [v, w] = q.front();
         q.pop();
         if (nodes[v][0] != w && nodes[v][1] != w) // Überprüfe, ob es die Kante
             continue;                             // noch gibt.
         bool const direction = nodes[w][0] == v;
-        iteration_count++;
 
         // Die aktuell bearbeitete Kante ist {v, w}. u kommt vor v, x nach w.
         // Als mögliche Tauschpartner werden nur Kanten in Richtung von x in
@@ -189,18 +191,32 @@ vector<complex<double>> optimize_path(vector<complex<double>> const &path)
     return new_path;
 }
 
-int main()
+int main(int argc, char **argv)
 {
     vector<complex<double>> z;
     double x, y;
     while (scanf("%lf %lf", &x, &y) == 2)
         z.emplace_back(x, y);
 
+    auto start_time = chrono::system_clock::now();
+
     vector<complex<double>> path = randomized_obtuse_path(z);
-    cerr << "Zulässige Tour mit Länge " << path_length(path) << " gefunden.\n"
-         << "Starte 2-opt...\n";
-    path = optimize_path(path);
-    cerr << "Tourlänge nach Optimierung: " << path_length(path) << '\n';
+    auto duration = chrono::duration_cast<chrono::duration<double>>(
+        chrono::system_clock::now() - start_time);
+
+    cerr << setprecision(6) << fixed << "Zulässige Tour mit Länge "
+         << path_length(path) << " nach " << duration.count()
+         << " s gefunden.\nStarte 2-opt..." << endl;
+
+    double two_opt_time_limit = DBL_MAX;
+    if (argc == 3 && !strcmp(argv[1], "--2-opt-time-limit"))
+        two_opt_time_limit = stod(argv[2]);
+
+    path = optimize_path(path, two_opt_time_limit);
+    duration = chrono::duration_cast<chrono::duration<double>>(
+        chrono::system_clock::now() - start_time);
+    cerr << "Tourlänge nach Optimierung: " << path_length(path) << '\n'
+         << "Laufzeit: " << duration.count() << " s" << endl;
 
     cout << setprecision(6) << fixed
          << "Tourlänge: " << path_length(path) << '\n';
