@@ -3,6 +3,7 @@
 #include "Highs.h"
 using namespace std;
 
+// Gibt den Index der zur Kante {i, j} zugehörigen Variable zurück.
 size_t edge_index(size_t n, size_t i, size_t j)
 {
     return nchoose2(n) - nchoose2(n - min(i, j)) + max(i, j) - min(i, j) - 1;
@@ -64,8 +65,8 @@ void add_num_edges_constraint(HighsModel &model, size_t n)
         model.lp_.a_matrix_.index_.push_back(i);
         model.lp_.a_matrix_.value_.push_back(1);
     }
-    model.lp_.row_lower_.push_back(n - 1);
-    model.lp_.row_upper_.push_back(n - 1);
+    model.lp_.row_lower_.push_back(n - 1); // Fixiere den Wert der neuen Zeile
+    model.lp_.row_upper_.push_back(n - 1); // auf genau n - 1.
     model.lp_.a_matrix_.start_.push_back(model.lp_.a_matrix_.index_.size());
 }
 
@@ -78,6 +79,7 @@ void add_subtour_elimination_constraint(
     double *val = (double *)malloc(nchoose2(tour.size()) * sizeof *val);
     size_t k = 0; // Anzahl bereits in ind bzw. val eingefügter Elemente
 
+    // Setze den Koeffizienten jeder Kante zwischen Knoten der Subtour auf 1.
     for (size_t i = 0; i < tour.size(); i++)
     {
         for (size_t j = i + 1; j < tour.size(); j++)
@@ -103,8 +105,8 @@ vector<vector<size_t>> build_graph(Highs const &highs, size_t n)
     HighsSolution const &solution = highs.getSolution();
     vector<vector<size_t>> graph(n);
 
-    for (size_t i = 0; i < n; i++)
-        for (size_t j = i + 1; j < n; j++)
+    for (size_t i = 0; i < n; i++)         // Überprüfe für jede Kante, ob der
+        for (size_t j = i + 1; j < n; j++) // Wert ihrer Variablen 1 ist.
             if (solution.col_value[edge_index(n, i, j)] > 0.5)
                 graph[i].push_back(j), graph[j].push_back(i);
 
@@ -155,7 +157,7 @@ vector<complex<double>> shortest_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size();
 
-    HighsModel model;
+    HighsModel model; // Objekt, in dem das IP spezifiziert wird.
     model.lp_.sense_ = ObjSense::kMinimize;
     model.lp_.a_matrix_.format_ = MatrixFormat::kRowwise;
     model.lp_.a_matrix_.start_ = {0}; // Die erste Zeile beginnt bei Index 0.
