@@ -5,15 +5,16 @@ using namespace std;
 vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 {
     size_t const n = z.size(), sqrtn = sqrt(n);
-    vector<size_t> path;
+    deque<size_t> path;
     list<size_t> unvisited;
-    bool front_is_dead_end, back_is_dead_end;
+    bool front_is_dead_end, back_is_dead_end, extending_back;
     size_t no_added_node;
 
     auto restart_search = [&]()
     {
         front_is_dead_end = back_is_dead_end = 0; // Setze alle Datenstrukturen
-        unvisited.clear();                        // zurück.
+        extending_back = 0;                       // zurück.
+        unvisited.clear();
         path.clear();
         no_added_node = 0;
         srand(time(0));
@@ -32,10 +33,13 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
 
         // u: letzter Knoten, v: vorletzter Knoten (wenn existent)
         // w: Iterator in unvisited zum neu hinzugefügten Knoten
-        size_t u = path.back(),
-               v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX,
-               candidates = 0;
+        size_t u, v, candidates = 0;
         list<size_t>::iterator w = unvisited.end();
+
+        if (extending_back)
+            u = path.back(), v = path.size() >= 2 ? *++path.rbegin() : SIZE_MAX;
+        else
+            u = path.front(), v = path.size() >= 2 ? *++path.begin() : SIZE_MAX;
 
         for (auto it = unvisited.begin(); it != unvisited.end(); it++)
             if (path.size() < 2 || dot_product(z[u] - z[v], z[*it] - z[u]) >= 0)
@@ -48,7 +52,10 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
             }
         if (candidates)
         {
-            path.push_back(*w); // Erweitere den Pfad um w.
+            if (extending_back)
+                path.push_back(*w); // Erweitere den Pfad um w.
+            else
+                path.push_front(*w);
             unvisited.erase(w);
             no_added_node = 0;
             continue;
@@ -57,44 +64,47 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
         // Der Pfad kann von u aus nicht mehr erweitert werden, da alle mit
         // Abbiegewinkel <= pi / 2 schon besucht wurden. Das Ende des Pfads wird
         // als Sackgasse markiert.
-        back_is_dead_end = 1;
+        (extending_back ? back_is_dead_end : front_is_dead_end) = 1;
         no_added_node++; // In dieser Iteration wurde kein Knoten hinzugefügt.
 
         if (front_is_dead_end && back_is_dead_end)
         {
-            size_t candidates = 0;
-            // it: Iterator zum aktuell betrachteten Knoten
-            // w: Iterator zum Knoten, nach dem der Pfad aufgebrochen wird.
-            auto it = path.rbegin() + 2, w = path.rend();
+            // i: Index des aktuell betrachteten Knotens
+            // w: Index des Knotens, nach dem der Pfad aufgebrochen wird.
+            size_t i = extending_back ? path.size() - 3 : 2, w = SIZE_MAX,
+                   candidates = 0;
 
-            while (it != path.rend()) // Überprüfe die Winkelbeschränkungen und
-            {                         // ziehe it als Kandidaten in Betracht.
-                if (dot_product(z[u] - z[v], z[*it] - z[u]) >= 0 &&
-                    (it + 1 == path.rend() ||
-                     dot_product(z[*it] - z[u], z[*(it + 1)] - z[*it]) >= 0))
+            while (i < path.size())
+            {
+                // j: Nachbar von path[i], mit dem beim Einfügen der Kante
+                //    {u, path[i]} ein Abbiegewinkel entstehen würde.
+                size_t j = extending_back ? i - 1 : i + 1;
+                if (dot_product(z[u] - z[v], z[path[i]] - z[u]) >= 0 &&
+                    (j >= path.size() ||
+                     dot_product(z[path[i]] - z[u], z[path[j]] - z[path[i]]) >= 0))
                 {
                     candidates++;
                     if (!(rand() % candidates)) // wahr mit Wahrscheinlichkeit
-                        w = it;                 // 1 / candidates.
+                        w = i;                  // 1 / candidates.
                     if (candidates > sqrtn)
                         break;
                 }
-                it++;
+                i += extending_back ? -1 : 1;
             }
 
             if (candidates) // Breche den Pfad nach w auf und verbinde u mit w.
             {
-                reverse(path.rbegin(), w); // Kehre das Suffix bis w um.
-                back_is_dead_end = 0;
+                if (extending_back) // Kehre das Suffix strikt nach w um.
+                    reverse(path.begin() + w + 1, path.end());
+                else // Kehre das Präfix strikt vor w um.
+                    reverse(path.begin(), path.begin() + w);
+                (extending_back ? back_is_dead_end : front_is_dead_end) = 0;
             }
             else
-                reverse(path.begin(), path.end());
+                extending_back = !extending_back;
         }
         else // Versuche den Pfad am anderen Ende zu erweitern.
-        {
-            reverse(path.begin(), path.end());
-            swap(front_is_dead_end, back_is_dead_end);
-        }
+            extending_back = !extending_back;
     }
 
     vector<complex<double>> point_order;
@@ -209,8 +219,9 @@ int main(int argc, char **argv)
          << " s gefunden.\nStarte 2-opt..." << endl;
 
     double two_opt_time_limit = DBL_MAX;
-    if (argc == 3 && !strcmp(argv[1], "--2-opt-time-limit"))
-        two_opt_time_limit = stod(argv[2]);
+    for (int i = 1; i + 1 < argc; i++)
+        if (!strcmp(argv[i], "--2-opt-time-limit"))
+            two_opt_time_limit = stod(argv[i + 1]);
 
     path = optimize_path(path, two_opt_time_limit);
     duration = chrono::duration_cast<chrono::duration<double>>(
