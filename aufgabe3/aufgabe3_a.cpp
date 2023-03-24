@@ -146,7 +146,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
                          n - length + get_lbound_gamma(s, i) + 1);
 
             if (pre[length - 2].find(y.index) == pre[length - 2].end() &&
-                y.lbound < ubound)
+                y.lbound < ubound && length - 1 >= n - (2 * n + 2) / 3)
             {
                 pre[length - 2][y.index] = index;
                 q.push(y);
@@ -167,7 +167,10 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
     if (!ind(p)) // Identische Permutation erreicht.
         return {{}, 1};
 
-    if (vis[p.size() - 1].find(ind(p)) != vis[p.size() - 1].end())
+    // Prüfe, ob der Knoten schon besucht wurde oder die Oberschranke von A(p)
+    // n - ceil(2n / 3) überschritten wurde.
+    if (vis[p.size() - 1].find(ind(p)) != vis[p.size() - 1].end() ||
+        p.size() <= vis.size() - (2 * vis.size() + 2) / 3)
         return {{}, 0};
 
     priority_queue<Node> q;

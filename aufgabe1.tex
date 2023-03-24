@@ -185,7 +185,7 @@ In \cite{tsp-formulations} finden sich noch viele andere Möglichkeiten zur Form
 
 \subsection{Heuristische Lösung für große Instanzen}
 
-Mithilfe eines IP-Solvers und der obigen Formulierung konnten alle Instanzen von BWINF optimal gelöst werden. Bei ca. 300 Knoten sind aufgrund der hohen Laufzeit und des hohen Speicherverbrauchs aber die Grenzen dieses Verfahrens erreicht. Daher soll noch ein heuristisches Verfahren vorgestellt werden, das auf dem randomisierten Algorithmus zum Finden von Hamiltonzyklen von Posá basiert.
+Mithilfe eines IP-Solvers und der obigen Formulierung konnten alle Instanzen von BWINF optimal gelöst werden. Bei ca. 300 Knoten sind aufgrund der hohen Laufzeit und des hohen Speicherverbrauchs aber die Grenzen dieses Verfahrens erreicht. Daher soll noch ein heuristisches Verfahren vorgestellt werden, das auf dem randomisierten Algorithmus zum Finden von Hamiltonzyklen von Posá \cite{discrete-math} basiert.
 
 Der Algorithmus funktioniert wie folgt: Zuerst wird ein zufälliger Startknoten ausgewählt. Anschließend wird ein zufälliger Knoten gewählt, der noch nicht im Pfad ist und vom letzten Knoten erreichbar ist, ohne dass ein Abbiegewinkel größer $\pi / 2$ entsteht. Existiert kein solcher Knoten, wird das Ende des Pfads als Sackgasse markiert und versucht, das andere Ende auf die gleiche Weise zu erweitern. Sind beide Enden des Pfads als Sackgasse markiert, wird eine zufällige Kante aus dem Pfad ausgewählt und entfernt. Anschließend wird der Knoten am hinteren Ende des Pfads so mit einem der Endpunkte der entfernten Kante verbunden, dass der Pfad wieder verbunden ist. Natürlich werden bei der zufälligen Wahl der Kante nur solche Kanten in Betracht gezogen, dass die neu eingefügte Kante vom Knoten am Ende des Pfads nicht die Beschränkung des Abbiegewinkels verletzt. Existiert keine solche Kante, wird das gleiche mit dem Knoten am vorderen Ende des Pfads versucht. Durch Aufbrechen des Pfads und neues Verbinden des ersten oder letzten Knotens kann der Pfad häufig wieder erweitert werden. Die beschriebene Operation wird im Folgenden \emph{Neuverbindung} genannt. Es kann aber vorkommen, dass weder eine Neuverbindung des ersten noch des letzten Knotens möglich ist, oder dass sich die gleichen Neuverbindungen in eine Zyklus immer wieder abwechseln. Durch eine zufällige Wahl der entfernten Kante kann das meistens verhindert werden, aber nicht immer. Für diesen Fall wird eine Oberschranke an aufeinanderfolgenden Neuverbindungen festgelegt. Wird diese überschritten, wird die gesamte Suche von neuem gestartet. $\sqrt n$ hat sich experimentell als geeigneter Wert dafür herausgestellt. Ein zu großes Limit sorgt für eine größere Laufzeit, wenn ein ohnehin aussichtsloser Pfad noch lange versucht wird, zu erweitern, mit einem zu kleinen Limit wird die Suche dagegen sehr schnell abgebrochen, obwohl eine Erweiterung noch möglich gewesen wäre. Denn manchmal ist eine längere Folge an Neuverbindungen nötig, um den Pfad wieder erweiterbar zu machen.
 
@@ -694,8 +694,8 @@ Dieses Beispiel ist die größte Instanz, die von dem Programm \verb|aufgabe1_ra
     \href{https://arxiv.org/pdf/1312.2549.pdf}{https://arxiv.org/pdf/1312.2549.pdf}
 
     \bibitem{discrete-math}
-    Johnsonbaugh, R. (2018). 
-    Discrete Mathematics (Eighth Edition).
+    Johnsonbaugh, R. (2017). 
+    Discrete Mathematics (8. Auflage). Pearson Verlag
 
     \bibitem{uwaterloo}
     University of Waterloo. World TSP \\
