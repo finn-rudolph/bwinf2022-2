@@ -31,7 +31,7 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
         if (no_added_node > sqrtn) // Zu große Anzahl aufeinanderfolgener
             restart_search();      // Iterationen ohne Hinzufügen eines Knotens.
 
-        // u: letzter Knoten, v: vorletzter Knoten (wenn existent)
+        // u: letzter / erster Knoten, v: vorletzter / zweiter Knoten
         // w: Iterator in unvisited zum neu hinzugefügten Knoten
         size_t u, v, candidates = 0;
         list<size_t>::iterator w = unvisited.end();
@@ -62,8 +62,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
         }
 
         // Der Pfad kann von u aus nicht mehr erweitert werden, da alle mit
-        // Abbiegewinkel <= pi / 2 schon besucht wurden. Das Ende des Pfads wird
-        // als Sackgasse markiert.
+        // Abbiegewinkel <= pi / 2 schon besucht wurden. Das aktuell behandelte
+        // Ende des Pfads wird als Sackgasse markiert.
         (extending_back ? back_is_dead_end : front_is_dead_end) = 1;
         no_added_node++; // In dieser Iteration wurde kein Knoten hinzugefügt.
 
