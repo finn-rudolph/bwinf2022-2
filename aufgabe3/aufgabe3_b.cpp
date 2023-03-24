@@ -2,9 +2,8 @@
 #include "util.hpp"
 using namespace std;
 
-// Schreibt A(p) für jede Permutation der Länge k mit Index im Intervall
-// [i1, i2) in z. In y muss A(q) für jede Permutation q der Laenge k - 1 stehen.
-// Des Weiteren gilt u = k! und v = (k - 1)!.
+// Schreibt A(q) für jede Permutation der Länge k mit Index im Intervall
+// [i1, i2) in z. In y muss A(p) für jede Permutation p der Laenge k - 1 stehen.
 void update_z(
     size_t k, uint8_t const *const y, uint8_t *const z, size_t i1, size_t i2)
 {
@@ -63,7 +62,7 @@ pair<unsigned, size_t> pwue(size_t n)
     uint8_t *y = (uint8_t *)malloc(sizeof *y),
             *z = (uint8_t *)malloc(sizeof *z);
     y[0] = 0;
-    unsigned const n_threads = thread::hardware_concurrency();
+    unsigned const num_threads = thread::hardware_concurrency();
 
     for (size_t k = 2; k < n; k++)
     {
@@ -71,14 +70,14 @@ pair<unsigned, size_t> pwue(size_t n)
         z = (uint8_t *)realloc(z, k_factorial * sizeof *z);
         vector<thread> threads;
 
-        // Die k! Permutationen werden ausgeglichen unter den n_threads Threads
-        // aufgeteilt.
-        for (unsigned i = 0; i < n_threads; i++)
+        // Die k! Permutationen werden ausgeglichen unter den num_threads
+        // Threads aufgeteilt.
+        for (unsigned i = 0; i < num_threads; i++)
             threads.emplace_back(update_z, k, y, z,
-                                 (k_factorial / 2) * i / n_threads,
-                                 (k_factorial / 2) * (i + 1) / n_threads);
+                                 (k_factorial / 2) * i / num_threads,
+                                 (k_factorial / 2) * (i + 1) / num_threads);
 
-        for (thread &t : threads)
+        for (thread &t : threads) // Warte, bis alle Threads fertig sind.
             t.join();
 
         z[0] = 0;
@@ -86,15 +85,17 @@ pair<unsigned, size_t> pwue(size_t n)
     }
 
     free(z);
-    pair<unsigned, size_t> res = {0, -1};
+    pair<unsigned, size_t> res = {0, -1}; // P(n), Index der Beispielpermutation.
     vector<future<pair<unsigned, size_t>>> fut;
 
     // Für Länge n ist es nicht mehr nötig, A(p) zu speichern, daher wird
-    // get_max_a verwendet.
+    // get_max_a als Threadfunktion verwendet. Die future-Objekte erlauben es
+    // auf die Rückgabe der Threads zuzugreifen.
     size_t const n_factorial = factorial(n);
-    for (unsigned i = 0; i < n_threads; i++)
-        fut.emplace_back(async(get_max_a, n, y, (n_factorial / 2) * i / n_threads,
-                               (n_factorial / 2) * (i + 1) / n_threads));
+    for (unsigned i = 0; i < num_threads; i++)
+        fut.emplace_back(async(get_max_a, n, y,
+                               (n_factorial / 2) * i / num_threads,
+                               (n_factorial / 2) * (i + 1) / num_threads));
 
     for (auto &f : fut)
         res = max(res, f.get());
