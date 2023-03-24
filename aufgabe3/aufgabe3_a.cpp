@@ -5,10 +5,10 @@ using namespace std;
 
 struct Node // Ein Knoten im Suchbaum. Enthält Index, Länge und untere Schranke.
 {           // Bei Vergleich werden untere Schranke und Länge verglichen.
-    size_t index;
+    uint64_t index;
     unsigned length, lbound;
 
-    Node(size_t index_, unsigned length_, unsigned lbound_)
+    Node(uint64_t index_, unsigned length_, unsigned lbound_)
     {
         index = index_, length = length_, lbound = lbound_;
     }
@@ -24,8 +24,8 @@ struct Node // Ein Knoten im Suchbaum. Enthält Index, Länge und untere Schrank
 // Permutation umzuformen durch Austesten aller möglichen Operationen.
 vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 {
-    vector<unordered_map<size_t, size_t>> pre(p.size());
-    pre[p.size() - 1][ind(p)] = SIZE_MAX;
+    vector<unordered_map<uint64_t, uint64_t>> pre(p.size());
+    pre[p.size() - 1][ind(p)] = UINT64_MAX;
 
     queue<Node> q;
     q.emplace(ind(p), p.size(), 0); // Untere Schranke wird nicht verwendet.
@@ -40,9 +40,10 @@ vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 
         vector<unsigned> const s = ith_permutation(length, index);
 
-        for (size_t i = 0; i < length; i++) // Wende alle möglichen gamma_i-
-        {                                   // Operationen (0 <= i < length) an.
+        for (unsigned i = 0; i < length; i++) // Wende alle möglichen gamma_i-
+        {                                     // Operationen (0 <= i < length) an.
             Node const y(ind_gamma(s, i), length - 1, 0);
+            // Prüfe, ob die Permutation gamma_i s schon besucht wurde.
             if (pre[y.length - 1].find(y.index) == pre[y.length - 1].end())
             {
                 pre[y.length - 1][y.index] = index; // Vorgänger im Suchbaum.
@@ -73,16 +74,16 @@ unsigned get_lbound(vector<unsigned> const &p)
         return 0;
 
     unsigned x = 1; // Anzahl monotoner Teilstrings
-    bool incr = p[1] > p[0];
+    bool incr = p[0] < p[1];
 
-    for (size_t i = 2; i < p.size(); i++)
+    for (unsigned i = 2; i < p.size(); i++)
         incr = is_increasing(incr, p[i - 1], p[i], x);
 
     return (x + 1) / 3;
 }
 
 // Bestimmt eine untere Schranke für A(gamma_i p).
-unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
+unsigned get_lbound_gamma(vector<unsigned> const &p, unsigned i)
 {
     assert(i < p.size());
 
@@ -94,13 +95,13 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
         i >= 2 ? (p[i - 2] > p[i - 1])
                : (i == 1 ? (p[i + 1] > p[i - 1]) : (p[i + 2] > p[i + 1]));
 
-    for (size_t j = 2; j < i; j++) // umgekehrte Elemente vor i
+    for (unsigned j = 2; j < i; j++) // umgekehrte Elemente vor i
         incr = is_increasing(incr, p[i - j], p[i - j - 1], x);
 
     if (i && i + 1 < p.size()) // neu benachbarte Elemente (p[0], p[i + 1])
         incr = is_increasing(incr, p[0], p[i + 1], x);
 
-    for (size_t j = i + 2; j < p.size(); j++) // Elemente nach i
+    for (unsigned j = i + 2; j < p.size(); j++) // Elemente nach i
         incr = is_increasing(incr, p[j - 1], p[j], x);
 
     return (x + 1) / 3;
@@ -111,14 +112,14 @@ unsigned get_lbound_gamma(vector<unsigned> const &p, size_t i)
 // gespeichert und aufsteigend nach unterer Schranke abgearbeitet.
 vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 {
-    size_t const n = p.size();
+    unsigned const n = p.size();
     priority_queue<Node> q;
     q.emplace(ind(p), n, get_lbound(p));
 
     // Speichert für jede Permutationslänge die Indizes besuchter
     // Permutationen und deren Vorgänger.
-    vector<unordered_map<size_t, size_t>> pre(n);
-    pre[n - 1][ind(p)] = SIZE_MAX;
+    vector<unordered_map<uint64_t, uint64_t>> pre(n);
+    pre[n - 1][ind(p)] = UINT64_MAX;
 
     unsigned ubound = n; // aktuelle Oberschranke
 
@@ -139,7 +140,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 
         // Füge jede durch eine gamma-Operation erreichbare Permutation zur
         // Warteschlange hinzu, die das Ergebnis noch verbessern kann.
-        for (size_t i = 0; i < length; i++)
+        for (unsigned i = 0; i < length; i++)
         {
             Node const y(ind_gamma(s, i), length - 1,
                          n - length + get_lbound_gamma(s, i) + 1);
@@ -160,7 +161,7 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
 // Sortieren von p. Falls keine kürzere als ubound existiert, wird das zweite
 // Element der Rückgabe auf 0 gesetzt.
 pair<vector<unsigned>, bool> min_operations_bnb_r(
-    vector<unsigned> const &p, vector<unordered_set<size_t>> &vis,
+    vector<unsigned> const &p, vector<unordered_set<uint64_t>> &vis,
     unsigned ubound = UINT_MAX)
 {
     if (!ind(p)) // Identische Permutation erreicht.
@@ -204,7 +205,7 @@ pair<vector<unsigned>, bool> min_operations_bnb_r(
 // die Operationen in die richtige Reihenfolge.
 vector<unsigned> min_operations_bnb(vector<unsigned> const &p)
 {
-    vector<unordered_set<size_t>> vis(p.size());
+    vector<unordered_set<uint64_t>> vis(p.size());
     vector<unsigned> res = min_operations_bnb_r(p, vis).first;
     reverse(res.begin(), res.end());
     return res;
@@ -214,29 +215,33 @@ vector<unsigned> min_operations_bnb(vector<unsigned> const &p)
 // Operationen auf dem Pfad ein. m ist die Länge der anfänglichen Permutation,
 // i ihr Index.
 vector<unsigned> reconstruct_operations(
-    vector<unordered_map<size_t, size_t>> const &pre, size_t m, size_t i)
+    vector<unordered_map<uint64_t, uint64_t>> const &pre, unsigned length,
+    uint64_t index)
 {
-    vector<unsigned> t;
+    vector<unsigned> operations;
 
-    while (m < pre.size())
+    while (length < pre.size())
     {
-        vector<unsigned> const s = ith_permutation(m + 1, pre[m - 1].at(i));
+        vector<unsigned> const s =
+            ith_permutation(length + 1, pre[length - 1].at(index));
 
         // Suche nach der gamma-Operation, die den Vorgänger (p) in den
         // Nachfolger (i-te Permutation der Länge n) umwandelt.
-        for (size_t j = 0; j < m + 1; j++)
-            if (ind_gamma(s, j) == i)
+        for (unsigned j = 0; j < length + 1; j++)
+            if (ind_gamma(s, j) == index)
             {
-                t.push_back(j);
+                operations.push_back(j);
                 break;
             }
 
-        i = pre[m - 1].at(i); // Speichere den Index der vorherigen Permutation
-        m++;                  // und erhöhe die Permutationslänge um 1.
+        // Gehe zur vorherigen Permutation.
+        index = pre[length - 1].at(index);
+        length++;
     }
 
-    reverse(t.begin(), t.end()); // Die Operationen wurden umgekehrt eingefügt.
-    return t;
+    // Die Operationen wurden umgekehrt eingefügt.
+    reverse(operations.begin(), operations.end());
+    return operations;
 }
 
 void print_operations(vector<unsigned> p, vector<unsigned> const &op)
@@ -270,7 +275,7 @@ void print_operations(vector<unsigned> p, vector<unsigned> const &op)
 
 int main(int argc, char *argv[])
 {
-    size_t n;
+    unsigned n;
     cin >> n;
 
     vector<unsigned> p(n);

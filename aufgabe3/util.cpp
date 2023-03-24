@@ -2,16 +2,16 @@
 #include "util.hpp"
 using namespace std;
 
-size_t factorial(size_t n) { return !n ? 1 : n * factorial(n - 1); }
+uint64_t factorial(uint64_t n) { return !n ? 1 : n * factorial(n - 1); }
 
 // Berechnet den Index von p in einer lexikographisch sortierten Liste aller
 // |p|! Permutationen der Laenge |p|.
-size_t ind(vector<unsigned> const &p)
+uint64_t ind(vector<unsigned> const &p)
 {
-    size_t k = 0; // Der Index von p.
-    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size()),
-                 m = 1ULL << lgn;
-    unsigned tree[2 * m];
+    uint64_t k = 0; // Der Index von p.
+    size_t const lgn = countl_zero<size_t>(0) - countl_zero(p.size()),
+                 m = 1U << lgn;
+    unsigned tree[2 * m]; // Summensegmentbaum
     memset(tree, 0, sizeof tree);
 
     for (size_t j = 0; j < p.size(); j++)
@@ -34,7 +34,7 @@ size_t ind(vector<unsigned> const &p)
     return k;
 }
 
-vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
+vector<unsigned> gamma(vector<unsigned> const &p, unsigned i)
 {
     vector<unsigned> s(p.size() - 1);
 
@@ -46,13 +46,13 @@ vector<unsigned> gamma(vector<unsigned> const &p, size_t i)
     return s;
 }
 
-// Berechnet den Index von gamma_i p.
-size_t ind_gamma(vector<unsigned> const &p, size_t i)
+// Berechnet mu(gamma_i p).
+uint64_t ind_gamma(vector<unsigned> const &p, unsigned i)
 {
-    size_t k = 0;
-    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size() - 1),
-                 m = 1 << lgn;
-    unsigned tree[2 * m];
+    uint64_t k = 0;
+    size_t const lgn = countl_zero<size_t>(0) - countl_zero(p.size() - 1),
+                 m = 1U << lgn;
+    unsigned tree[2 * m]; // Summensegmentbaum
     memset(tree, 0, sizeof tree);
 
     // Die Elemente vor i werden in umgekehrter Reihenfolge bearbeitet. Das j-te
@@ -94,7 +94,7 @@ size_t ind_gamma(vector<unsigned> const &p, size_t i)
 }
 
 // Schreibt die Ziffern von i im fakultätsbasierten Zahlensystem in digits.
-void calc_factorial_digits(size_t i, vector<unsigned> &digits)
+void calc_factorial_digits(uint64_t i, vector<unsigned> &digits)
 {
     for (size_t j = 1; j <= digits.size(); j++)
     {
@@ -103,24 +103,24 @@ void calc_factorial_digits(size_t i, vector<unsigned> &digits)
     }
 }
 
-vector<unsigned> ith_permutation(size_t n, size_t i)
+vector<unsigned> ith_permutation(unsigned n, uint64_t i)
 {
     vector<unsigned> p(n);       // Verwende p zunächst als Speicher für die
     calc_factorial_digits(i, p); // Ziffern im fankultätsbasierten Zahlensystem.
 
-    size_t const lgn = countl_zero((size_t)0) - countl_zero(p.size()),
+    size_t const lgn = countl_zero<size_t>(0) - countl_zero(p.size()),
                  m = 1 << lgn;
     unsigned tree[2 * m];
     for (size_t l = 0; l <= lgn; l++) // Initialisiere den Baum mit Einsen.
-        for (size_t j = 0; j < (1ULL << l); j++)
+        for (size_t j = 0; j < (1U << l); j++)
             tree[(1 << l) + j] = 1 << (lgn - l);
 
     for (size_t j = 0; j < n; j++)
     {
-        size_t z = 1;
+        size_t z = 1; // Index des aktuellen Knotens im Segmentbaum
         for (size_t l = 0; l < lgn; l++)
         {
-            tree[z]--;
+            tree[z]--; // p[j] ist nun vorhanden -> setzte seinen Wert auf 0.
             z <<= 1;
             // Wenn nach rechts gegangen wird, muss die Anahl benötigter,
             // kleinerer Elemente um die Zahl kleinerer Elemente im linken
@@ -136,7 +136,7 @@ vector<unsigned> ith_permutation(size_t n, size_t i)
 }
 
 // Die eigentliche Wende-und-Ess-Operation.
-vector<unsigned> reverse_and_eat(vector<unsigned> const &p, size_t i)
+vector<unsigned> reverse_and_eat(vector<unsigned> const &p, unsigned i)
 {
     vector<unsigned> s(p.size() - 1);
 
