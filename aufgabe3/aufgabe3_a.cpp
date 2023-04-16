@@ -25,7 +25,6 @@ struct Node // Ein Knoten im Suchbaum. Enthält Index, Länge und untere Schrank
 vector<unsigned> min_operations_bfs(vector<unsigned> const &p)
 {
     vector<unordered_map<uint64_t, uint64_t>> pre(p.size());
-    pre[p.size() - 1][ind(p)] = UINT64_MAX;
 
     queue<Node> q;
     q.emplace(ind(p), p.size(), 0); // Untere Schranke wird nicht verwendet.
@@ -119,7 +118,6 @@ vector<unsigned> min_operations_astar(vector<unsigned> const &p)
     // Speichert für jede Permutationslänge die Indizes besuchter
     // Permutationen und deren Vorgänger.
     vector<unordered_map<uint64_t, uint64_t>> pre(n);
-    pre[n - 1][ind(p)] = UINT64_MAX;
 
     unsigned ubound = n; // aktuelle Oberschranke
 
