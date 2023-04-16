@@ -61,9 +61,8 @@ vector<complex<double>> randomized_obtuse_path(vector<complex<double>> const &z)
             continue;
         }
 
-        // Der Pfad kann von u aus nicht mehr erweitert werden, da alle mit
-        // Abbiegewinkel <= pi / 2 schon besucht wurden. Das aktuell behandelte
-        // Ende des Pfads wird als Sackgasse markiert.
+        // Der Pfad kann von u aus nicht mehr erweitert werden. Das aktuell
+        // behandelte Ende des Pfads wird als Sackgasse markiert.
         (extending_back ? back_is_dead_end : front_is_dead_end) = 1;
         no_added_node++; // In dieser Iteration wurde kein Knoten hinzugefügt.
 
